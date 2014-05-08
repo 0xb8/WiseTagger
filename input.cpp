@@ -142,7 +142,6 @@ void TagInput::loadTagFile(const QString& file)
 		return c.isLetterOrNumber() || c == '_' || c == ';';
 	};
 
-
 	while(!in.atEnd()) {
 		line = in.readLine();
 		main_tag.clear();
@@ -152,12 +151,14 @@ void TagInput::loadTagFile(const QString& file)
 
 		for(int i = 0; i < line.length(); ++i) {
 			if(!charAllowed(line[i])) {
-				qWarning("Warning: invalid character <%c> (%s:%d:%d)\n  %s", line[i].toLatin1(), qPrintable(QFileInfo(file).fileName()), line_number, i+1, qPrintable(line));
+			#ifndef NO_PARSER_DEBUG
+				qDebug("Warning: invalid character <%c> (%s:%d:%d)\n  %s", line[i].toLatin1(), qPrintable(QFileInfo(file).fileName()), line_number, i+1, qPrintable(line));
 				std::string err;
 				for(int j = 0; j < i+2; ++j)
 					err.append(" ");
 				err.append("^----");
-				qWarning("%s",err.c_str());
+				qDebug("%s",err.c_str());
+			#endif
 				break;
 			}
 
@@ -168,7 +169,9 @@ void TagInput::loadTagFile(const QString& file)
 				}
 				if(line[i] == ':' && !main_tag.isEmpty()) {
 					main_tag_length = main_tag.length();
-					//qDebug("colon delimiter @ %s (line %d:%d); resulting main tag is [%s]", qPrintable(line), line_number, i+1, qPrintable(main_tag));
+				#ifndef NO_PARSER_DEBUG
+					qDebug("colon delimiter @ %s (line %d:%d); resulting main tag is [%s]", qPrintable(line), line_number, i+1, qPrintable(main_tag));
+				#endif
 					continue;
 				}
 			} else {
@@ -178,19 +181,26 @@ void TagInput::loadTagFile(const QString& file)
 				}
 				if(line[i] == ',' && !map_tag.isEmpty()) {
 					map_tags.push_back(map_tag);
-					//qDebug("comma delimiter @ %s (line %d:%d); resulting mapped tag is [%s]", qPrintable(line), line_number, i+1, qPrintable(map_tag));
-					//qDebug("pushing mapped tag (@ %s) [%s] (line %d)", qPrintable(main_tag), qPrintable(map_tag), line_number);
+				#ifndef NO_PARSER_DEBUG
+					qDebug("comma delimiter @ %s (line %d:%d); resulting mapped tag is [%s]", qPrintable(line), line_number, i+1, qPrintable(map_tag));
+					qDebug("pushing mapped tag (@ %s) [%s] (line %d)", qPrintable(main_tag), qPrintable(map_tag), line_number);
+				#endif
 					map_tag.clear();
 				}
 			}
 		} // for
+
 		if(!main_tag.isEmpty()) {
-			//qDebug("pushing main tag [%s] (line %d)", qPrintable(main_tag), line_number);
+		#ifndef NO_PARSER_DEBUG
+			qDebug("pushing main tag [%s] (line %d)", qPrintable(main_tag), line_number);
+		#endif
 			main_tags.push_back(main_tag);
 		}
 		if(!map_tag.isEmpty()) {
 			map_tags.push_back(map_tag);
-			//qDebug("pushing mapped tag (@ %s) [%s] (line %d)", qPrintable(main_tag), qPrintable(map_tag), line_number);
+		#ifndef NO_PARSER_DEBUG
+			qDebug("pushing mapped tag (@ %s) [%s] (line %d)", qPrintable(main_tag), qPrintable(map_tag), line_number);
+		#endif
 		}
 
 		for(auto & maptag : map_tags) {
@@ -204,15 +214,11 @@ void TagInput::loadTagFile(const QString& file)
 	setCompleter(completer.get());
 }
 
-void TagInput::reloadMappedTags() {
-
+void TagInput::reloadMappedTags()
+{
 	for(auto it = mapped_tags.begin(); it != mapped_tags.end(); ) {
 		if (it->second == it->first) {
 			it = mapped_tags.erase(it);
 		} else ++it;
 	}
-
-//	for(auto & tag : mapped_tags) {
-//		qDebug("%s:%s",tag.first.c_str(),tag.second.c_str());
-	//	}
 }

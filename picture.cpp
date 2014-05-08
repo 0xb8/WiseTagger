@@ -1,15 +1,18 @@
 #include "picture.h"
-#include <QPixmap>
-#include <QGraphicsPixmapItem>
 #include <QResizeEvent>
-#include <QtDebug>
+#include <QFileInfo>
 
-Picture::Picture(QWidget *parent) :	QGraphicsView(parent) {
-	setFrameStyle(QFrame::NoFrame);
-	setRenderHint(QPainter::SmoothPixmapTransform, true);
-	QGraphicsScene *scene = new QGraphicsScene(this);
-	setScene(scene);
+static const char* TransparentBGFile = "://transparency.png";
+static const char* BackgroundColor = "#eef3fa"; // or #eef3fa
+
+Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setFocusPolicy(Qt::ClickFocus);
+	setMinimumSize(1,1);
+	psize.setHeight(1);
+	psize.setHeight(1);
+	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+	setStyleSheet(tr("background-color:%1;").arg(BackgroundColor));
 }
 
 // Implement empty event handlers to allow filtering by MainWindow
@@ -19,33 +22,38 @@ void Picture::dropEvent(QDropEvent *e) {Q_UNUSED(e)}
 
 bool Picture::loadPicture(const QString &filename)
 {
-	QPixmap pm;
-	if(!pm.load(filename))
+	QString ext = QFileInfo(filename).suffix();
+	if ( ext == "png" || ext == "gif" ) {
+		setStyleSheet(tr("background-image: url(%1);background-color: %2;").arg(TransparentBGFile).arg(BackgroundColor));
+	} else {
+		setStyleSheet(tr("background-image: none;background-color: %1;").arg(BackgroundColor));
+	}
+
+	if(!pixmap.load(filename))
 		return false;
 
-	pixmap_w = pm.width();
-	pixmap_h = pm.height();
-
-	scene()->clear();
-
-	QGraphicsPixmapItem *item = scene()->addPixmap(pm);
-	item->setTransformationMode(Qt::SmoothTransformation);
-	scene()->setSceneRect(0, 0, pixmap_w, pixmap_h);
-
-	if(pixmap_w > geometry().width() || pixmap_h > geometry().height()) {
-		fitInView(0, 0, pixmap_w, pixmap_h, Qt::KeepAspectRatio);
-	} else {
-		fitInView(0, 0, geometry().width(), geometry().height(), Qt::KeepAspectRatio);
-	}
+	resizeAndSetPixmap();
 	return true;
 }
 
-
-void Picture::resizeEvent(QResizeEvent *event)
+QSize Picture::sizeHint() const
 {
-	if(pixmap_w > geometry().width() || pixmap_h > geometry().height())
-		fitInView(0, 0, pixmap_w, pixmap_h, Qt::KeepAspectRatio);
-	else
-		fitInView(0, 0, event->size().width(), event->size().height(), Qt::KeepAspectRatio);
-		scene()->setSceneRect(0, 0, pixmap_w, pixmap_h);
+	return psize;
+}
+
+void Picture::resizeAndSetPixmap()
+{
+
+	psize.setWidth(qMin(size().width(),  pixmap.width()));
+	psize.setHeight(qMin(size().height(),pixmap.height()));
+	QLabel::setPixmap(pixmap.scaled(psize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
+
+
+void Picture::resizeEvent(QResizeEvent * e)
+{
+	Q_UNUSED(e);
+	if(!pixmap.isNull()) {
+		resizeAndSetPixmap();
+	}
 }

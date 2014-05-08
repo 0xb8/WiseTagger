@@ -7,7 +7,6 @@
 
 #include <QKeySequence>
 #include <QMessageBox>
-#include <QtDebug>
 
 #include <QMimeData>
 #include <QDragEnterEvent>
@@ -20,20 +19,20 @@ const static char* MainWindowTitle = "%1  –  WiseTagger v%2";
 
 Window::Window(QWidget *parent) :
 	QMainWindow(parent)
-      , tagger(this)
-      , last_directory(QDir::homePath())
-      ,	openAct(	tr("&Open File..."), this)
-      , openDirAct(	tr("Open &Directory..."), this)
-      , NextAct(	tr("&Next file"), this)
-      , PrevAct(	tr("&Previous file"), this)
-      , saveAct(	tr("&Save"), this)
-      , saveNextAct(	tr("Save and open next file"), this)
-      , savePrevAct(	tr("Save and open previous file"),this)
-      , reloadTagsAct(	tr("Reload tag file"),this)
-      , exitAct(	tr("E&xit"), this)
-      , aboutAct(	"&About",this)
-      , fileMenu(	tr("&File"), this)
-      , helpMenu(	tr("&Help"), this)
+	, tagger(this)
+	, last_directory(QDir::homePath())
+	, openAct(	tr("Open File..."), this)
+	, openDirAct(	tr("Open Directory..."), this)
+	, NextAct(	tr("Next file"), this)
+	, PrevAct(	tr("Previous file"), this)
+	, saveAct(	tr("Save"), this)
+	, saveNextAct(	tr("Save and open next file"), this)
+	, savePrevAct(	tr("Save and open previous file"),this)
+	, reloadTagsAct(tr("Reload tag file"),this)
+	, exitAct(	tr("Exit"), this)
+	, aboutAct(	tr("About"),this)
+	, fileMenu(	tr("File"), this)
+	, helpMenu(	tr("Help"), this)
 {
 	Q_UNUSED(parent);
 
@@ -248,11 +247,11 @@ void Window::createActions()
 	saveAct.setEnabled(false);
 	connect(&saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-	saveNextAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
+	saveNextAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
 	saveNextAct.setEnabled(false);
 	connect(&saveNextAct, SIGNAL(triggered()), this, SLOT(savenext()));
 
-	savePrevAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
+	savePrevAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
 	savePrevAct.setEnabled(false);
 	connect(&savePrevAct, SIGNAL(triggered()), this, SLOT(saveprev()));
 

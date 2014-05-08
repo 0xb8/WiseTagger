@@ -16,6 +16,7 @@ QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 
 VERSION = 0.4
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
+Debug:DEFINES += NO_PARSER_DEBUG
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"
 CONFIG += c++11
@@ -35,3 +36,6 @@ HEADERS  += \
     tagger.h \
     multicompleter.h \
     input.h
+
+RESOURCES += \
+    resources.qrc

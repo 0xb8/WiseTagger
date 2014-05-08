@@ -2,7 +2,9 @@
 #define WISETAGGER_H
 
 #include <QVBoxLayout>
+#include <QResizeEvent>
 #include <QLabel>
+#include <QFrame>
 #include <QWidget>
 #include <QMap>
 
@@ -34,6 +36,7 @@ public:
 private:
 	Picture pic;
 	TagInput input;
+	QFrame hr_line;
 	QString current_file, current_dir, current_tags;
 	QVBoxLayout mainlayout;
 	QVBoxLayout inputlayout;

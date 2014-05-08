@@ -3,12 +3,11 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 #include <QDirIterator>
-#include <QtDebug>
-
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QJsonObject>
+#include <QFrame>
 
 static const char* ConfigFilename = "config.json";
 
@@ -20,13 +19,15 @@ Tagger::Tagger(QWidget *parent) :
 	loadJsonConfig();
 	mainlayout.setMargin(0);
 	mainlayout.setSpacing(0);
-	mainlayout.addWidget(&pic);
 
 	inputlayout.setMargin(10);
 	inputlayout.addWidget(&input);
+
+	hr_line.setFrameStyle(QFrame::HLine | QFrame::Sunken);
+	mainlayout.addWidget(&pic);
+	mainlayout.addWidget(&hr_line);
 	mainlayout.addLayout(&inputlayout);
 	setLayout(&mainlayout);
-
 	setAcceptDrops(true);
 }
 
