@@ -1,3 +1,7 @@
+/* Copyright © 2011 Michał Męciński
+ * Code taken from http://www.mimec.org/node/304
+ */
+
 #ifndef MULTICOMPLETER_H
 #define MULTICOMPLETER_H
 
@@ -8,12 +12,12 @@ class MultiSelectCompleter : public QCompleter
 {
     Q_OBJECT
 public:
-    MultiSelectCompleter( const QStringList& items, QObject* parent );
-    ~MultiSelectCompleter();
+	MultiSelectCompleter( const QStringList& items, QObject* parent );
+	~MultiSelectCompleter();
 
 public:
-    QString pathFromIndex( const QModelIndex& index ) const;
-    QStringList splitPath( const QString& path ) const;
+	QString pathFromIndex( const QModelIndex& index ) const;
+	QStringList splitPath( const QString& path ) const;
 };
 
 #endif // MULTICOMPLETER_H

@@ -35,7 +35,8 @@ HEADERS  += \
     window.h \
     tagger.h \
     multicompleter.h \
-    input.h
+    input.h \
+    unordered_map_qt.h
 
 RESOURCES += \
     resources.qrc

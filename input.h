@@ -1,27 +1,22 @@
+/* Copyright © 2014 cat <cat@wolfgirl.org>
+ * This program is free software. It comes without any warranty, to the extent
+ * permitted by applicable law. You can redistribute it and/or modify it under
+ * the terms of the Do What The Fuck You Want To Public License, Version 2, as
+ * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+ */
+
 #ifndef TAGINPUT_H
 #define TAGINPUT_H
 
 #include "multicompleter.h"
+#include "unordered_map_qt.h"
 #include <QStringList>
 #include <QLineEdit>
 #include <QKeyEvent>
-
-#include <unordered_map>
 #include <memory>
-#include <string>
 
-namespace std {
-template<>
-	struct hash<QString> {
-		typedef QString      argument_type;
-		typedef std::size_t  result_type;
-		result_type operator()(const QString &s) const {
-			return std::hash<std::string>()(s.toStdString());
-		}
-	};
-}
+using QStringUnMap = std::unordered_multimap<QString,QString>;
 
-using StringMultimap = std::unordered_multimap<QString,QString>;
 
 class TagInput : public QLineEdit {
 	Q_OBJECT
@@ -38,8 +33,7 @@ private:
 	bool nextCompleter();
 	int index;
 
-	QStringList loadTagListFromFile();
-	StringMultimap mapped_tags;
+	QStringUnMap mapped_tags;
 	std::unique_ptr<MultiSelectCompleter> completer;
 };
 #endif // TAGINPUT_H

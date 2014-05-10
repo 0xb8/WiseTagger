@@ -1,13 +1,20 @@
+/* Copyright © 2014 cat <cat@wolfgirl.org>
+ * This program is free software. It comes without any warranty, to the extent
+ * permitted by applicable law. You can redistribute it and/or modify it under
+ * the terms of the Do What The Fuck You Want To Public License, Version 2, as
+ * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+ */
+
 #include "tagger.h"
 #include <QMessageBox>
-#include <QFileInfo>
-#include <QStandardPaths>
 #include <QDirIterator>
+#include <QApplication>
+
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QJsonObject>
-#include <QFrame>
+
 
 static const char* ConfigFilename = "config.json";
 
@@ -40,7 +47,7 @@ void Tagger::installEventFilterForPicture(QObject * filter_object)
 
 void Tagger::reloadTags()
 {
-	input.loadTagFile(current_tags);
+	input.loadTagFile(current_tags_file);
 	input.reloadMappedTags();
 }
 
@@ -51,62 +58,76 @@ QString Tagger::currentFile() const
 
 QString Tagger::currentFileName() const
 {
-	return QFileInfo(current_file).completeBaseName();
+	return QFileInfo(current_file).fileName();
 }
 
 bool Tagger::isModified() const
 {
-	return input.text() != currentFileName();
+	return input.text() != QFileInfo(current_file).completeBaseName();
 }
 
 bool Tagger::loadFile(const QString &filename)
 {
-	if(!pic.loadPicture(filename)) {
-		QMessageBox::critical(this, tr("Error opening image"), tr("File is corrupted or file format is unrecognized."));
+	QFileInfo f(filename);
+	if(!f.exists()) {
+		QMessageBox::critical(this, tr("Error opening image"), tr("File \"%1\" does not exist.").arg(f.fileName()));
+		return false;
+	}
+
+	if(!pic.loadPicture(f.absoluteFilePath())) {
+		QMessageBox::critical(this, tr("Error opening image"), tr("File format is not supported or file is corrupted."));
 			return false;
 	}
-	QFileInfo f(filename);
-	input.setText(f.completeBaseName());
-	pic.setFocus();
-	current_file = filename;
 
-	if(current_dir == f.absolutePath()) {
-		input.reloadMappedTags();
-		return true;
-	} else {
-		current_dir = f.absolutePath();
+	input.setText(f.completeBaseName());
+	current_file = f.absoluteFilePath();
+
+	locateTagsFile(f);
+
+
+	pic.setFocus();
+
+	return true;
+
+
+}
+
+void Tagger::locateTagsFile(const QFileInfo& file)
+{
+	if(current_dir != file.absolutePath()) {
+		current_dir = file.absolutePath();
 
 		bool found = false;
-		for(QString &k : directory_tagfiles.keys()) {
-			QFileInfo kinfo(k);
-			if(kinfo.exists() && current_dir.contains(kinfo.absoluteFilePath())) {
-				current_tags = directory_tagfiles[k];
+		QFileInfo directory;
+
+		for(auto&& entry : dir_tagfiles) {
+			directory.setFile(entry.first);
+			if(directory.exists() && current_dir.contains(directory.absoluteFilePath())) {
+				current_tags_file = entry.second;
 				found = true;
 				break;
 			}
 		}
 		if(!found) {
-			if(directory_tagfiles.find("*") != directory_tagfiles.end())
-				current_tags = directory_tagfiles["*"];
-			else current_tags = "tags.txt";
+			auto it = dir_tagfiles.find("*");
+			if(it != dir_tagfiles.end()) {
+				current_tags_file = it->second;
+			} else {
+				current_tags_file = "tags.txt";
+			}
 		}
-		input.loadTagFile(current_tags);
+		input.loadTagFile(current_tags_file);
+		return;
 	}
 	input.reloadMappedTags();
-	return true;
+	return;
 }
+
+
 
 bool Tagger::loadJsonConfig()
 {
-	QString configfile;
-	if((configfile = QStandardPaths::locate(QStandardPaths::QStandardPaths::ConfigLocation, ConfigFilename)).isEmpty()) {
-		if(!QFileInfo(ConfigFilename).exists()) {
-			createJsonConfig(QStandardPaths::writableLocation(QStandardPaths::QStandardPaths::ConfigLocation));
-			configfile = QStandardPaths::locate(QStandardPaths::QStandardPaths::ConfigLocation, ConfigFilename);
-		} else {
-			configfile = ConfigFilename;
-		}
-	}
+	QString configfile = qApp->applicationDirPath() + '/' + ConfigFilename;
 
 	QFile f(configfile);
 	if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
@@ -114,53 +135,47 @@ bool Tagger::loadJsonConfig()
 		return false;
 	}
 
+
+
 	QJsonDocument config = QJsonDocument().fromJson(f.readAll());
+	QJsonArray array = config.array();
+	QJsonObject object;
 
-	QJsonArray tagdirs = config.array();
-	if(tagdirs.empty()) {
-		QMessageBox::warning(this, tr("Error opening config file"), tr("\"%1\" is an empty or invalid JSON array\n\n%2").arg(configfile).arg(QString(QJsonDocument(tagdirs).toJson())));
+	if(array.empty()) {
+		QMessageBox::warning(this,
+			tr("Error opening config file"),
+			tr("\"%1\" is an empty or invalid JSON array\n\n%2")
+			.arg(configfile)
+			.arg(QString(QJsonDocument(array).toJson())));
 		return false;
 	}
-	directory_tagfiles.clear();
-	for(auto&& obj : tagdirs) {
+	dir_tagfiles.clear();
+	for(auto&& obj : array) {
 		if(!obj.isObject()) {
-			QMessageBox::warning(this, tr("Error opening config file"), tr("Invalid object in config file."));
+			QMessageBox::warning(this, tr("Error opening config file"), tr("Array should contain valid JSON objects."));
 			return false;
 		}
-		QJsonObject tagdir = obj.toObject();
-		if(!tagdir.contains("directory") || !tagdir.contains("tagfile")) {
-			QMessageBox::warning(this, tr("Error opening config file"), tr("Object should have \"directory\" and \"tagfile\" keys\n\n%1").arg(QString(QJsonDocument(tagdir).toJson())));
+		object = obj.toObject();
+		if(!object.contains("directory") || !object.contains("tagfile")) {
+			QMessageBox::warning(this,
+				tr("Error opening config file"),
+				tr("Object should have \"directory\" and \"tagfile\" keys\n\n%1")
+				.arg(QString(QJsonDocument(object).toJson())));
 			return false;
 		}
-		directory_tagfiles.insert(tagdir["directory"].toString(), tagdir["tagfile"].toString());
-	}
+		if(!object["directory"].isString() || !object["tagfile"].isString()) {
+			QMessageBox::warning(this,
+				tr("Error opening config file"),
+				tr("<pre>directory</pre> and <pre>tagfile</pre> keys should be of type <pre>string</pre>."));
+			return false;
+		}
+
+		dir_tagfiles.insert(std::pair<QString,QString>(object["directory"].toString(),object["tagfile"].toString()));
+	} // for
 
 	return true;
 }
 
-bool Tagger::createJsonConfig(const QString &directory) {
-	QDir dir(directory);
-	if(!dir.mkpath(".")) {
-		QMessageBox::warning(this, tr("Error creating configuration directory"), tr("Could not create configuration directory %1.").arg(directory));
-		return false;
-	}
-
-	QFileInfo fi(directory, ConfigFilename);
-	QFile f(fi.absoluteFilePath());
-	if(!f.open(QIODevice::ReadWrite|QIODevice::Text)) {
-		QMessageBox::warning(this, tr("Error opening config file"), tr("Could not open configuration file \"%1\" for writing.").arg(f.fileName()));
-		return false;
-	}
-	QJsonDocument config;
-	QJsonArray tagdirs;
-	QJsonObject tagdir;
-	tagdir.insert(QString("directory"), QString("*"));
-	tagdir.insert(QString("tagfile"), QString("tags.txt"));
-	tagdirs.push_back(tagdir);
-	config.setArray(tagdirs);
-	f.write(config.toJson());
-	return true;
-}
 
 
 int Tagger::rename(bool forcesave)

@@ -1,17 +1,26 @@
+/* Copyright © 2014 cat <cat@wolfgirl.org>
+ * This program is free software. It comes without any warranty, to the extent
+ * permitted by applicable law. You can redistribute it and/or modify it under
+ * the terms of the Do What The Fuck You Want To Public License, Version 2, as
+ * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+ */
+
 #include "input.h"
 #include <algorithm>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QApplication>
+
 #include <QTextStream>
+#include <QTextCodec>
 
 TagInput::TagInput(QWidget *parent) : QLineEdit(parent), index(0)
 {
 	setMinimumHeight(30);
 	completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter(QStringList(),this));
 
-	// TODO make cross-platform
 	QFont font("Consolas");
-	font.setStyleHint(QFont::Monospace);
+	font.setStyleHint(QFont::TypeWriter);
 	font.setPixelSize(14);
 	setFont(font);
 }
@@ -32,7 +41,7 @@ void TagInput::fixTags(bool nosort)
 		}
 
 		auto range = mapped_tags.equal_range(tag);
-		auto val_equals_key = std::find_if(range.first,range.second,[&](StringMultimap::value_type& p){
+		auto val_equals_key = std::find_if(range.first,range.second,[&](QStringUnMap::value_type p){
 				return p.first == p.second;
 		});
 
@@ -43,7 +52,7 @@ void TagInput::fixTags(bool nosort)
 		 * Note that such elements will be deleted from mapped tags when andother file is loaded, or tag file gets reloaded.
 		 */
 		if(val_equals_key == range.second) { // if not found
-			std::for_each( range.first, range.second, [&](StringMultimap::value_type& p) {
+			std::for_each( range.first, range.second, [&](QStringUnMap::value_type p) {
 				added.push_back(p.second);
 			});
 			if(range.first != mapped_tags.end()) { // if we actually have added something
@@ -123,14 +132,25 @@ void TagInput::keyPressEvent(QKeyEvent *event)
 
 void TagInput::loadTagFile(const QString& file)
 {
-	QFile f(file);
-	if(!f.exists() || !f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+
+	QFileInfo fi(file);
+	QFile f;
+	if(!fi.exists()) {
+		if(fi.isRelative()) {
+			f.setFileName(qApp->applicationDirPath() + "/" + file);
+		}
+	} else {
+		f.setFileName(file);
+	}
+
+	if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
 		QMessageBox::warning(NULL, tr("Error opening tag file"), tr("Could not open %1. Tag autocomplete will be disabled.").arg(file));
 		return;
 	}
 
 	mapped_tags.clear();
 	QTextStream in(&f);
+	in.setCodec("UTF-8");
 	QString line, main_tag, map_tag;
 	QStringList main_tags, map_tags;
 	int main_tag_length;
@@ -152,7 +172,7 @@ void TagInput::loadTagFile(const QString& file)
 		for(int i = 0; i < line.length(); ++i) {
 			if(!charAllowed(line[i])) {
 			#ifndef NO_PARSER_DEBUG
-				qDebug("Warning: invalid character <%c> (%s:%d:%d)\n  %s", line[i].toLatin1(), qPrintable(QFileInfo(file).fileName()), line_number, i+1, qPrintable(line));
+				qDebug("Warning: invalid character <%c> (%s:%d:%d)\n  %s", line[i].unicode(), qPrintable(QFileInfo(file).fileName()), line_number, i+1, qPrintable(line));
 				std::string err;
 				for(int j = 0; j < i+2; ++j)
 					err.append(" ");

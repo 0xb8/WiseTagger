@@ -1,9 +1,15 @@
+/* Copyright © 2014 cat <cat@wolfgirl.org>
+ * This program is free software. It comes without any warranty, to the extent
+ * permitted by applicable law. You can redistribute it and/or modify it under
+ * the terms of the Do What The Fuck You Want To Public License, Version 2, as
+ * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+ */
+ 
 #include "picture.h"
 #include <QResizeEvent>
-#include <QFileInfo>
 
 static const char* TransparentBGFile = "://transparency.png";
-static const char* BackgroundColor = "#eef3fa"; // or #eef3fa
+static const char* BackgroundColor = "white"; // or #eef3fa
 
 Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setFocusPolicy(Qt::ClickFocus);
@@ -22,15 +28,14 @@ void Picture::dropEvent(QDropEvent *e) {Q_UNUSED(e)}
 
 bool Picture::loadPicture(const QString &filename)
 {
-	QString ext = QFileInfo(filename).suffix();
-	if ( ext == "png" || ext == "gif" ) {
+	if(!pixmap.load(filename))
+		return false;
+
+	if (pixmap.hasAlphaChannel()) {
 		setStyleSheet(tr("background-image: url(%1);background-color: %2;").arg(TransparentBGFile).arg(BackgroundColor));
 	} else {
 		setStyleSheet(tr("background-image: none;background-color: %1;").arg(BackgroundColor));
 	}
-
-	if(!pixmap.load(filename))
-		return false;
 
 	resizeAndSetPixmap();
 	return true;
