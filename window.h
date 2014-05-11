@@ -26,12 +26,13 @@ public:
 	void openSingleFile(const QString &file);		// load file into tagger w/o adding it to queue
 	void openSingleDirectory(const QString &directory);	// open first file in directory
 	void loadDirContents(const QString &directory);		// enqueue files in directory
-	int  saveFile(bool forcesave);
-	void nextFile(bool forcesave);
-	void prevFile(bool forcesasve);
+	int  saveFile(bool forcesave = false);
+	void nextFile(bool forcesave = false);
+	void prevFile(bool forcesave = false);
 
 protected:
 	bool eventFilter(QObject *, QEvent *);
+	void closeEvent(QCloseEvent *event);
 
 private slots:
 	void fileOpenDialog();

@@ -236,6 +236,19 @@ bool Window::eventFilter(QObject *object, QEvent *event)
 	return false;
 }
 
+void Window::closeEvent(QCloseEvent *event)
+{
+	if(tagger.isModified()) {
+		if(saveFile() >= 0) {
+			event->accept();
+			return;
+		}
+		event->ignore();
+		return;
+	}
+	event->accept();
+}
+
 void Window::parseCommandLineArguments()
 {
 	QFileInfo f;
@@ -303,12 +316,10 @@ void Window::createActions()
 	connect(&savePrevAct, SIGNAL(triggered()), this, SLOT(saveprev()));
 
 	reloadTagsAct.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-	savePrevAct.setEnabled(false);
+	reloadTagsAct.setEnabled(false);
 	connect(&reloadTagsAct, SIGNAL(triggered()), this, SLOT(reload_tags()));
 
-	exitAct.setShortcut(tr("Ctrl+Q"));
 	connect(&exitAct, SIGNAL(triggered()), this, SLOT(close()));
-
 	connect(&aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 	connect(&aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 	connect(&helpAct, SIGNAL(triggered()), this, SLOT(help()));
@@ -371,17 +382,17 @@ void Window::help()
 
 void Window::save()
 {
-	saveFile(false);
+	saveFile();
 }
 
 void Window::next()
 {
-	nextFile(false);
+	nextFile();
 }
 
 void Window::prev()
 {
-	prevFile(false);
+	prevFile();
 }
 
 void Window::savenext()
