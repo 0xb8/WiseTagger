@@ -156,7 +156,7 @@ void TagInput::loadTagFile(const QString& file)
 	int main_tag_length;
 	int line_number = 1;
 	auto charAllowed = [](QChar c){
-		return c.isLetterOrNumber() || c == '_' || c == ':' || c == ';' || c == ',';
+		return c.isLetterOrNumber() || c == '_' || c == ':' || c == ';' || c == ',' || c == ' ' || c == '\t';
 	};
 	auto charMainTag = [](QChar c){
 		return c.isLetterOrNumber() || c == '_' || c == ';';
@@ -173,9 +173,14 @@ void TagInput::loadTagFile(const QString& file)
 			if(!charAllowed(line[i])) {
 			#ifndef NO_PARSER_DEBUG
 				qDebug("Warning: invalid character <%c> (%s:%d:%d)\n  %s", line[i].unicode(), qPrintable(QFileInfo(file).fileName()), line_number, i+1, qPrintable(line));
-				std::string err;
-				for(int j = 0; j < i+2; ++j)
-					err.append(" ");
+				std::string err("  ");
+				for(int j = 0; j < i; ++j) {
+					if(line[j] == '\t') {
+						err.append("\t");
+					} else {
+						err.append(" ");
+					}
+				}
 				err.append("^----");
 				qDebug("%s",err.c_str());
 			#endif
