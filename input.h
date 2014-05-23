@@ -40,9 +40,9 @@ private:
 	QStringList replacement_tags(QString& tag);
 
 	int m_index;
-	std::unordered_multimap<QString,QString> m_related_tags;  // k: tag -- v: related tag
-	std::unordered_multimap<QString,QString> m_replaced_tags; // k: replacement tag -- v: replaced tag
-	std::unordered_map<QString, bool>        m_removed_tags;  // k: removed tag -- v: been removed already?
-	std::unique_ptr<MultiSelectCompleter>    m_completer;
+	std::unordered_multimap <QString,QString> m_related_tags;  // k: tag -- v: related tag
+	std::unordered_multimap <QString,QString> m_replaced_tags; // k: replacement tag -- v: replaced tag
+	std::unordered_map      <QString, bool>   m_removed_tags;  // k: removed tag -- v: been removed already?
+	std::unique_ptr<MultiSelectCompleter>     m_completer;
 };
 #endif // TAGINPUT_H
