@@ -11,29 +11,38 @@
 #include "multicompleter.h"
 #include "unordered_map_qt.h"
 #include <QStringList>
+#include <QTextStream>
+#include <QTextCodec>
 #include <QLineEdit>
 #include <QKeyEvent>
 #include <memory>
 
-using QStringUnMap = std::unordered_multimap<QString,QString>;
-
-
 class TagInput : public QLineEdit {
 	Q_OBJECT
 public:
-	explicit TagInput(QWidget *parent = 0);
+	explicit TagInput(QWidget* parent = 0);
 	void fixTags(bool nosort = false);
-	void loadTagFile(const QString &file);
-	void reloadMappedTags();
+	void loadTagFile(const QString& file);
+	void reloadAdditionalTags();
 
 protected:
-	void keyPressEvent(QKeyEvent *event);
+	void keyPressEvent(QKeyEvent* event);
 
 private:
-	bool nextCompleter();
-	int index;
+	bool next_completer();
+	QStringList parse_tags_file(QTextStream& input);
 
-	QStringUnMap mapped_tags;
-	std::unique_ptr<MultiSelectCompleter> completer;
+	void remove_if_short(QString &tag);
+	void remove_if_unwanted(QString& tag);
+	void replace_booru_and_id(QString& tag);
+
+	QStringList related_tags(const QString& tag);
+	QStringList replacement_tags(QString& tag);
+
+	int m_index;
+	std::unordered_multimap<QString,QString> m_related_tags;  // k: tag -- v: related tag
+	std::unordered_multimap<QString,QString> m_replaced_tags; // k: replacement tag -- v: replaced tag
+	std::unordered_map<QString, bool>        m_removed_tags;  // k: removed tag -- v: been removed already?
+	std::unique_ptr<MultiSelectCompleter>    m_completer;
 };
 #endif // TAGINPUT_H

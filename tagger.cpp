@@ -48,7 +48,7 @@ void Tagger::installEventFilterForPicture(QObject * filter_object)
 void Tagger::reloadTags()
 {
 	input.loadTagFile(current_tags_file);
-	input.reloadMappedTags();
+	input.reloadAdditionalTags();
 }
 
 QString Tagger::currentFile() const
@@ -119,7 +119,7 @@ void Tagger::locateTagsFile(const QFileInfo& file)
 		input.loadTagFile(current_tags_file);
 		return;
 	}
-	input.reloadMappedTags();
+	input.reloadAdditionalTags();
 	return;
 }
 
@@ -189,7 +189,7 @@ int Tagger::rename(bool forcesave)
 
 	QFileInfo newfile(newname);
 	if(newfile.exists()) {
-		QMessageBox::critical(this, tr("Cannot rename file"),tr("File with this name already exists in \"<b>%1</b>\".\n\nPlease change some of your tags.").arg(QFileInfo(parent).completeBaseName()));
+		QMessageBox::critical(this, tr("Cannot rename file"),tr("File with this name already exists in <b>%1</b>.\n\nPlease change some of your tags.").arg(QFileInfo(parent).completeBaseName()));
 		return 0;
 	}
 
@@ -197,7 +197,7 @@ int Tagger::rename(bool forcesave)
 	if(!forcesave) {
 		QMessageBox::StandardButton reply;
 		reply = QMessageBox::question(this, tr("Rename file?")
-						, tr("Rename \"<b>%1</b>\"?").arg(file.completeBaseName())
+						, tr("Rename <b>%1</b>?").arg(file.completeBaseName())
 						, QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
 		if(reply == QMessageBox::Yes) {
 			QFile(current_file).rename(newname);
