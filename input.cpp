@@ -279,8 +279,10 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 
 void TagInput::remove_if_short(QString& tag)
 {
-	if(tag.length() < 2)
-		tag.clear();
+	if(tag.length() == 1) {
+		if(!tag[0].isDigit())
+			tag.clear();
+	}
 }
 
 using qs_ummap = std::unordered_multimap<QString,QString>;
@@ -345,8 +347,6 @@ void TagInput::replace_booru_and_id(QString &tag)
 	}
 
 	if((id = tag.toInt()) != 0) {
-		tag.clear();
-
 		for(int i = 0; i < len; ++i) {
 			if(found_booru[i]) {
 				tag = QString(replacement[i]) + QString::number(id);
