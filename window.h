@@ -8,8 +8,9 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QMainWindow>
+#include "reverse_search.h"
 #include "tagger.h"
+#include <QMainWindow>
 #include <QMenuBar>
 #include <QAction>
 #include <QString>
@@ -45,6 +46,7 @@ private slots:
 	void savenext();
 	void saveprev();
 	void reload_tags();
+	void search_iqdb();
 
 private:
 	void createActions();
@@ -53,6 +55,8 @@ private:
 	void parseCommandLineArguments();
 
 	Tagger tagger;
+	ReverseSearch iqdb;
+
 	QString last_directory;
 	QVector<QString> files;
 	int current_pos;
@@ -65,6 +69,7 @@ private:
 	QAction saveNextAct;
 	QAction savePrevAct;
 	QAction reloadTagsAct;
+	QAction iqdbSearchAct;
 	QAction exitAct;
 	QAction aboutAct;
 	QAction aboutQtAct;

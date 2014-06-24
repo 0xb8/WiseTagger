@@ -37,6 +37,7 @@ Window::Window(QWidget *parent) :
 	, saveNextAct(	tr("Save and open next file"), this)
 	, savePrevAct(	tr("Save and open previous file"),this)
 	, reloadTagsAct(tr("Reload tag file"),this)
+	, iqdbSearchAct(tr("IQDB.org search"), this)
 	, exitAct(	tr("Exit"), this)
 	, aboutAct(	tr("About"),this)
 	, aboutQtAct(	tr("About Qt"),this)
@@ -319,6 +320,10 @@ void Window::createActions()
 	reloadTagsAct.setEnabled(false);
 	connect(&reloadTagsAct, SIGNAL(triggered()), this, SLOT(reload_tags()));
 
+	iqdbSearchAct.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+	iqdbSearchAct.setEnabled(false);
+	connect(&iqdbSearchAct, SIGNAL(triggered()), this, SLOT(search_iqdb()));
+
 	connect(&exitAct, SIGNAL(triggered()), this, SLOT(close()));
 	connect(&aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 	connect(&aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -338,6 +343,7 @@ void Window::createMenus() {
 	fileMenu.addAction(&savePrevAct);
 	fileMenu.addSeparator();
 	fileMenu.addAction(&reloadTagsAct);
+	fileMenu.addAction(&iqdbSearchAct);
 	fileMenu.addSeparator();
 	fileMenu.addAction(&exitAct);
 
@@ -357,6 +363,7 @@ void Window::enableMenusOnFileOpen() {
 	saveNextAct.setEnabled(true);
 	savePrevAct.setEnabled(true);
 	reloadTagsAct.setEnabled(true);
+	iqdbSearchAct.setEnabled(true);
 }
 
 //------------------------------------------------------------------------
@@ -364,20 +371,20 @@ void Window::about()
 {
 	QMessageBox::about(this,
 		tr("About WiseTagger"),
-		tr("<h3>WiseTagger v%1</h3>\
-<p>Built %2, %3.</p><p>Copyright &copy; 2014 catgirl &lt;<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>\
-<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, Version 2, as published by Sam Hocevar. See <a href=\"http://www.wtfpl.net/\">http://www.wtfpl.net/</a> for more details.</p>").arg(qApp->applicationVersion()).arg(__DATE__).arg(__TIME__));
+		tr("<h3>WiseTagger v%1</h3><p>Built %2, %3.</p>\
+<p>Copyright &copy; 2014 catgirl &lt;<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>\
+<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. You can redistribute it \
+and/or modify it under the terms of the Do What The Fuck You Want To Public License, Version 2, as published by Sam Hocevar. \
+See <a href=\"http://www.wtfpl.net/\">http://www.wtfpl.net/</a> for more details.</p>").arg(qApp->applicationVersion()).arg(__DATE__).arg(__TIME__));
 }
 
 void Window::help()
 {
 	QMessageBox::about(this,tr("Help"),tr("<h2>User Interface</h2>\
-<dl><dt><b>Tab</b></dt><dd>&ndash; list autocomplete suggestions</dd>\
-<dt><b>Enter</b></dt><dd>&ndash; sort tags and clear focus</dd>\
-<dt><b>Left</b> and <b>Right</b> arrows</dt><dd>&ndash; show previous/next picture</dd></dl>\
-<h2>Command-line usage</h2>\
-<code>WiseTagger [path] ...</code>"));
-
+<p><b>Tab</b> &ndash; list autocomplete suggestions</p>\
+<p><b>Enter</b> &ndash; apply changes and clear focus</p>\
+<p><b>Left</b> and <b>Right</b> arrows &ndash; show previous/next picture</p>\
+<p>Tag file format documentation is at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"));
 }
 
 void Window::save()
@@ -408,6 +415,11 @@ void Window::saveprev()
 void Window::reload_tags()
 {
 	tagger.reloadTags();
+}
+
+void Window::search_iqdb()
+{
+	iqdb.search(tagger.currentFile());
 }
 
 //------------------------------------------------------------------------
