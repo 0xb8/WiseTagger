@@ -2,23 +2,33 @@
 #define REVERSESEARCH_H
 
 #include <QNetworkAccessManager>
-#include <QNetworkReply>
 #include <QHttpMultiPart>
+#include <QNetworkReply>
+#include <QHttpPart>
 #include <QProgressDialog>
-#include <QFile>
 #include <QString>
 #include <QVector>
 #include <QObject>
+#include <QFile>
+
+struct IqdbHttpParts {
+	IqdbHttpParts();
+	QHttpPart maxsize;
+	QHttpPart service;
+	QHttpPart file;
+	QHttpPart url;
+};
 
 class ReverseSearch : public QObject
 {
-
 	Q_OBJECT
 public:
-	ReverseSearch();
-	virtual ~ReverseSearch();
-
+	explicit ReverseSearch(QObject* _parent = 0);
+	~ReverseSearch();
 	void search(const QString &file);
+
+	const char* iqdb_post_url = "http://iqdb.org/";
+	static const int iqdb_max_file_size = 8388608; // bytes
 
 private slots:
 	void open_reply(QNetworkReply* reply);
@@ -28,11 +38,10 @@ private:
 	void upload_file();
 
 	QString current_file;
+	QFile imagefile;
 	QVector<QString> response_files;
-	QNetworkAccessManager nam;
+	QNetworkAccessManager network_access_manager;
 	QProgressDialog upload_progress;
-	QHttpMultiPart *multipart;
-
 };
 
 #endif // REVERSESEARCH_H
