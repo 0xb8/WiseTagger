@@ -10,7 +10,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = WiseTagger
@@ -32,6 +32,7 @@ SOURCES +=\
     main.cpp \
     tagger.cpp \
     multicompleter.cpp \
+    reverse_search.cpp \
     input.cpp
 
 HEADERS  += \
@@ -39,6 +40,7 @@ HEADERS  += \
     window.h \
     tagger.h \
     multicompleter.h \
+    reverse_search.h \
     input.h \
     unordered_map_qt.h
 
