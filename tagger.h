@@ -42,6 +42,9 @@ public:
 
 	QString currentFile() const;
 	QString currentFileName() const;
+	int picture_width() const;
+	int picture_height() const;
+	float picture_size() const;
 
 private:
 	Picture pic;

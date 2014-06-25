@@ -61,6 +61,21 @@ QString Tagger::currentFileName() const
 	return QFileInfo(current_file).fileName();
 }
 
+int Tagger::picture_width() const
+{
+	return pic.picture_width();
+}
+
+int Tagger::picture_height() const
+{
+	return pic.picture_height();
+}
+
+float Tagger::picture_size() const
+{
+	return QFileInfo(current_file).size() / 1024.0f / 1024.0f;
+}
+
 bool Tagger::isModified() const
 {
 	return input.text() != QFileInfo(current_file).completeBaseName();

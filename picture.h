@@ -23,6 +23,8 @@ public:
 	bool loadPicture(const QString& filename);
 	virtual QSize sizeHint() const;
 	void resizeAndSetPixmap();
+	int picture_width() const;
+	int picture_height() const;
 
 protected:
 	void dragEnterEvent(QDragEnterEvent *e);

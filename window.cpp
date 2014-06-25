@@ -22,12 +22,13 @@
 
 #include "window.h"
 
-const static char* MainWindowTitle = "%1  –  WiseTagger v%2";
+const static char* MainWindowTitle = "%1 [%3x%4] (%5Mb)  –  WiseTagger v%2";
 const static int FilesVectorReservedSize = 1024;
 
 Window::Window(QWidget *parent) :
 	QMainWindow(parent)
 	, tagger(this)
+	, iqdb(this)
 	, last_directory(QDir::homePath())
 	, openAct(	tr("Open File..."), this)
 	, openDirAct(	tr("Open Directory..."), this)
@@ -64,7 +65,12 @@ Window::~Window() { }
 void Window::openSingleFile(const QString &file) {
 	if(tagger.loadFile(file)) {
 		enableMenusOnFileOpen();
-		setWindowTitle(tr(MainWindowTitle).arg(tagger.currentFileName()).arg(qApp->applicationVersion()));
+		setWindowTitle(tr(MainWindowTitle)
+			.arg(tagger.currentFileName())
+			.arg(qApp->applicationVersion())
+			.arg(tagger.picture_width())
+			.arg(tagger.picture_height())
+			.arg(tagger.picture_size(), 0, 'f', 3));
 	}
 }
 
@@ -137,7 +143,12 @@ int Window::saveFile(bool forcesave) {
 	int ret = tagger.rename(forcesave);
 	if(ret > 0) {
 		files[current_pos] = tagger.currentFile();
-		setWindowTitle(tr(MainWindowTitle).arg(tagger.currentFileName()).arg(qApp->applicationVersion()));
+		setWindowTitle(tr(MainWindowTitle)
+			.arg(tagger.currentFileName())
+			.arg(qApp->applicationVersion())
+			.arg(tagger.picture_width())
+			.arg(tagger.picture_height())
+			.arg(tagger.picture_size(), 0, 'f', 3));
 	}
 	return ret;
 }

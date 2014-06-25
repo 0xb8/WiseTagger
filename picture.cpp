@@ -4,7 +4,7 @@
  * the terms of the Do What The Fuck You Want To Public License, Version 2, as
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
- 
+
 #include "picture.h"
 #include <QResizeEvent>
 
@@ -52,6 +52,16 @@ void Picture::resizeAndSetPixmap()
 	psize.setWidth(qMin(size().width(),  pixmap.width()));
 	psize.setHeight(qMin(size().height(),pixmap.height()));
 	QLabel::setPixmap(pixmap.scaled(psize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
+
+int Picture::picture_width() const
+{
+	return pixmap.width();
+}
+
+int Picture::picture_height() const
+{
+	return pixmap.height();
 }
 
 
