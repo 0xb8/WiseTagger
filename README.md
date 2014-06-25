@@ -10,6 +10,7 @@ Simple picture filename-tagging tool
 * related tags insertion
 * per-directory tags.txt files (in config.json)
 * picture drag-and-drop support
+* image reverse-search (using iqdb.org)
 * crossplatform, uses Qt (should compile and run wherever Qt runs, haven't tested it yet)
 
 ### Tags File Format ###
