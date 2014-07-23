@@ -11,6 +11,7 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QTimer>
 #include <QPixmap>
 #include <QString>
 #include <QLabel>
@@ -19,12 +20,12 @@ class Picture : public QLabel
 {
 	Q_OBJECT
 public:
-	explicit Picture(QWidget *parent = 0);
+	explicit Picture(QWidget *parent = nullptr);
 	bool loadPicture(const QString& filename);
+
 	virtual QSize sizeHint() const;
-	void resizeAndSetPixmap();
-	int picture_width() const;
-	int picture_height() const;
+	int width() const;
+	int height() const;
 
 protected:
 	void dragEnterEvent(QDragEnterEvent *e);
@@ -32,10 +33,20 @@ protected:
 	void dropEvent(QDropEvent *e);
 	void resizeEvent(QResizeEvent *event);
 
+private slots:
+	void resizeTimeout();
+
 private:
 	QPixmap pixmap;
-	QSize psize;
+	QSize pixmap_size;
+	QTimer resize_timer;
 
+	void resizeAndSetPixmap();
+	void setBackgroundStyle(bool has_alpha = false);
+
+	static const int resize_timeout = 100; //ms
+	static constexpr char const* TransparentBGFile = "://transparency.png";
+	static constexpr char const* BackgroundColor = "white";
 };
 
 #endif // PICTURE_H
