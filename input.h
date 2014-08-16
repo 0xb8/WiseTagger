@@ -20,8 +20,8 @@
 class TagInput : public QLineEdit {
 	Q_OBJECT
 public:
-	explicit TagInput(QWidget* parent = 0);
-	void fixTags(bool nosort = false);
+	explicit TagInput(QWidget* parent = nullptr);
+	void fixTags(bool sort = true);
 	void loadTagFile(const QString& file);
 	void reloadAdditionalTags();
 

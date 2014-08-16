@@ -15,7 +15,7 @@ TagInput::TagInput(QWidget *parent) : QLineEdit(parent), m_index(0)
 {
 	setMinimumHeight(30);
 	// no std::make_unique yet, sadly...
-	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter(QStringList(),this));
+	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter(QStringList(), nullptr));
 
 	QFont font("Consolas");
 	font.setStyleHint(QFont::TypeWriter);
@@ -23,7 +23,7 @@ TagInput::TagInput(QWidget *parent) : QLineEdit(parent), m_index(0)
 	setFont(font);
 }
 
-void TagInput::fixTags(bool nosort)
+void TagInput::fixTags(bool sort)
 {
 	QStringList list = text().split(" ", QString::SkipEmptyParts);
 
@@ -39,9 +39,8 @@ void TagInput::fixTags(bool nosort)
 
 	list.removeDuplicates();
 
-	if(!nosort) {
+	if(sort)
 		list.sort();
-	}
 
 	QString newname;
 	for(const auto& tag : list)
@@ -76,7 +75,8 @@ void TagInput::keyPressEvent(QKeyEvent *event)
 	}
 
 	 if(event->key() == Qt::Key_Space) {
-		fixTags(true);
+		/* Don't sort tags, haven't finished editing yet */
+		fixTags(false);
 	}
 
 	QLineEdit::keyPressEvent(event);
@@ -97,7 +97,9 @@ void TagInput::loadTagFile(const QString& file)
 	}
 
 	if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-		QMessageBox::warning(this, tr("Error opening tag file"), tr("Could not open %1. Tag autocomplete will be disabled.").arg(file));
+		QMessageBox::warning(this,
+			tr("Error opening tag file"),
+			tr("<p>Could not open <b>%1</b>.</p><p>Tag autocomplete will be disabled.</p>").arg(file));
 		return;
 	}
 
@@ -108,13 +110,14 @@ void TagInput::loadTagFile(const QString& file)
 	QTextStream in(&f);
 	in.setCodec("UTF-8");
 
-	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter( parse_tags_file(in), this ));
+	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter( parse_tags_file(in), nullptr ));
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
 }
 
 void TagInput::reloadAdditionalTags()
 {
+	/* Remove elements with value == key to restore original state */
 	for(auto it = m_related_tags.begin(); it != m_related_tags.end(); ) {
 		if (it->second == it->first) {
 			it = m_related_tags.erase(it);
@@ -127,6 +130,7 @@ void TagInput::reloadAdditionalTags()
 		} else ++it;
 	}
 
+	/* Restore state */
 	for(auto it = m_removed_tags.begin(); it != m_removed_tags.end(); ++it) {
 		if (it->second == true) {
 			it->second = false;
@@ -141,7 +145,7 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, mapped_tags_list;
 
-	auto allowed_file = [](QChar c){
+	auto allowed_in_file = [](QChar c){
 		return	c.isLetterOrNumber() ||
 			c == '_' ||
 			c == '-' ||
@@ -153,7 +157,7 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 			c == '\t';
 	};
 
-	auto allowed_tag = [](QChar c){
+	auto allowed_in_tag = [](QChar c){
 		return c.isLetterOrNumber() || c == '_' || c == ';';
 	};
 
@@ -172,33 +176,33 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 		bool appending_main = true, removing_main = false, found_replace = false, found_mapped = false;
 
 		for(int i = 0; i < current_line.length(); ++i) {
-			if(!allowed_file(current_line[i])) {
+			if(!allowed_in_file(current_line[i])) {
 				break; // go to next line
 			}
 
 			if(appending_main) {
-				if(allowed_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i])) {
 					main_tag.append(current_line[i]);
 					continue;
 				}
 			}
 
 			if(removing_main) {
-				if(allowed_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i])) {
 					removed_tag.append(current_line[i]);
 					continue;
 				}
 			}
 
 			if(found_replace) {
-				if(allowed_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i])) {
 					replaced_tag.append(current_line[i]);
 					continue;
 				}
 			}
 
 			if(found_mapped) {
-				if(allowed_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i])) {
 					mapped_tag.append(current_line[i]);
 					continue;
 				}
@@ -262,15 +266,15 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 			main_tags_list.push_back(main_tag);
 		}
 
-		for(auto & remtag : removed_tags_list) {
+		for(auto && remtag : removed_tags_list) {
 			m_removed_tags.insert(std::pair<QString, bool> (remtag, false));
 		}
 
-		for (auto & repltag : replaced_tags_list) {
+		for (auto && repltag : replaced_tags_list) {
 			m_replaced_tags.insert(std::pair<QString,QString>(repltag, main_tag));
 		}
 
-		for(auto & maptag : mapped_tags_list) {
+		for(auto && maptag : mapped_tags_list) {
 			m_related_tags.insert(std::pair<QString,QString>(main_tag,maptag));
 		}
 	}
@@ -280,6 +284,7 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 void TagInput::remove_if_short(QString& tag)
 {
 	if(tag.length() == 1) {
+		/* Allow single digits */
 		if(!tag[0].isDigit())
 			tag.clear();
 	}
@@ -292,11 +297,15 @@ QStringList TagInput::related_tags(const QString &tag)
 	QStringList ret;
 	auto mapped_range = m_related_tags.equal_range(tag);
 	auto key_eq_val = std::find_if(mapped_range.first, mapped_range.second, [](qs_ummap::value_type p) { return p.first == p.second; });
+	/* Check if tag hasn't been added already */
 	if((mapped_range.first != m_related_tags.end()) && (key_eq_val == mapped_range.second)) {
+		/* Add all related tags for this tag */
 		std::for_each( mapped_range.first, mapped_range.second,
 			[&](qs_ummap::value_type p) {
 				ret.push_back(p.second);
 			});
+		/* Mark this tag as processed by inserting additional element into hashmap,
+		 * whose key and value are both equal to this tag */
 		m_related_tags.insert(std::pair<QString,QString>(tag,tag));
 	}
 	return ret;
@@ -307,11 +316,15 @@ QStringList TagInput::replacement_tags(QString &tag)
 	QStringList ret;
 	auto replaced_range = m_replaced_tags.equal_range(tag);
 	auto key_eq_val = std::find_if(replaced_range.first, replaced_range.second, [](qs_ummap::value_type p) { return p.first == p.second; });
+	/* Check if tag hasn't been added already */
 	if((replaced_range.first != m_replaced_tags.end()) && (key_eq_val == replaced_range.second)) {
+		/* Add all replacement tags for this tag and remove it */
 		std::for_each( replaced_range.first, replaced_range.second,
 			[&](qs_ummap::value_type p) {
 				ret.push_back(p.second);
 			});
+			/* Mark this tag as processed by inserting additional element into hashmap,
+			 * whose key and value are both equal to this tag */
 			m_replaced_tags.insert(std::pair<QString,QString>(tag,tag));
 			tag.clear();
 	}
@@ -321,9 +334,11 @@ QStringList TagInput::replacement_tags(QString &tag)
 void TagInput::remove_if_unwanted(QString &tag)
 {
 	auto removed_pos = m_removed_tags.find(tag);
+	/* Check if it hasn't been removed already */
 	if(removed_pos != m_removed_tags.end()) {
 		if(removed_pos->second == false) {
 			tag.clear();
+			/* Mark this tag as processed */
 			removed_pos->second = true;
 		}
 	}
