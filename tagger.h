@@ -13,7 +13,6 @@
 #include <QLabel>
 #include <QFrame>
 #include <QWidget>
-#include <QFileInfo>
 
 #include "unordered_map_qt.h"
 #include "picture.h"
@@ -28,33 +27,31 @@ public:
 	explicit Tagger(QWidget *parent = nullptr);
 	virtual ~Tagger();
 
-	bool isModified() const;
 	bool loadFile(const QString& filename);
-	bool loadJsonConfig();
+	int  rename(bool autosave, bool show_cancel_button = true); // 1 = success, -1 = cancelled, 0 = failed
 
-	void locateTagsFile(const QFileInfo &file);
 	void reloadTags();
+	void clearDirTagfiles();
+	void insertToDirTagfiles(const QString& dir, const QString& tagfile);
 
-	int rename(bool forcesave); // -1 when save is cancelled
-
-	void installEventFilterForPicture(QObject *filter_object);
-
-
-	QString currentFile() const;
-	QString currentFileName() const;
+	bool isModified() const;
 	int picture_width() const;
 	int picture_height() const;
-	float picture_size() const;
+	qint64 picture_size() const;
+	QString currentFile() const;
+	QString currentFileName() const;
 
 private:
-	Picture pic;
-	TagInput input;
+
+	void locateTagsFile(const QString& file);
+	Picture m_picture;
+	TagInput m_input;
 	QFrame hr_line;
 	QVBoxLayout mainlayout;
 	QVBoxLayout inputlayout;
 
-	QString current_file, current_dir, current_tags_file;
-	std::unordered_map<QString,QString> dir_tagfiles;
+	QString m_current_file, m_current_dir, m_current_tags_file;
+	std::unordered_map<QString,QString> tag_files_for_directories;
 
 };
 

@@ -6,32 +6,25 @@
  */
 
 #include "tagger.h"
+#include <QDir>
+#include <QFileInfo>
 #include <QMessageBox>
-#include <QDirIterator>
 #include <QApplication>
 
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QJsonObject>
-
-
-static const char* ConfigFilename = "config.json";
-
 Tagger::Tagger(QWidget *parent) :
-	QWidget(parent),
-	pic(this),
-	input(this)
+	QWidget(parent)
 {
-	loadJsonConfig();
+	installEventFilter(parent);
+	m_picture.installEventFilter(parent);
+
 	mainlayout.setMargin(0);
 	mainlayout.setSpacing(0);
 
 	inputlayout.setMargin(10);
-	inputlayout.addWidget(&input);
+	inputlayout.addWidget(&m_input);
 
 	hr_line.setFrameStyle(QFrame::HLine | QFrame::Sunken);
-	mainlayout.addWidget(&pic);
+	mainlayout.addWidget(&m_picture);
 	mainlayout.addWidget(&hr_line);
 	mainlayout.addLayout(&inputlayout);
 	setLayout(&mainlayout);
@@ -40,194 +33,173 @@ Tagger::Tagger(QWidget *parent) :
 
 Tagger::~Tagger() { }
 
-void Tagger::installEventFilterForPicture(QObject * filter_object)
+QString Tagger::currentFile() const
 {
-	pic.installEventFilter(filter_object);
+	return m_current_file;
+}
+
+
+QString Tagger::currentFileName() const
+{
+	return QFileInfo(m_current_file).fileName();
+}
+
+
+int Tagger::picture_width() const
+{
+	return m_picture.width();
+}
+
+
+int Tagger::picture_height() const
+{
+	return m_picture.height();
+}
+
+
+bool Tagger::isModified() const
+{
+	return m_input.text() != QFileInfo(m_current_file).completeBaseName() && !m_current_file.isEmpty();
+}
+
+
+qint64 Tagger::picture_size() const
+{
+	return QFileInfo(m_current_file).size();
 }
 
 void Tagger::reloadTags()
 {
-	input.loadTagFile(current_tags_file);
-	input.reloadAdditionalTags();
+	m_input.loadTagFile(m_current_tags_file);
+	m_input.reloadAdditionalTags();
 }
 
-QString Tagger::currentFile() const
+void Tagger::clearDirTagfiles()
 {
-	return current_file;
+	tag_files_for_directories.clear();
 }
 
-QString Tagger::currentFileName() const
+void Tagger::insertToDirTagfiles(const QString &dir, const QString &tagfile)
 {
-	return QFileInfo(current_file).fileName();
+	tag_files_for_directories.insert(std::pair<QString,QString>(dir,tagfile));
 }
 
-int Tagger::picture_width() const
+
+void Tagger::locateTagsFile(const QString &file)
 {
-	return pic.picture_width();
-}
-
-int Tagger::picture_height() const
-{
-	return pic.picture_height();
-}
-
-float Tagger::picture_size() const
-{
-	return QFileInfo(current_file).size() / 1024.0f / 1024.0f;
-}
-
-bool Tagger::isModified() const
-{
-	return input.text() != QFileInfo(current_file).completeBaseName();
-}
-
-bool Tagger::loadFile(const QString &filename)
-{
-	QFileInfo f(filename);
-	if(!f.exists()) {
-		QMessageBox::critical(this, tr("Error opening image"), tr("File \"%1\" does not exist.").arg(f.fileName()));
-		return false;
-	}
-
-	if(!pic.loadPicture(f.absoluteFilePath())) {
-		QMessageBox::critical(this, tr("Error opening image"), tr("File format is not supported or file is corrupted."));
-			return false;
-	}
-
-	input.setText(f.completeBaseName());
-	current_file = f.absoluteFilePath();
-
-	locateTagsFile(f);
-
-
-	pic.setFocus();
-
-	return true;
-
-
-}
-
-void Tagger::locateTagsFile(const QFileInfo& file)
-{
-	if(current_dir != file.absolutePath()) {
-		current_dir = file.absolutePath();
-
+	QFileInfo fi(file);
+	/* If loading file from other directory */
+	if(m_current_dir != fi.absolutePath()) {
+		/* Determine file's parent directory */
+		m_current_dir = fi.absolutePath();
 		bool found = false;
 		QFileInfo directory;
 
-		for(auto&& entry : dir_tagfiles) {
+		for(auto&& entry : tag_files_for_directories) {
 			directory.setFile(entry.first);
-			if(directory.exists() && current_dir.contains(directory.absoluteFilePath())) {
-				current_tags_file = entry.second;
+
+			/* Check if file's parent dir is inside mapped dir */
+			if(directory.exists() && m_current_dir.contains(directory.absoluteFilePath())) {
+				m_current_tags_file = entry.second;
 				found = true;
 				break;
 			}
 		}
 		if(!found) {
-			auto it = dir_tagfiles.find("*");
-			if(it != dir_tagfiles.end()) {
-				current_tags_file = it->second;
+			/* Use global tags file */
+			auto it = tag_files_for_directories.find("*");
+			if(it != tag_files_for_directories.end()) {
+				m_current_tags_file = it->second;
 			} else {
-				current_tags_file = "tags.txt";
+				m_current_tags_file = "tags.txt";
 			}
 		}
-		input.loadTagFile(current_tags_file);
+
+		m_input.loadTagFile(m_current_tags_file);
 		return;
-	}
-	input.reloadAdditionalTags();
+
+	} // if(current_dir...
+
+	m_input.reloadAdditionalTags();
 	return;
 }
 
 
-
-bool Tagger::loadJsonConfig()
+bool Tagger::loadFile(const QString &filename)
 {
-	QString configfile = qApp->applicationDirPath() + '/' + ConfigFilename;
-
-	QFile f(configfile);
-	if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-		QMessageBox::warning(this, tr("Error opening config file"), tr("Could not open configuration file \"%1\"").arg(configfile));
+	QFileInfo f(filename);
+	if(!f.exists()) {
+		QMessageBox::critical(this,
+			tr("Error opening image"),
+			tr("File <b>%1</b> does not exist.").arg(f.fileName()));
 		return false;
 	}
 
-
-
-	QJsonDocument config = QJsonDocument().fromJson(f.readAll());
-	QJsonArray array = config.array();
-	QJsonObject object;
-
-	if(array.empty()) {
-		QMessageBox::warning(this,
-			tr("Error opening config file"),
-			tr("\"%1\" is an empty or invalid JSON array\n\n%2")
-			.arg(configfile)
-			.arg(QString(QJsonDocument(array).toJson())));
-		return false;
+	if(!m_picture.loadPicture(f.absoluteFilePath())) {
+		QMessageBox::critical(this,
+			tr("Error opening image"),
+			tr("File format is not supported or file is corrupted."));
+			return false;
 	}
-	dir_tagfiles.clear();
-	for(auto&& obj : array) {
-		if(!obj.isObject()) {
-			QMessageBox::warning(this, tr("Error opening config file"), tr("Array should contain valid JSON objects."));
-			return false;
-		}
-		object = obj.toObject();
-		if(!object.contains("directory") || !object.contains("tagfile")) {
-			QMessageBox::warning(this,
-				tr("Error opening config file"),
-				tr("Object should have \"directory\" and \"tagfile\" keys\n\n%1")
-				.arg(QString(QJsonDocument(object).toJson())));
-			return false;
-		}
-		if(!object["directory"].isString() || !object["tagfile"].isString()) {
-			QMessageBox::warning(this,
-				tr("Error opening config file"),
-				tr("<pre>directory</pre> and <pre>tagfile</pre> keys should be of type <pre>string</pre>."));
-			return false;
-		}
 
-		dir_tagfiles.insert(std::pair<QString,QString>(object["directory"].toString(),object["tagfile"].toString()));
-	} // for
-
+	locateTagsFile(filename);
+	m_input.setText(f.completeBaseName());
+	m_current_file = f.absoluteFilePath();
+	m_picture.setFocus();
 	return true;
 }
 
 
-
-int Tagger::rename(bool forcesave)
+int Tagger::rename(bool autosave, bool show_cancel_button)
 {
-	QFileInfo file(current_file);
-	QString parent = file.canonicalPath(), ext = file.suffix();
+	QFileInfo file(m_current_file);
+	QString new_file_path;
 
-	input.fixTags();
-	QString newname = QFileInfo(parent + "/" + input.text() + "." + ext).filePath();
-	if(newname == current_file) return 0;
+	m_input.fixTags();
+	/* Make new file path from input text */
+	new_file_path = m_input.text() + "." + file.suffix();
+	new_file_path = QFileInfo(QDir(file.canonicalPath()), new_file_path).filePath();
 
-	QFileInfo newfile(newname);
-	if(newfile.exists()) {
-		QMessageBox::critical(this, tr("Cannot rename file"),tr("File with this name already exists in <b>%1</b>.\n\nPlease change some of your tags.").arg(QFileInfo(parent).completeBaseName()));
+	if(new_file_path == m_current_file || m_input.text().isEmpty())
+		return 0; /* No need to save */
+
+	/* Check for possible filename conflict */
+	if(QFileInfo::exists(new_file_path)) {
+		QMessageBox::critical(this,
+			tr("Cannot rename file"),
+			tr("<p>File with this name already exists in <b>%1</b>.</p><p>Please change some of your tags.</p>")
+				.arg(file.canonicalPath()));
 		return 0;
 	}
 
-
-	if(!forcesave) {
-		QMessageBox::StandardButton reply;
-		reply = QMessageBox::question(this, tr("Rename file?")
-						, tr("Rename <b>%1</b>?").arg(file.completeBaseName())
-						, QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
-		if(reply == QMessageBox::Yes) {
-			QFile(current_file).rename(newname);
-			current_file = newname;
-			return 1;
-		}
-		if(reply == QMessageBox::Cancel) {
-			return -1;
-		}
-
-		return 0;
-
-	} else {
-		QFile(current_file).rename(newname);
-		current_file = newname;
-		return 1;
+	if(autosave) {
+		QFile(m_current_file).rename(new_file_path);
+		m_current_file = new_file_path;
+		return 1; // saved
 	}
+
+	/* Show save dialog */
+	QMessageBox renameMessageBox(QMessageBox::Question,
+		tr("Rename file?"),
+		tr("Rename <b>%1</b>?").arg(file.completeBaseName()),
+		QMessageBox::Save|QMessageBox::Discard);
+
+	renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
+	if(show_cancel_button) {
+		renameMessageBox.addButton(QMessageBox::Cancel);
+	}
+
+	int reply = renameMessageBox.exec();
+
+	if(reply == QMessageBox::Save) {
+		QFile(m_current_file).rename(new_file_path);
+		m_current_file = new_file_path;
+		return 1; // saved
+	}
+
+	if(reply == QMessageBox::Cancel) {
+		return -1; // cancelled
+	}
+
+	return 0;
 }
