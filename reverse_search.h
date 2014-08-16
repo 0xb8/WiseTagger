@@ -9,14 +9,15 @@
 #define REVERSESEARCH_H
 
 #include <QNetworkAccessManager>
-#include <QHttpMultiPart>
-#include <QNetworkReply>
-#include <QHttpPart>
 #include <QProgressDialog>
+#include <QHttpMultiPart>
+#include <QHttpPart>
 #include <QString>
 #include <QVector>
-#include <QObject>
 #include <QFile>
+
+class QNetworkReply;
+class QObject;
 
 struct IqdbHttpParts {
 	IqdbHttpParts();
@@ -30,12 +31,17 @@ class ReverseSearch : public QObject
 {
 	Q_OBJECT
 public:
-	explicit ReverseSearch(QObject* _parent = 0);
+	ReverseSearch();
 	~ReverseSearch();
 	void search(const QString &file);
+	void setProxy(const QString& protocol,
+		const QString& host,
+		std::uint16_t port,
+		const QString& user = QString(),
+		const QString& pass = QString());
 
-	const char* iqdb_post_url = "http://iqdb.org/";
-	static const int iqdb_max_file_size = 8388608; // bytes
+	static constexpr char const* iqdb_post_url = "http://iqdb.org/";
+	static const int max_file_size = 8388608; // 8 Mb
 
 private slots:
 	void open_reply(QNetworkReply* reply);
