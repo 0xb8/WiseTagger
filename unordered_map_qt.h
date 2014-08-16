@@ -9,8 +9,8 @@
 #define UNORDERED_MAP_QT_H
 
 #include <unordered_map>
-#include <string>
 #include <QString>
+#include <QHash>
 
 namespace std {
 	template<>
@@ -18,7 +18,8 @@ namespace std {
 		typedef QString      argument_type;
 		typedef std::size_t  result_type;
 		result_type operator()(const QString &s) const {
-			return std::hash<std::string>()(s.toStdString());
+			/* qHash() returns uint, we can't use it directly */
+			return std::hash<unsigned int>()(qHash(s));
 		}
 	};
 }
