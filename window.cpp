@@ -5,6 +5,7 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+#include <QDesktopServices>
 #include <QDirIterator>
 #include <QApplication>
 #include <QFileDialog>
@@ -47,6 +48,7 @@ Window::Window(QWidget *parent) :
 	, aboutAct(	tr("About"), this)
 	, aboutQtAct(	tr("About Qt"), this)
 	, helpAct(	tr("Help"), this)
+	, openConfig(	tr("Open configuration file"), this)
 	, fileMenu(	tr("File"), this)
 	, helpMenu(	tr("Help"), this)
 {
@@ -465,14 +467,12 @@ void Window::readJsonConfig()
 		/* Insert directory and it's tag file into Tagger's map */
 		tagger.insertToDirTagfiles(object["directory"].toString(), object["tagfile"].toString());
 	}
-
 	if(maximized) {
 		resize(1024,600);
 		showMaximized();
 		return;
 	}
 	resize(window_size);
-
 }
 
 void Window::writeJsonConfig()
@@ -511,6 +511,18 @@ void Window::writeJsonConfig()
 	config_file.write(config_tmp);
 }
 
+void Window::openConfigFile()
+{
+	QFileInfo config_file(qApp->applicationDirPath() + '/' + Window::ConfigFilename);
+	if(!config_file.exists()) {
+		QMessageBox::warning(this,
+			tr("Could not open configuration file"),
+			tr("<p>Could not locate <b>%1</b>").arg(config_file.fileName()));
+		return;
+	}
+	QDesktopServices::openUrl(QUrl::fromLocalFile(config_file.filePath()));
+}
+
 //------------------------------------------------------------------------
 void Window::createActions()
 {
@@ -546,6 +558,7 @@ void Window::createActions()
 	connect(&aboutAct,	SIGNAL(triggered()), this, SLOT(about()));
 	connect(&aboutQtAct,	SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 	connect(&helpAct,	SIGNAL(triggered()), this, SLOT(help()));
+	connect(&openConfig,	SIGNAL(triggered()), this, SLOT(openConfigFile()));
 }
 
 void Window::createMenus() {
@@ -565,6 +578,7 @@ void Window::createMenus() {
 	fileMenu.addAction(&exitAct);
 
 	helpMenu.addAction(&helpAct);
+	helpMenu.addAction(&openConfig);
 	helpMenu.addSeparator();
 	helpMenu.addAction(&aboutAct);
 	helpMenu.addAction(&aboutQtAct);

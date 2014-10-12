@@ -40,6 +40,7 @@ protected:
 private slots:
 	void fileOpenDialog();
 	void directoryOpenDialog();
+	void openConfigFile();
 	void about();
 	void help();
 	void save();
@@ -84,6 +85,7 @@ private:
 	QAction aboutAct;
 	QAction aboutQtAct;
 	QAction helpAct;
+	QAction openConfig;
 
 	QMenu fileMenu;
 	QMenu helpMenu;
