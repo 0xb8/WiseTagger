@@ -84,6 +84,15 @@ void Tagger::insertToDirTagfiles(const QString &dir, const QString &tagfile)
 	tag_files_for_directories.insert(std::pair<QString,QString>(dir,tagfile));
 }
 
+void Tagger::setFont(const QFont &f)
+{
+	m_input.setFont(f);
+}
+
+const QFont &Tagger::font() const
+{
+	return m_input.font();
+}
 
 void Tagger::locateTagsFile(const QString &file)
 {

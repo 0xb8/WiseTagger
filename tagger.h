@@ -34,6 +34,8 @@ public:
 	void clearDirTagfiles();
 	void insertToDirTagfiles(const QString& dir, const QString& tagfile);
 
+	void setFont(const QFont& f);
+	const QFont &font() const;
 	bool isModified() const;
 	int picture_width() const;
 	int picture_height() const;

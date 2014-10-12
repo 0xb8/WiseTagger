@@ -360,6 +360,8 @@ void Window::readJsonConfig()
 
 	QSize window_size(1024,600);
 	QPoint window_pos;
+	QFont font("Consolas"); // default font
+	font.setPixelSize(14);
 	bool maximized = false;
 
 	QJsonDocument config_json;
@@ -385,6 +387,9 @@ void Window::readJsonConfig()
 	/* Check if window sub-object and its sub-objects present */
 	if(config_object["window"].isObject())
 		config_window = config_object["window"].toObject();
+
+	if(config_window["font"].isString())
+		font.setFamily(config_window["font"].toString());
 
 	if(config_window["maximized"].isBool())
 		maximized = config_window["maximized"].toBool();
@@ -473,6 +478,7 @@ void Window::readJsonConfig()
 		return;
 	}
 	resize(window_size);
+	tagger.setFont(font);
 }
 
 void Window::writeJsonConfig()
@@ -501,6 +507,7 @@ void Window::writeJsonConfig()
 	config_window.insert("size", QJsonValue(config_window_size));
 	config_window.insert("position", QJsonValue(config_window_pos));
 	config_window.insert("maximized", QJsonValue(isMaximized()));
+	config_window.insert("font", QJsonValue(tagger.font().family()));
 	config_object.remove("window");
 	config_object.insert("window", QJsonValue(config_window));
 	config_object.remove("last_directory");

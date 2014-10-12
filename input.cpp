@@ -16,11 +16,6 @@ TagInput::TagInput(QWidget *parent) : QLineEdit(parent), m_index(0)
 	setMinimumHeight(30);
 	// no std::make_unique yet, sadly...
 	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter(QStringList(), nullptr));
-
-	QFont font("Consolas");
-	font.setStyleHint(QFont::TypeWriter);
-	font.setPixelSize(14);
-	setFont(font);
 }
 
 void TagInput::fixTags(bool sort)
@@ -74,7 +69,7 @@ void TagInput::keyPressEvent(QKeyEvent *event)
 		return;
 	}
 
-	 if(event->key() == Qt::Key_Space) {
+	if(event->key() == Qt::Key_Space) {
 		/* Don't sort tags, haven't finished editing yet */
 		fixTags(false);
 	}
