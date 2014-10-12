@@ -13,6 +13,7 @@
 #include <QNetworkProxy>
 #include <QMimeDatabase>
 #include <QMessageBox>
+#include <stdexcept>
 #include <QFileInfo>
 #include <QUrl>
 
@@ -26,7 +27,7 @@ ReverseSearch::ReverseSearch()
 ReverseSearch::~ReverseSearch()
 {
 	for(int i = 0; i < response_files.size(); ++i) {
-		QFile(response_files[i]).remove();
+		QFile::remove(response_files[i]);
 	}
 }
 
@@ -44,6 +45,8 @@ void ReverseSearch::setProxy(const QString &protocol, const QString &host,
 		type = QNetworkProxy::Socks5Proxy;
 	else if(protocol == "http")
 		type = QNetworkProxy::HttpProxy;
+	/* This is checked in calling code and should never happen. */
+	else throw std::invalid_argument(tr("Invalid proxy protocol: %1").arg(protocol).toStdString());
 
 	QNetworkProxy proxy(type, host, port, user, pass);
 	network_access_manager.setProxy(proxy);
