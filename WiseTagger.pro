@@ -28,22 +28,11 @@ QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS_RELEASE += -flto
 
 SOURCES +=\
-    picture.cpp \
-    window.cpp \
-    main.cpp \
-    tagger.cpp \
-    multicompleter.cpp \
-    reverse_search.cpp \
-    input.cpp \
+    $$PWD/src/*.cpp \
     util/open_graphical_shell.cpp
 
 HEADERS  += \
-    picture.h \
-    window.h \
-    tagger.h \
-    multicompleter.h \
-    reverse_search.h \
-    input.h \
+    $$PWD/src/*.h \
     util/unordered_map_qt.h \
     util/open_graphical_shell.h
 
