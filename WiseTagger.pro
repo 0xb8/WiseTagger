@@ -20,7 +20,7 @@ QMAKE_TARGET_PRODUCT = WiseTagger
 QMAKE_TARGET_DESCRIPTION = Simple picture tagger
 QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 
-VERSION = 0.4.4
+VERSION = "0.4.5b"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"
@@ -34,7 +34,8 @@ SOURCES +=\
     tagger.cpp \
     multicompleter.cpp \
     reverse_search.cpp \
-    input.cpp
+    input.cpp \
+    util/open_graphical_shell.cpp
 
 HEADERS  += \
     picture.h \
@@ -43,7 +44,8 @@ HEADERS  += \
     multicompleter.h \
     reverse_search.h \
     input.h \
-    unordered_map_qt.h
+    util/unordered_map_qt.h \
+    util/open_graphical_shell.h
 
 RESOURCES += \
     resources.qrc

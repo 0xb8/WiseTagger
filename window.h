@@ -41,6 +41,7 @@ private slots:
 	void fileOpenDialog();
 	void directoryOpenDialog();
 	void openConfigFile();
+	void openImageLocation();
 	void about();
 	void help();
 	void save();
@@ -85,9 +86,11 @@ private:
 	QAction aboutAct;
 	QAction aboutQtAct;
 	QAction helpAct;
-	QAction openConfig;
+	QAction openConfigAct;
+	QAction openFileLocation;
 
 	QMenu fileMenu;
+	QMenu navMenu;
 	QMenu helpMenu;
 };
 #endif // WINDOW_H

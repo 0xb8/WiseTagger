@@ -30,6 +30,8 @@
 #include <QDropEvent>
 
 #include "window.h"
+#include "input.h"
+#include "util/open_graphical_shell.h"
 
 Window::Window(QWidget *parent) :
 	QMainWindow(parent)
@@ -48,8 +50,10 @@ Window::Window(QWidget *parent) :
 	, aboutAct(	tr("About"), this)
 	, aboutQtAct(	tr("About Qt"), this)
 	, helpAct(	tr("Help"), this)
-	, openConfig(	tr("Open configuration file"), this)
+	, openConfigAct(	tr("Open configuration file"), this)
+	, openFileLocation(	tr("Open file location"), this)
 	, fileMenu(	tr("File"), this)
+	, navMenu(	tr("Navigation"), this)
 	, helpMenu(	tr("Help"), this)
 {
 	setCentralWidget(&tagger);
@@ -59,8 +63,8 @@ Window::Window(QWidget *parent) :
 	createMenus();
 
 	files.reserve(FilesVectorReservedSize);
-	parseCommandLineArguments();
 	readJsonConfig();
+	parseCommandLineArguments();
 }
 
 Window::~Window() { }
@@ -308,6 +312,9 @@ void Window::parseCommandLineArguments()
 			if(arg == "-h" || arg =="--help") {
 				help();
 			}
+			if(arg == "--no-last-dir") {
+				// TODO: disable last dir save in config
+			}
 			continue;
 		}
 		f.setFile(arg);
@@ -343,7 +350,7 @@ void Window::updateWindowTitle()
 		.arg(qApp->applicationVersion())
 		.arg(tagger.picture_width())
 		.arg(tagger.picture_height())
-		.arg(tagger.picture_size() <= 1024*1024 // less than 1 Mb
+		.arg(tagger.picture_size() <= 1024*1024 // if less than 1 Mb show exact KB size
 			? QString("%1Kb").arg(tagger.picture_size() / 1024)
 			: QString("%1Mb").arg(tagger.picture_size() / 1024.0f / 1024.0f, 0,'f', 3)));
 }
@@ -428,11 +435,11 @@ void Window::readJsonConfig()
 			QMessageBox::warning(this,
 				tr("Configuration error"),
 				tr("<p>Invalid proxy port number <b>%1</b>, should be between 1 and 65535.</p><p>Proxy will not work.</p>"));
-		} else if (protocol != "http" && protocol != "socks5") {
+		} else if(protocol != "http" && protocol != "socks5") {
 			QMessageBox::warning(this,
 				tr("Configuration error"),
 				tr("<p>Invalid proxy protocol <b>%1</b>, should be either <b>http<b> or <b>socks5</b>.</p><p>Proxy will not work.</p>").arg(protocol));
-		} else {
+		} else if(config_proxy["enable"].isBool() && config_proxy["enable"].toBool()) {
 			iqdb.setProxy(protocol, host, static_cast<std::uint16_t>(port), user, pass);
 		}
 	}
@@ -472,13 +479,14 @@ void Window::readJsonConfig()
 		/* Insert directory and it's tag file into Tagger's map */
 		tagger.insertToDirTagfiles(object["directory"].toString(), object["tagfile"].toString());
 	}
+
+	tagger.setFont(font);
 	if(maximized) {
 		resize(1024,600);
 		showMaximized();
 		return;
 	}
 	resize(window_size);
-	tagger.setFont(font);
 }
 
 void Window::writeJsonConfig()
@@ -497,6 +505,7 @@ void Window::writeJsonConfig()
 
 	config_json = QJsonDocument::fromJson(config_file.readAll());
 	config_object = config_json.object();
+	config_window = config_object["window"].toObject();
 
 
 	config_window_size.insert("width", QJsonValue(width()));
@@ -507,7 +516,7 @@ void Window::writeJsonConfig()
 	config_window.insert("size", QJsonValue(config_window_size));
 	config_window.insert("position", QJsonValue(config_window_pos));
 	config_window.insert("maximized", QJsonValue(isMaximized()));
-	config_window.insert("font", QJsonValue(tagger.font().family()));
+	//config_window.insert("font", QJsonValue(tagger.font().family()));
 	config_object.remove("window");
 	config_object.insert("window", QJsonValue(config_window));
 	config_object.remove("last_directory");
@@ -530,6 +539,11 @@ void Window::openConfigFile()
 	QDesktopServices::openUrl(QUrl::fromLocalFile(config_file.filePath()));
 }
 
+void Window::openImageLocation()
+{
+	open_file_in_graphical_shell(tagger.currentFile());
+}
+
 //------------------------------------------------------------------------
 void Window::createActions()
 {
@@ -542,6 +556,7 @@ void Window::createActions()
 	savePrevAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
 	reloadTagsAct.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
 	iqdbSearchAct.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+	openFileLocation.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_L));
 	helpAct.setShortcut(	Qt::Key_F1);
 
 	NextAct.setEnabled(false);
@@ -551,6 +566,7 @@ void Window::createActions()
 	savePrevAct.setEnabled(false);
 	reloadTagsAct.setEnabled(false);
 	iqdbSearchAct.setEnabled(false);
+	openFileLocation.setEnabled(false);
 
 	connect(&openAct,	SIGNAL(triggered()), this, SLOT(fileOpenDialog()));
 	connect(&openDirAct,	SIGNAL(triggered()), this, SLOT(directoryOpenDialog()));
@@ -565,32 +581,37 @@ void Window::createActions()
 	connect(&aboutAct,	SIGNAL(triggered()), this, SLOT(about()));
 	connect(&aboutQtAct,	SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 	connect(&helpAct,	SIGNAL(triggered()), this, SLOT(help()));
-	connect(&openConfig,	SIGNAL(triggered()), this, SLOT(openConfigFile()));
+	connect(&openConfigAct,	SIGNAL(triggered()), this, SLOT(openConfigFile()));
+	connect(&openFileLocation,SIGNAL(triggered()), this, SLOT(openImageLocation()));
 }
 
 void Window::createMenus() {
 	fileMenu.addAction(&openAct);
 	fileMenu.addAction(&openDirAct);
 	fileMenu.addSeparator();
-	fileMenu.addAction(&NextAct);
-	fileMenu.addAction(&PrevAct);
-	fileMenu.addSeparator();
 	fileMenu.addAction(&saveAct);
-	fileMenu.addAction(&saveNextAct);
-	fileMenu.addAction(&savePrevAct);
 	fileMenu.addSeparator();
 	fileMenu.addAction(&reloadTagsAct);
 	fileMenu.addAction(&iqdbSearchAct);
 	fileMenu.addSeparator();
 	fileMenu.addAction(&exitAct);
 
+	navMenu.addAction(&NextAct);
+	navMenu.addAction(&PrevAct);
+	navMenu.addSeparator();
+	navMenu.addAction(&saveNextAct);
+	navMenu.addAction(&savePrevAct);
+	navMenu.addSeparator();
+	navMenu.addAction(&openFileLocation);
+	navMenu.addAction(&openConfigAct);
+
 	helpMenu.addAction(&helpAct);
-	helpMenu.addAction(&openConfig);
 	helpMenu.addSeparator();
 	helpMenu.addAction(&aboutAct);
 	helpMenu.addAction(&aboutQtAct);
 
 	menuBar()->addMenu(&fileMenu);
+	menuBar()->addMenu(&navMenu);
 	menuBar()->addMenu(&helpMenu);
 }
 
@@ -602,6 +623,7 @@ void Window::enableMenusOnFileOpen() {
 	savePrevAct.setEnabled(true);
 	reloadTagsAct.setEnabled(true);
 	iqdbSearchAct.setEnabled(true);
+	openFileLocation.setEnabled(true);
 }
 
 //------------------------------------------------------------------------

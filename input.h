@@ -9,7 +9,7 @@
 #define TAGINPUT_H
 
 #include "multicompleter.h"
-#include "unordered_map_qt.h"
+#include "util/unordered_map_qt.h"
 #include <QStringList>
 #include <QTextStream>
 #include <QTextCodec>
