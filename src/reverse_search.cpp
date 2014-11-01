@@ -17,6 +17,8 @@
 #include <QFileInfo>
 #include <QUrl>
 
+#include "util/config.h"
+
 ReverseSearch::ReverseSearch()
 {
 	upload_progress.setLabelText(tr("Uploading file..."));
@@ -97,7 +99,7 @@ void ReverseSearch::upload_file()
 	multipart->setParent(r);
 
 	connect(r, SIGNAL(uploadProgress(qint64,qint64)), this, SLOT(showProgress(qint64,qint64)));
-	upload_progress.show();
+	upload_progress.exec();
 }
 
 

@@ -73,24 +73,24 @@ private:
 	QVector<QString> files;
 	int current_pos;
 
-	QAction openAct;
-	QAction openDirAct;
-	QAction NextAct;
-	QAction PrevAct;
-	QAction saveAct;
-	QAction saveNextAct;
-	QAction savePrevAct;
-	QAction reloadTagsAct;
-	QAction iqdbSearchAct;
-	QAction exitAct;
-	QAction aboutAct;
-	QAction aboutQtAct;
-	QAction helpAct;
-	QAction openConfigAct;
-	QAction openFileLocation;
+	QAction a_open;
+	QAction a_open_dir;
+	QAction a_next;
+	QAction a_prev;
+	QAction a_save;
+	QAction a_save_next;
+	QAction a_save_prev;
+	QAction a_reload_tags;
+	QAction a_iqdb_search;
+	QAction a_exit;
+	QAction a_about;
+	QAction a_about_qt;
+	QAction a_help;
+	QAction a_open_config;
+	QAction a_open_loc;
 
-	QMenu fileMenu;
-	QMenu navMenu;
-	QMenu helpMenu;
+	QMenu m_file;
+	QMenu m_navigation;
+	QMenu m_help;
 };
 #endif // WINDOW_H

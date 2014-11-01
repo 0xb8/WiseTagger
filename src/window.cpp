@@ -37,24 +37,24 @@ Window::Window(QWidget *parent) :
 	QMainWindow(parent)
 	, tagger(this)
 	, last_directory(QDir::homePath())
-	, openAct(	tr("Open File..."), this)
-	, openDirAct(	tr("Open Directory..."), this)
-	, NextAct(	tr("Next file"), this)
-	, PrevAct(	tr("Previous file"), this)
-	, saveAct(	tr("Save"), this)
-	, saveNextAct(	tr("Save and open next file"), this)
-	, savePrevAct(	tr("Save and open previous file"), this)
-	, reloadTagsAct(tr("Reload tag file"), this)
-	, iqdbSearchAct(tr("IQDB.org search"), this)
-	, exitAct(	tr("Exit"), this)
-	, aboutAct(	tr("About"), this)
-	, aboutQtAct(	tr("About Qt"), this)
-	, helpAct(	tr("Help"), this)
-	, openConfigAct(	tr("Open configuration file"), this)
-	, openFileLocation(	tr("Open file location"), this)
-	, fileMenu(	tr("File"), this)
-	, navMenu(	tr("Navigation"), this)
-	, helpMenu(	tr("Help"), this)
+	, a_open(	tr("Open File..."), this)
+	, a_open_dir(	tr("Open Directory..."), this)
+	, a_next(	tr("Next file"), this)
+	, a_prev(	tr("Previous file"), this)
+	, a_save(	tr("Save"), this)
+	, a_save_next(	tr("Save and open next file"), this)
+	, a_save_prev(	tr("Save and open previous file"), this)
+	, a_reload_tags(tr("Reload tag file"), this)
+	, a_iqdb_search(tr("IQDB.org search"), this)
+	, a_exit(	tr("Exit"), this)
+	, a_about(	tr("About"), this)
+	, a_about_qt(	tr("About Qt"), this)
+	, a_help(	tr("Help"), this)
+	, a_open_config(tr("Open configuration file"), this)
+	, a_open_loc(	tr("Open file location"), this)
+	, m_file(	tr("File"), this)
+	, m_navigation(	tr("Navigation"), this)
+	, m_help(	tr("Help"), this)
 {
 	setCentralWidget(&tagger);
 	setAcceptDrops(true);
@@ -65,6 +65,7 @@ Window::Window(QWidget *parent) :
 	files.reserve(FilesVectorReservedSize);
 	readJsonConfig();
 	parseCommandLineArguments();
+
 }
 
 Window::~Window() { }
@@ -541,89 +542,89 @@ void Window::openConfigFile()
 
 void Window::openImageLocation()
 {
-	open_file_in_graphical_shell(tagger.currentFile());
+	util::open_file_in_gui_shell(tagger.currentFile());
 }
 
 //------------------------------------------------------------------------
 void Window::createActions()
 {
-	openAct.setShortcut(	Qt::CTRL + Qt::Key_O);
-	openDirAct.setShortcut(	Qt::CTRL + Qt::Key_D);
-	NextAct.setShortcut(	QKeySequence(Qt::Key_Right));
-	PrevAct.setShortcut(	QKeySequence(Qt::Key_Left));
-	saveAct.setShortcut(	Qt::CTRL + Qt::Key_S);
-	saveNextAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
-	savePrevAct.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
-	reloadTagsAct.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-	iqdbSearchAct.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
-	openFileLocation.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_L));
-	helpAct.setShortcut(	Qt::Key_F1);
+	a_open.setShortcut(	Qt::CTRL + Qt::Key_O);
+	a_open_dir.setShortcut(	Qt::CTRL + Qt::Key_D);
+	a_next.setShortcut(	QKeySequence(Qt::Key_Right));
+	a_prev.setShortcut(	QKeySequence(Qt::Key_Left));
+	a_save.setShortcut(	Qt::CTRL + Qt::Key_S);
+	a_save_next.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
+	a_save_prev.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
+	a_reload_tags.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+	a_iqdb_search.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
+	a_open_loc.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_L));
+	a_help.setShortcut(	Qt::Key_F1);
 
-	NextAct.setEnabled(false);
-	PrevAct.setEnabled(false);
-	saveAct.setEnabled(false);
-	saveNextAct.setEnabled(false);
-	savePrevAct.setEnabled(false);
-	reloadTagsAct.setEnabled(false);
-	iqdbSearchAct.setEnabled(false);
-	openFileLocation.setEnabled(false);
+	a_next.setEnabled(false);
+	a_prev.setEnabled(false);
+	a_save.setEnabled(false);
+	a_save_next.setEnabled(false);
+	a_save_prev.setEnabled(false);
+	a_reload_tags.setEnabled(false);
+	a_iqdb_search.setEnabled(false);
+	a_open_loc.setEnabled(false);
 
-	connect(&openAct,	SIGNAL(triggered()), this, SLOT(fileOpenDialog()));
-	connect(&openDirAct,	SIGNAL(triggered()), this, SLOT(directoryOpenDialog()));
-	connect(&NextAct,	SIGNAL(triggered()), this, SLOT(next()));
-	connect(&PrevAct,	SIGNAL(triggered()), this, SLOT(prev()));
-	connect(&saveAct,	SIGNAL(triggered()), this, SLOT(save()));
-	connect(&saveNextAct,	SIGNAL(triggered()), this, SLOT(savenext()));
-	connect(&savePrevAct,	SIGNAL(triggered()), this, SLOT(saveprev()));
-	connect(&reloadTagsAct,	SIGNAL(triggered()), this, SLOT(reload_tags()));
-	connect(&iqdbSearchAct,	SIGNAL(triggered()), this, SLOT(search_iqdb()));
-	connect(&exitAct,	SIGNAL(triggered()), this, SLOT(close()));
-	connect(&aboutAct,	SIGNAL(triggered()), this, SLOT(about()));
-	connect(&aboutQtAct,	SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-	connect(&helpAct,	SIGNAL(triggered()), this, SLOT(help()));
-	connect(&openConfigAct,	SIGNAL(triggered()), this, SLOT(openConfigFile()));
-	connect(&openFileLocation,SIGNAL(triggered()), this, SLOT(openImageLocation()));
+	connect(&a_open,	SIGNAL(triggered()), this, SLOT(fileOpenDialog()));
+	connect(&a_open_dir,	SIGNAL(triggered()), this, SLOT(directoryOpenDialog()));
+	connect(&a_next,	SIGNAL(triggered()), this, SLOT(next()));
+	connect(&a_prev,	SIGNAL(triggered()), this, SLOT(prev()));
+	connect(&a_save,	SIGNAL(triggered()), this, SLOT(save()));
+	connect(&a_save_next,	SIGNAL(triggered()), this, SLOT(savenext()));
+	connect(&a_save_prev,	SIGNAL(triggered()), this, SLOT(saveprev()));
+	connect(&a_reload_tags,	SIGNAL(triggered()), this, SLOT(reload_tags()));
+	connect(&a_iqdb_search,	SIGNAL(triggered()), this, SLOT(search_iqdb()));
+	connect(&a_exit,	SIGNAL(triggered()), this, SLOT(close()));
+	connect(&a_about,	SIGNAL(triggered()), this, SLOT(about()));
+	connect(&a_about_qt,	SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	connect(&a_help,	SIGNAL(triggered()), this, SLOT(help()));
+	connect(&a_open_config,	SIGNAL(triggered()), this, SLOT(openConfigFile()));
+	connect(&a_open_loc,	SIGNAL(triggered()), this, SLOT(openImageLocation()));
 }
 
 void Window::createMenus() {
-	fileMenu.addAction(&openAct);
-	fileMenu.addAction(&openDirAct);
-	fileMenu.addSeparator();
-	fileMenu.addAction(&saveAct);
-	fileMenu.addSeparator();
-	fileMenu.addAction(&reloadTagsAct);
-	fileMenu.addAction(&iqdbSearchAct);
-	fileMenu.addSeparator();
-	fileMenu.addAction(&exitAct);
+	m_file.addAction(&a_open);
+	m_file.addAction(&a_open_dir);
+	m_file.addSeparator();
+	m_file.addAction(&a_save);
+	m_file.addSeparator();
+	m_file.addAction(&a_reload_tags);
+	m_file.addAction(&a_iqdb_search);
+	m_file.addSeparator();
+	m_file.addAction(&a_exit);
 
-	navMenu.addAction(&NextAct);
-	navMenu.addAction(&PrevAct);
-	navMenu.addSeparator();
-	navMenu.addAction(&saveNextAct);
-	navMenu.addAction(&savePrevAct);
-	navMenu.addSeparator();
-	navMenu.addAction(&openFileLocation);
-	navMenu.addAction(&openConfigAct);
+	m_navigation.addAction(&a_next);
+	m_navigation.addAction(&a_prev);
+	m_navigation.addSeparator();
+	m_navigation.addAction(&a_save_next);
+	m_navigation.addAction(&a_save_prev);
+	m_navigation.addSeparator();
+	m_navigation.addAction(&a_open_loc);
+	m_navigation.addAction(&a_open_config);
 
-	helpMenu.addAction(&helpAct);
-	helpMenu.addSeparator();
-	helpMenu.addAction(&aboutAct);
-	helpMenu.addAction(&aboutQtAct);
+	m_help.addAction(&a_help);
+	m_help.addSeparator();
+	m_help.addAction(&a_about);
+	m_help.addAction(&a_about_qt);
 
-	menuBar()->addMenu(&fileMenu);
-	menuBar()->addMenu(&navMenu);
-	menuBar()->addMenu(&helpMenu);
+	menuBar()->addMenu(&m_file);
+	menuBar()->addMenu(&m_navigation);
+	menuBar()->addMenu(&m_help);
 }
 
 void Window::enableMenusOnFileOpen() {
-	NextAct.setEnabled(true);
-	PrevAct.setEnabled(true);
-	saveAct.setEnabled(true);
-	saveNextAct.setEnabled(true);
-	savePrevAct.setEnabled(true);
-	reloadTagsAct.setEnabled(true);
-	iqdbSearchAct.setEnabled(true);
-	openFileLocation.setEnabled(true);
+	a_next.setEnabled(true);
+	a_prev.setEnabled(true);
+	a_save.setEnabled(true);
+	a_save_next.setEnabled(true);
+	a_save_prev.setEnabled(true);
+	a_reload_tags.setEnabled(true);
+	a_iqdb_search.setEnabled(true);
+	a_open_loc.setEnabled(true);
 }
 
 //------------------------------------------------------------------------
