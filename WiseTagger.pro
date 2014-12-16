@@ -10,8 +10,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui network widgets
 
 TARGET = WiseTagger
 
@@ -24,7 +23,7 @@ VERSION = "0.4.5b"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++1y
 QMAKE_CXXFLAGS_RELEASE += -flto
 
 SOURCES +=\

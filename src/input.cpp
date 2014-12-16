@@ -14,8 +14,8 @@
 TagInput::TagInput(QWidget *parent) : QLineEdit(parent), m_index(0)
 {
 	setMinimumHeight(30);
-	// no std::make_unique yet, sadly...
-	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter(QStringList(), nullptr));
+
+	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 }
 
 void TagInput::fixTags(bool sort)
@@ -105,7 +105,7 @@ void TagInput::loadTagFile(const QString& file)
 	QTextStream in(&f);
 	in.setCodec("UTF-8");
 
-	m_completer = std::unique_ptr<MultiSelectCompleter>(new MultiSelectCompleter( parse_tags_file(in), nullptr ));
+	m_completer = std::make_unique<MultiSelectCompleter>(parse_tags_file(in), nullptr);
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
 }
