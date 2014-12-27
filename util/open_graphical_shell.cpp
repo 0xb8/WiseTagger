@@ -33,8 +33,8 @@ void util::open_file_in_gui_shell(const QString &file) {
 	if(pid == 0ll) {
 		QMessageBox::critical(nullptr,
 			"Error starting process",
-			"<p>Could not start exploler.exe</p>"\
-			"<p>Make sure it exists (<b>HOW U EVEN ШINDOШS, BRO?</b>) and <b>PATH</b> environment variable is correct.");
+			"<p>Could not start explorer.exe</p>"\
+			"<p>Make sure it exists and <b>PATH</b> environment variable is correct.");
 	}
 
 #else
