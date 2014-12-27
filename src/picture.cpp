@@ -8,7 +8,7 @@
 #include "picture.h"
 #include <QResizeEvent>
 
-Picture::Picture(QWidget *parent) : QLabel(parent), resize_timer(this) {
+Picture::Picture(QWidget *_parent) : QLabel(_parent), resize_timer(this) {
 	setFocusPolicy(Qt::ClickFocus);
 	setMinimumSize(1,1);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);

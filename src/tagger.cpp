@@ -11,8 +11,8 @@
 #include <QMessageBox>
 #include <QApplication>
 
-Tagger::Tagger(QWidget *parent) :
-	QWidget(parent)
+Tagger::Tagger(QWidget *_parent) :
+	QWidget(_parent)
 {
 	installEventFilter(parent);
 	m_picture.installEventFilter(parent);

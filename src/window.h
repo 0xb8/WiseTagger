@@ -20,7 +20,7 @@
 class Window : public QMainWindow {
 	Q_OBJECT
 public:
-	explicit Window(QWidget *parent = nullptr);
+	explicit Window(QWidget *_parent = nullptr);
 	virtual ~Window();
 
 	static bool check_ext(const QString& ext);

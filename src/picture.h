@@ -20,7 +20,7 @@ class Picture : public QLabel
 {
 	Q_OBJECT
 public:
-	explicit Picture(QWidget *parent = nullptr);
+	explicit Picture(QWidget *_parent = nullptr);
 	bool loadPicture(const QString& filename);
 
 	virtual QSize sizeHint() const;

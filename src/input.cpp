@@ -11,7 +11,7 @@
 #include <QFileInfo>
 #include <QApplication>
 
-TagInput::TagInput(QWidget *parent) : QLineEdit(parent), m_index(0)
+TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
 	setMinimumHeight(30);
 

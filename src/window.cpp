@@ -33,8 +33,8 @@
 #include "input.h"
 #include "util/open_graphical_shell.h"
 
-Window::Window(QWidget *parent) :
-	QMainWindow(parent)
+Window::Window(QWidget *_parent) :
+	QMainWindow(_parent)
 	, tagger(this)
 	, last_directory(QDir::homePath())
 	, a_open(	tr("Open File..."), this)

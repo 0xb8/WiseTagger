@@ -5,8 +5,8 @@
 #include "multicompleter.h"
 #include <QLineEdit>
 
-MultiSelectCompleter::MultiSelectCompleter( const QStringList& items, QObject* parent )
-	: QCompleter( items, parent )
+MultiSelectCompleter::MultiSelectCompleter(const QStringList& items, QObject* _parent )
+	: QCompleter( items, _parent )
 {
 }
 

@@ -24,7 +24,7 @@ class Tagger : public QWidget
 	Q_OBJECT
 
 public:
-	explicit Tagger(QWidget *parent = nullptr);
+	explicit Tagger(QWidget *_parent = nullptr);
 	virtual ~Tagger();
 
 	bool loadFile(const QString& filename);
