@@ -6,11 +6,13 @@
  */
 
 #include "open_graphical_shell.h"
+#include <QFile>
 
 #ifdef Q_OS_WIN32
 #include <QProcess>
 #include <QStringList>
 #include <QMessageBox>
+#include <QApplication>
 #include <QDir>
 #else
 #include <QDesktopServices>
@@ -20,7 +22,7 @@
 
 
 void util::open_file_in_gui_shell(const QString &file) {
-	if(file.isEmpty())
+	if(!QFile::exists(file))
 		return;
 
 #ifdef Q_OS_WIN32
@@ -32,9 +34,9 @@ void util::open_file_in_gui_shell(const QString &file) {
 
 	if(pid == 0ll) {
 		QMessageBox::critical(nullptr,
-			"Error starting process",
-			"<p>Could not start explorer.exe</p>"\
-			"<p>Make sure it exists and <b>PATH</b> environment variable is correct.");
+			qApp->translate("OpenInGuiShell","Error starting process"),
+			qApp->translate("OpenInGuiShell","<p>Could not start Explorer</p>"\
+			"<p>Make sure system <b>PATH</b> environment variable is correct."));
 	}
 
 #else
