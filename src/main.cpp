@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
 	QApplication a(argc, argv);
 	a.setApplicationVersion(APP_VERSION);
 	a.setApplicationName(TARGET_PRODUCT);
+	a.setOrganizationName(TARGET_COMPANY);
+	a.setOrganizationDomain("wolfgirl.org");
 	Window w;
 	w.show();
 

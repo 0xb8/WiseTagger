@@ -14,7 +14,7 @@ QT       += core gui network widgets
 
 TARGET = WiseTagger
 
-QMAKE_TARGET_COMPANY = Dobrobox (dobrobox.org)
+QMAKE_TARGET_COMPANY = catgirl
 QMAKE_TARGET_PRODUCT = WiseTagger
 QMAKE_TARGET_DESCRIPTION = Simple picture tagger
 QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
@@ -22,18 +22,19 @@ QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 VERSION = "0.4.5b"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
-DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"
+DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\" TARGET_COMPANY=\\\"$$QMAKE_TARGET_COMPANY\\\"
 QMAKE_CXXFLAGS += -std=c++1y
 QMAKE_CXXFLAGS_RELEASE += -flto
 
+PRECOMPILED_HEADER += util/precompiled.h
+
 SOURCES +=\
     $$PWD/src/*.cpp \
-    util/open_graphical_shell.cpp
+    $$PWD/util/*.cpp
 
 HEADERS  += \
     $$PWD/src/*.h \
-    util/unordered_map_qt.h \
-    util/open_graphical_shell.h
+    $$PWD/util/*.h
 
 RESOURCES += \
     resources.qrc
