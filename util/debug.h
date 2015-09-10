@@ -5,6 +5,9 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+#ifndef UTIL_DEBUG_H
+#define UTIL_DEBUG_H
+
 #if defined(__GNUC__)
 	#define ___PREFUNCTION__ __PRETTY_FUNCTION__
 #else
@@ -15,3 +18,6 @@
 
 #define pdbg qDebug() << ___PREFUNCTION__ << __PFUNC_SEP__
 #define pwarn qWarning() << ___PREFUNCTION__ << __PFUNC_SEP__
+
+
+#endif // UTIL_DEBUG_H
