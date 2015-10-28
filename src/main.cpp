@@ -10,6 +10,7 @@
 
 int main(int argc, char *argv[])
 {
+	qSetMessagePattern("%{if-warning}[WARN] %{endif}[%{time h:mm:ss.zzz}] %{function}  \t%{message}");
 	QApplication a(argc, argv);
 	a.setApplicationVersion(APP_VERSION);
 	a.setApplicationName(TARGET_PRODUCT);

@@ -16,7 +16,7 @@ Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setMinimumSize(1,1);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setBackgroundStyle();
-	connect(&m_resize_timer, SIGNAL(timeout()), this, SLOT(resizeTimeout()));
+	connect(&m_resize_timer, &QTimer::timeout, this, &Picture::resizeTimeout);
 }
 
 // Implement empty event handlers to allow filtering by MainWindow
