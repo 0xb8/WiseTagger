@@ -10,37 +10,49 @@
 
 #include "reverse_search.h"
 #include "tagger.h"
+#include <vector>
 #include <QMainWindow>
-#include <QMenuBar>
 #include <QAction>
 #include <QString>
-#include <QVector>
 #include <QMenu>
+#include <QStatusBar>
+
+#ifdef Q_OS_WIN32
+#include <QtWinExtras>
+#endif
 
 class Window : public QMainWindow {
 	Q_OBJECT
 public:
 	explicit Window(QWidget *_parent = nullptr);
-	virtual ~Window();
+	~Window() override;
 
-	static bool check_ext(const QString& ext);
-
-	void openFileFromDirectory(const QString filename);	// load dir contents and open selected file
-	void openSingleFile(const QString &file);		// load file into tagger w/o adding it to queue
-	void openSingleDirectory(const QString &directory);	// open first file in directory
+	static bool check_ext(const QString& file);
+	// TODO: move all loading to tagger class
+	void openFileFromDirectory(const QString& filename);	// enqueue directory contents and open selected file
+	void openSingleDirectory(const QString &directory);	// open first file in directory and enqueue the rest
 	void loadDirContents(const QString &directory);		// enqueue files in directory
-	int  saveFile(bool autosave, bool show_cancel_button = true);
+
+	Tagger::RenameStatus saveFile(bool autosave, bool show_cancel_button = true);
 	void nextFile(bool autosave);
 	void prevFile(bool autosave);
 
+public slots:
+	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
+	void hideUploadProgress();
+	void updateWindowTitle();
+	void updateWindowTitleProgress(int progress);
+	void updateStatusBarText();
+	void updateImageboardPostURL(QString url);
+
 protected:
-	bool eventFilter(QObject *, QEvent *);
-	void closeEvent(QCloseEvent *event);
+	bool eventFilter(QObject*, QEvent *e) override;
+	void closeEvent(QCloseEvent *e) override;
+	void showEvent(QShowEvent* e) override;
 
 private slots:
 	void fileOpenDialog();
 	void directoryOpenDialog();
-	void openConfigFile();
 	void openImageLocation();
 	void about();
 	void help();
@@ -50,47 +62,65 @@ private slots:
 	void savenext();
 	void saveprev();
 	void reload_tags();
+	void open_post();
 	void search_iqdb();
+	void replace_tags(bool checked);
+	void restore_tags(bool checked);
+	void toggle_statusbar(bool checked);
 
 private:
 	void createActions();
 	void createMenus();
 	void enableMenusOnFileOpen();
 	void parseCommandLineArguments();
-	void updateWindowTitle();
 
-	void readJsonConfig();
-	void writeJsonConfig();
+	void loadWindowSettings();
+	void saveWindowSettings();
 
-	static constexpr char const* MainWindowTitle = "%1 [%3x%4] (%5)  –  WiseTagger v%2";
-	static constexpr char const* ConfigFilename = "wisetagger.json";
-	static const int FilesVectorReservedSize = 1024;
+	void openSingleFile(const QString& filename);		// load file w/o adding it to queue
 
-	Tagger tagger;
-	ReverseSearch iqdb;
+	static constexpr const char* MainWindowTitle = "%1 [%3x%4] (%5)  –  WiseTagger v%2";
+	static constexpr const char* MainWindowTitleProgress = "%6%  –  %1 [%3x%4] (%5)  –  WiseTagger v%2";
 
-	QString last_directory;
-	QVector<QString> files;
-	int current_pos;
+	Tagger m_tagger;
+	ReverseSearch m_reverse_search;
 
-	QAction a_open;
+	std::vector<QString> m_files;
+	size_t m_current_file_index;
+
+	QString m_last_directory;
+	QString m_post_url;
+
+	QAction a_open_file;
 	QAction a_open_dir;
-	QAction a_next;
-	QAction a_prev;
-	QAction a_save;
+	QAction a_next_file;
+	QAction a_prev_file;
+	QAction a_save_file;
 	QAction a_save_next;
 	QAction a_save_prev;
 	QAction a_reload_tags;
+	QAction a_open_post;
 	QAction a_iqdb_search;
 	QAction a_exit;
 	QAction a_about;
 	QAction a_about_qt;
 	QAction a_help;
-	QAction a_open_config;
 	QAction a_open_loc;
 
-	QMenu m_file;
-	QMenu m_navigation;
-	QMenu m_help;
+	QAction a_ib_replace;
+	QAction a_ib_restore;
+	QAction a_toggle_statusbar;
+
+	QMenu menu_file;
+	QMenu menu_navigation;
+	QMenu menu_options;
+	QMenu menu_help;
+
+	QStatusBar m_statusbar;
+	QLabel     m_statusbar_info_label;
+
+#ifdef Q_OS_WIN32
+	QWinTaskbarButton m_win_taskbar_button;
+#endif
 };
 #endif // WINDOW_H

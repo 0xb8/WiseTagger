@@ -12,6 +12,10 @@
 
 QT       += core gui network widgets
 
+win32 {
+    QT += winextras
+}
+
 TARGET = WiseTagger
 
 QMAKE_TARGET_COMPANY = catgirl
@@ -23,7 +27,7 @@ VERSION = "0.4.5b"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\" TARGET_COMPANY=\\\"$$QMAKE_TARGET_COMPANY\\\"
-QMAKE_CXXFLAGS += -std=c++1y
+QMAKE_CXXFLAGS += -std=c++14
 QMAKE_CXXFLAGS_RELEASE += -flto
 
 PRECOMPILED_HEADER += util/precompiled.h

@@ -5,6 +5,7 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+#include <QCommandLineParser>
 #include <QDesktopServices>
 #include <QDirIterator>
 #include <QApplication>
@@ -13,72 +14,85 @@
 #include <QFile>
 #include <QUrl>
 #include <QMimeData>
-
-#include <QJsonParseError>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QJsonValueRef>
-#include <QJsonObject>
+#include <QSettings>
+#include <QCollator>
 
 #include <QKeySequence>
 #include <QMessageBox>
-#include <QJsonDocument>
 
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
 
+#include <QMenuBar>
+#include <QSizeGrip>
+
 #include "window.h"
-#include "input.h"
 #include "util/open_graphical_shell.h"
+#include "util/debug.h"
+#include "util/size.h"
 
 Window::Window(QWidget *_parent) :
 	QMainWindow(_parent)
-	, tagger(this)
-	, last_directory(QDir::homePath())
-	, a_open(	tr("Open File..."), this)
-	, a_open_dir(	tr("Open Directory..."), this)
-	, a_next(	tr("Next file"), this)
-	, a_prev(	tr("Previous file"), this)
-	, a_save(	tr("Save"), this)
-	, a_save_next(	tr("Save and open next file"), this)
-	, a_save_prev(	tr("Save and open previous file"), this)
-	, a_reload_tags(tr("Reload tag file"), this)
-	, a_iqdb_search(tr("IQDB.org search"), this)
-	, a_exit(	tr("Exit"), this)
-	, a_about(	tr("About"), this)
-	, a_about_qt(	tr("About Qt"), this)
-	, a_help(	tr("Help"), this)
-	, a_open_config(tr("Open configuration file"), this)
-	, a_open_loc(	tr("Open file location"), this)
-	, m_file(	tr("File"), this)
-	, m_navigation(	tr("Navigation"), this)
-	, m_help(	tr("Help"), this)
+	, m_tagger(this)
+	, m_reverse_search(this)
+	, a_open_file(	tr("Open File..."), nullptr)
+	, a_open_dir(	tr("Open Directory..."), nullptr)
+	, a_next_file(	tr("Next file"), nullptr)
+	, a_prev_file(	tr("Previous file"), nullptr)
+	, a_save_file(	tr("Save"), nullptr)
+	, a_save_next(	tr("Save and open next file"), nullptr)
+	, a_save_prev(	tr("Save and open previous file"), nullptr)
+	, a_reload_tags(tr("Reload tag file"), nullptr)
+	, a_open_post(	tr("Open imageboard post"), nullptr)
+	, a_iqdb_search(tr("IQDB.org search"), nullptr)
+	, a_exit(	tr("Exit"), nullptr)
+	, a_about(	tr("About"), nullptr)
+	, a_about_qt(	tr("About Qt"), nullptr)
+	, a_help(	tr("Help"), nullptr)
+	, a_open_loc(	tr("Open file location"), nullptr)
+	, a_ib_replace(	tr("Replace imageboard tags"), nullptr)
+	, a_ib_restore(	tr("Restore imageboard tags"), nullptr)
+	, a_toggle_statusbar(tr("Toggle status bar"), nullptr)
+	, menu_file(	tr("File"))
+	, menu_navigation(	tr("Navigation"))
+	, menu_options(	tr("Options"))
+	, menu_help(	tr("Help"))
+	, m_statusbar(nullptr)
+	, m_statusbar_info_label(nullptr)
 {
-	setCentralWidget(&tagger);
+	setCentralWidget(&m_tagger);
 	setAcceptDrops(true);
 
 	createActions();
 	createMenus();
 
-	files.reserve(FilesVectorReservedSize);
-	readJsonConfig();
+	loadWindowSettings();
 	parseCommandLineArguments();
-
 }
 
 Window::~Window() { }
 
 //------------------------------------------------------------------------------
-/* load file into tagger w/o adding it to queue */
-void Window::openSingleFile(const QString &file) {
-	if(tagger.loadFile(file)) {
+/* just load picture into tagger */
+void Window::openSingleFile(const QString &filename)
+{
+	if(m_tagger.loadFile(filename)) {
+		m_post_url = m_tagger.postURL();
 		enableMenusOnFileOpen();
 		updateWindowTitle();
+	} else {
+		// FIXME: may crash when no files left in folder
+		pdbg << "erasing re{named,moved} files from queue";
+		auto rem = std::next(m_files.begin(), m_current_file_index);
+
+		if(rem >= m_files.end())
+			return;
+
+		m_files.erase(std::remove(rem, m_files.end(), filename));
 	}
 }
-/* open first file in directory */
+/* open first file in directory and enqueue the rest */
 void Window::openSingleDirectory(const QString &directory)
 {
 	QDirIterator it(directory);
@@ -93,101 +107,110 @@ void Window::openSingleDirectory(const QString &directory)
 	}
 }
 
-/* load dir contents and open selected file */
-void Window::openFileFromDirectory(const QString filename)
+/* enqueue directory contents and open selected file */
+void Window::openFileFromDirectory(const QString &filename)
 {
-	last_directory = QFileInfo(filename).absolutePath();
-	files.clear();
-	loadDirContents(last_directory);
+	loadDirContents(QFileInfo(filename).absolutePath());
 
-	current_pos = 0;
+	const auto pos = std::find(m_files.cbegin(), m_files.cend(), filename);
+	Q_ASSERT(pos <= m_files.cend());
 
-	for(int i = 0; i < files.size(); ++i) {
-		if(files[i] == filename) {
-			current_pos = i;
-			break;
-		}
-	}
-
-	openSingleFile(filename);
+	m_current_file_index = std::distance(m_files.cbegin(), pos);
+	openSingleFile(*pos);
 }
 
 /* enqueue files in directory */
 void Window::loadDirContents(const QString &directory)
 {
-	last_directory = directory;
+	m_last_directory = directory;
+	m_files.clear();
 	QDirIterator it(directory);
+
 	QFileInfo file;
-	while(it.hasNext()) {
-		it.next();
+	while(it.hasNext() && !it.next().isNull()) {
 		file.setFile(it.filePath());
 
 		if(Window::check_ext(file.suffix())) {
-			files.push_back(it.filePath());
+			m_files.push_back(it.filePath());
 		}
 	}
+
+	QCollator collator;
+	collator.setNumericMode(true);
+
+	std::sort(m_files.begin(), m_files.end(),
+		[&collator](const auto& a, const auto& b)
+		{
+			return collator.compare(a,b) < 0;
+		});
 }
 
-//------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void Window::fileOpenDialog()
 {
-	QString fileName = QFileDialog::getOpenFileName(this,
+	QString fileName = QFileDialog::getOpenFileName(nullptr,
 		tr("Open File"),
-		last_directory,
+		m_last_directory,
 		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png)"));
 
-	if (fileName.isEmpty()) return;
+	if(fileName.isEmpty())
+		return;
 
 	openFileFromDirectory(fileName);
 }
 
 void Window::directoryOpenDialog()
 {
-	QString dir = QFileDialog::getExistingDirectory(this,
+	QString dir = QFileDialog::getExistingDirectory(nullptr,
 		tr("Open Directory"),
-		last_directory,
+		m_last_directory,
 		QFileDialog::ShowDirsOnly);
 
-	if(dir.isEmpty()) return;
+	if(dir.isEmpty())
+		return;
 
 	openSingleDirectory(dir);
 }
 
-//------------------------------------------------------------------------
-int Window::saveFile(bool autosave, bool show_cancel_button) {
-	int ret = tagger.rename(autosave, show_cancel_button);
-	if(ret > 0) {
+//------------------------------------------------------------------------------
+Tagger::RenameStatus Window::saveFile(bool autosave, bool show_cancel_button)
+{
+	auto ret = m_tagger.rename(autosave, show_cancel_button);
+	if(ret == Tagger::RenameStatus::Renamed) {
 		updateWindowTitle();
-		files[current_pos] = tagger.currentFile();
+		m_files[m_current_file_index] = m_tagger.currentFile();
 	}
 	return ret;
 }
 
-void Window::nextFile(bool autosave) {
-	if(tagger.isModified()) {
-		if(saveFile(autosave) < 0)
+void Window::nextFile(bool autosave)
+{
+	if(m_tagger.isModified()) {
+		if(saveFile(autosave) == Tagger::RenameStatus::Cancelled)
 			return;
 	}
-	++current_pos;
-	if(current_pos < 0 || current_pos >= files.size()) {
-		current_pos = 0;
+	++m_current_file_index;
+	if(m_current_file_index >= m_files.size()) {
+		m_current_file_index = 0;
 	}
 
-	openSingleFile(files[current_pos]);
+	if(!m_files.empty())
+		openSingleFile(m_files[m_current_file_index]);
 }
 
 void Window::prevFile(bool autosave) {
-	if(tagger.isModified()) {
-		if(saveFile(autosave) < 0)
+	if(m_tagger.isModified()) {
+		if(saveFile(autosave) == Tagger::RenameStatus::Cancelled)
 			return;
 	}
 
-	--current_pos;
-	if(current_pos < 0 || current_pos >= files.size()) {
-		current_pos = files.size()-1;
+	--m_current_file_index;
+	if(m_current_file_index >= m_files.size()) {
+		m_current_file_index = m_files.size()-1;
 	}
 
-	openSingleFile(files[current_pos]);
+	if(!m_files.empty())
+		openSingleFile(m_files[m_current_file_index]);
 }
 
 void Window::save()
@@ -218,20 +241,89 @@ void Window::saveprev()
 
 void Window::reload_tags()
 {
-	tagger.reloadTags();
+	m_tagger.reloadTags();
+}
+
+void Window::open_post()
+{
+	QDesktopServices::openUrl(m_post_url);
 }
 
 void Window::search_iqdb()
 {
-	iqdb.search(tagger.currentFile());
+	m_reverse_search.search(m_tagger.currentFile());
 }
 
-//------------------------------------------------------------------------
-bool Window::eventFilter(QObject *object, QEvent *event)
+void Window::replace_tags(bool checked)
 {
-	Q_UNUSED(object);
-	if(event->type() == QEvent::DragEnter) {
-		QDragEnterEvent *drag_event = static_cast<QDragEnterEvent *> (event);
+	QSettings settings;
+	settings.setValue("imageboard/replace-tags", checked);
+}
+
+void Window::restore_tags(bool checked)
+{
+	QSettings settings;
+	settings.setValue("imageboard/restore-tags", checked);
+}
+
+void Window::toggle_statusbar(bool checked)
+{
+	QSettings settings;
+	settings.setValue("window/show-statusbar", checked);
+
+	checked ? m_statusbar.show() : m_statusbar.hide();
+}
+
+void Window::updateWindowTitle()
+{
+	setWindowTitle(tr(Window::MainWindowTitle)
+		.arg(m_tagger.currentFileName())
+		.arg(qApp->applicationVersion())
+		.arg(m_tagger.picture_width())
+		.arg(m_tagger.picture_height())
+		.arg(util::size::printable(m_tagger.picture_size())));
+
+	updateStatusBarText();
+}
+
+void Window::updateWindowTitleProgress(int progress)
+{
+	setWindowTitle(tr(Window::MainWindowTitleProgress)
+		.arg(m_tagger.currentFileName())
+		.arg(qApp->applicationVersion())
+		.arg(m_tagger.picture_width())
+		.arg(m_tagger.picture_height())
+		.arg(util::size::printable(m_tagger.picture_size()))
+		       .arg(progress));
+}
+
+void Window::updateStatusBarText()
+{
+	QString statusbar_text;
+
+	statusbar_text.append(tr("Reverse search proxy is "));
+	statusbar_text.append(m_reverse_search.proxyEnabled()
+			? tr("<b>enabled</b>, proxy URL: <code>%1</code>. ").arg(m_reverse_search.proxyURL())
+			: tr("<b>disabled</b>. "));
+	m_statusbar_info_label.setText(statusbar_text);
+}
+
+void Window::updateImageboardPostURL(QString url)
+{
+	if(!url.isEmpty()) {
+		m_post_url = url;
+		a_open_post.setEnabled(true);
+	} else {
+		m_post_url.clear();
+		a_open_post.setEnabled(false);
+	}
+}
+
+//------------------------------------------------------------------------------
+bool Window::eventFilter(QObject*, QEvent *e)
+{
+	if(e->type() == QEvent::DragEnter) {
+		QDragEnterEvent *drag_event = static_cast<QDragEnterEvent *> (e);
 
 		if(!drag_event->mimeData()->hasUrls())
 			return true;
@@ -243,7 +335,6 @@ bool Window::eventFilter(QObject *object, QEvent *event)
 
 		for(auto&& dropfileurl : drag_event->mimeData()->urls()) {
 			dropfile.setFile(dropfileurl.toLocalFile());
-
 			if( !(dropfile.isDir() || Window::check_ext(dropfile.suffix()) ) ) {
 				return true;
 			}
@@ -252,8 +343,8 @@ bool Window::eventFilter(QObject *object, QEvent *event)
 		drag_event->acceptProposedAction();
 		return true;
 	}
-	if(event->type() == QEvent::Drop) {
-		QDropEvent *drop_event = static_cast<QDropEvent *> (event);
+	if(e->type() == QEvent::Drop) {
+		QDropEvent *drop_event = static_cast<QDropEvent *> (e);
 
 		QList<QUrl> fileurls = drop_event->mimeData()->urls();
 		QFileInfo fileinfo;
@@ -271,51 +362,109 @@ bool Window::eventFilter(QObject *object, QEvent *event)
 			return true;
 		}
 
-		files.clear();
+		m_files.clear();
 		for(auto&& fileurl : fileurls) {
 			fileinfo.setFile(fileurl.toLocalFile());
 			if(fileinfo.isFile()) {
-				files.push_back(fileinfo.absoluteFilePath());
+				m_files.push_back(fileinfo.absoluteFilePath());
 			}
 			if(fileinfo.isDir()) {
 				loadDirContents(fileinfo.absoluteFilePath());
 			}
 		}
 
-		openSingleFile(files.front());
-		current_pos = 0;
+		openSingleFile(0);
+		m_current_file_index = 0;
 		return true;
 	}
 	return false;
 }
 
-void Window::closeEvent(QCloseEvent *event)
+void Window::closeEvent(QCloseEvent *e)
 {
-	if(tagger.isModified()) {
-		if(saveFile(false) >= 0) {
-			writeJsonConfig();
-			event->accept();
+	if(m_tagger.isModified()) {
+		auto r = saveFile(false);
+		if(r == Tagger::RenameStatus::Renamed || r == Tagger::RenameStatus::Failed) {
+			saveWindowSettings();
+			e->accept();
 			return;
 		}
-		event->ignore();
+		e->ignore();
 		return;
 	}
-	writeJsonConfig();
-	event->accept();
+	saveWindowSettings();
+	e->accept();
+}
+
+void Window::showEvent(QShowEvent *e)
+{
+#ifdef Q_OS_WIN32
+	// workaround for taskbar button not working
+	m_win_taskbar_button.setWindow(this->windowHandle());
+#endif
+	e->accept();
+}
+
+void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
+{
+#ifdef Q_OS_WIN32
+	auto progress = m_win_taskbar_button.progress();
+	progress->setVisible(true);
+	progress->setMaximum(bytesTotal);
+	progress->setValue(bytesSent);
+
+	if(bytesSent == bytesTotal) {
+		// set indicator to indeterminate mode
+		progress->setMaximum(0);
+		progress->setValue(0);
+	}
+#endif
+	if(bytesTotal == 0)
+		return;
+
+	updateWindowTitleProgress(util::size::percent(bytesSent, bytesTotal));
+	statusBar()->showMessage(
+		tr("Uploading <b>%1</b> to iqdb.org...  %2% complete")
+			.arg(m_tagger.currentFileName())
+			.arg(util::size::percent(bytesSent, bytesTotal)));
+}
+
+void Window::hideUploadProgress()
+{
+#ifdef Q_OS_WIN32
+	m_win_taskbar_button.progress()->setVisible(false);
+#endif
+	updateWindowTitle();
+	statusBar()->showMessage(tr("Done."), 3000);
 }
 
 void Window::parseCommandLineArguments()
 {
 	QFileInfo f;
 	QStringList args = qApp->arguments();
-	for(const auto& arg : args) {
+
+	QCommandLineParser parser;
+	parser.addVersionOption();
+	parser.addHelpOption();
+	QCommandLineOption proxy_option("proxy", "Set proxy for IQDB search", "proxy");
+	QCommandLineOption no_proxy_option("no-proxy", "Disable proxy");
+	parser.addOption(proxy_option);
+	parser.addOption(no_proxy_option);
+	parser.process(args);
+
+	if(parser.isSet(proxy_option)) {
+		QString proxy_arg = parser.value("proxy");
+		pdbg << "proxy arg" << proxy_arg;
+		m_reverse_search.setProxy({proxy_arg, QUrl::StrictMode});
+	}
+
+	if(parser.isSet(no_proxy_option)) {
+		pdbg << "--no-proxy";
+		m_reverse_search.setProxyEnabled(false);
+	}
+
+	for(const auto& arg : parser.positionalArguments()) {
 		if(arg.startsWith('-')) {
-			if(arg == "-h" || arg =="--help") {
-				help();
-			}
-			if(arg == "--no-last-dir") {
-				// TODO: disable last dir save in config
-			}
 			continue;
 		}
 		f.setFile(arg);
@@ -325,7 +474,7 @@ void Window::parseCommandLineArguments()
 		}
 
 		if(f.isFile() && Window::check_ext(f.suffix())) {
-			files.push_back(f.absoluteFilePath());
+			m_files.push_back(f.absoluteFilePath());
 		}
 
 		if(f.isDir()) {
@@ -333,331 +482,197 @@ void Window::parseCommandLineArguments()
 		}
 	}
 
-	if(files.size() == 1) {
-		openFileFromDirectory(files.front());
+	if(m_files.size() == 1) {
+		openFileFromDirectory(m_files.front());
 		return;
 	}
 
-	if(!files.empty()) {
-		openSingleFile(files.front());
-		current_pos = 0;
+	if(!m_files.empty()) {
+		openSingleFile(0);
+		m_current_file_index = 0;
 	}
 }
 
-void Window::updateWindowTitle()
+void Window::saveWindowSettings()
 {
-	setWindowTitle(tr(Window::MainWindowTitle)
-		.arg(tagger.currentFileName())
-		.arg(qApp->applicationVersion())
-		.arg(tagger.picture_width())
-		.arg(tagger.picture_height())
-		.arg(tagger.picture_size() <= 1024*1024 // if less than 1 Mb show exact KB size
-			? QString("%1Kb").arg(tagger.picture_size() / 1024)
-			: QString("%1Mb").arg(tagger.picture_size() / 1024.0f / 1024.0f, 0,'f', 3)));
+	QSettings settings;
+	settings.beginGroup("window");
+		settings.setValue("size", this->size());
+		settings.setValue("position", this->pos());
+		settings.setValue("maximized", this->isMaximized());
+		settings.setValue("last-directory", m_last_directory);
+	settings.endGroup();
 }
 
-void Window::readJsonConfig()
+void Window::loadWindowSettings()
 {
-	QFile config_file(qApp->applicationDirPath() + '/' + Window::ConfigFilename);
-	if(!config_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		QMessageBox::warning(this,
-			tr("Error opening configuration file"),
-			tr("<p>Could not open <b>%1</b> for reading.</p><p>Tag autocomplete will not work.</p>")
-				.arg(config_file.fileName()));
-	}
+	QSettings settings;
+	settings.beginGroup("window");
+		m_last_directory = settings.value("last-directory").toString();
+		resize(settings.value("size", QSize(1024,600)).toSize());
+		if(settings.contains("position"))
+			move(settings.value("position").toPoint());
+		if(settings.value("maximized", false).toBool())
+			showMaximized();
+	settings.endGroup();
 
-	QSize window_size(1024,600);
-	QPoint window_pos;
-	QFont font("Consolas"); // default font
-	font.setPixelSize(14);
-	bool maximized = false;
+	a_ib_replace.setChecked(
+		settings.value("imageboard/replace-tags", false).toBool());
+	a_ib_restore.setChecked(
+		settings.value("imageboard/restore-tags", true).toBool());
+	a_toggle_statusbar.setChecked(
+		settings.value("window/show-statusbar", false).toBool());
 
-	QJsonDocument config_json;
-	QJsonObject config_object,
-		config_window,
-		config_window_size,
-		config_window_pos,
-		config_proxy;
-	QJsonArray config_tag_files;
-	int config_version = -1;
-
-
-	/* Read JSON and form root object */
-	config_json = QJsonDocument::fromJson(config_file.readAll());
-	config_object = config_json.object();
-
-	/* Currently unused, read anyway... */
-	if(config_object["version"].isDouble())
-		config_version = config_object["version"].toInt();
-
-	Q_UNUSED(config_version);
-
-	/* Check if window sub-object and its sub-objects present */
-	if(config_object["window"].isObject())
-		config_window = config_object["window"].toObject();
-
-	if(config_window["font"].isString())
-		font.setFamily(config_window["font"].toString());
-
-	if(config_window["maximized"].isBool())
-		maximized = config_window["maximized"].toBool();
-
-	if(config_window["size"].isObject() && config_window["position"].isObject()) {
-		config_window_size = config_window["size"].toObject();
-		config_window_pos = config_window["position"].toObject();
-	}
-
-	if(config_window_size["width"].isDouble() && config_window_size["height"].isDouble()) {
-		window_size.setWidth(config_window_size["width"].toInt());
-		window_size.setHeight(config_window_size["height"].toInt());
-	}
-
-	if(config_window_pos["x"].isDouble() && config_window_pos["y"].isDouble()) {
-		window_pos.setX(config_window_pos["x"].toInt());
-		window_pos.setY(config_window_pos["y"].toInt());
-		move(window_pos);
-	}
-
-	/* Check if proxy settings present */
-	if(config_object["proxy"].isObject())
-		config_proxy = config_object["proxy"].toObject();
-
-	QString protocol, host, user, pass;
-	double port;
-
-	if(config_proxy["protocol"].isString() && config_proxy["host"].isString() && config_proxy["port"].isDouble()) {
-		protocol = config_proxy["protocol"].toString();
-		host = config_proxy["host"].toString();
-		port = config_proxy["port"].toDouble();
-		user = config_proxy["username"].toString();
-		pass = config_proxy["password"].toString();
-		/* Validate port & protocol*/
-		if(port > 65535.0f || port < 1.0f) {
-			QMessageBox::warning(this,
-				tr("Configuration error"),
-				tr("<p>Invalid proxy port number <b>%1</b>, should be between 1 and 65535.</p><p>Proxy will not work.</p>"));
-		} else if(protocol != "http" && protocol != "socks5") {
-			QMessageBox::warning(this,
-				tr("Configuration error"),
-				tr("<p>Invalid proxy protocol <b>%1</b>, should be either <b>http<b> or <b>socks5</b>.</p><p>Proxy will not work.</p>").arg(protocol));
-		} else if(config_proxy["enable"].isBool() && config_proxy["enable"].toBool()) {
-			iqdb.setProxy(protocol, host, static_cast<std::uint16_t>(port), user, pass);
-		}
-	}
-
-	/* Check if last_directory present */
-	if(config_object["last_directory"].isString())
-		last_directory = config_object["last_directory"].toString();
-
-	if(config_object["tag_files"].isArray())
-		config_tag_files = config_object["tag_files"].toArray();
-
-	/* Check if tag_files array is not empty */
-	if(config_tag_files.isEmpty() && !config_json.isNull()) {
-		QMessageBox::warning(this,
-			tr("Configuration error"),
-			tr("<p><b>tag_files</b> JSON array not found in configuration file.</p><p>Tag autocomplete will not work.</p>"));
-	}
-
-	/* Clear Tagger's dir-tagfile map */
-	tagger.clearDirTagfiles();
-
-	for(auto&& o : config_tag_files) {
-		if(!o.isObject()) {
-			QMessageBox::warning(this,
-				tr("Configuration error"),
-				tr("<p><b>tag_files</b> array should contain valid JSON objects.</p><p>Tag autocomplete will not work.</p>"));
-			break;
-		}
-		auto object = o.toObject();
-		if(!object["directory"].isString() || !object["tagfile"].isString()) {
-			QMessageBox::warning(this,
-				tr("Configuration error"),
-				tr("<p><b>directory</b> and <b>tagfile</b> entries must be strings!</p><p>Tag autocomplete will not work.</p>"));
-			break;
-		}
-
-		/* Insert directory and it's tag file into Tagger's map */
-		tagger.insertToDirTagfiles(object["directory"].toString(), object["tagfile"].toString());
-	}
-
-	tagger.setFont(font);
-	if(maximized) {
-		resize(1024,600);
-		showMaximized();
-		return;
-	}
-	resize(window_size);
-}
-
-void Window::writeJsonConfig()
-{
-	QFile config_file(qApp->applicationDirPath() + '/' + Window::ConfigFilename);
-	if(!config_file.open(QIODevice::ReadWrite | QIODevice::Text)) {
-		QMessageBox::warning(this,
-			tr("Could not open configuration file"),
-			tr("<p>Could not open <b>%1</b> for writing.</p><p>Window size and location will not be saved.</p>")
-				.arg(config_file.fileName()));
-		return;
-	}
-
-	QJsonDocument config_json;
-	QJsonObject config_object, config_window_size, config_window_pos, config_window;
-
-	config_json = QJsonDocument::fromJson(config_file.readAll());
-	config_object = config_json.object();
-	config_window = config_object["window"].toObject();
-
-
-	config_window_size.insert("width", QJsonValue(width()));
-	config_window_size.insert("height", QJsonValue(height()));
-	config_window_pos.insert("x", QJsonValue(pos().x()));
-	config_window_pos.insert("y", QJsonValue(pos().y()));
-
-	config_window.insert("size", QJsonValue(config_window_size));
-	config_window.insert("position", QJsonValue(config_window_pos));
-	config_window.insert("maximized", QJsonValue(isMaximized()));
-	//config_window.insert("font", QJsonValue(tagger.font().family()));
-	config_object.remove("window");
-	config_object.insert("window", QJsonValue(config_window));
-	config_object.remove("last_directory");
-	config_object.insert("last_directory", QJsonValue(last_directory));
-
-	QByteArray config_tmp = QJsonDocument(config_object).toJson();
-	config_file.resize(0);
-	config_file.write(config_tmp);
-}
-
-void Window::openConfigFile()
-{
-	QFileInfo config_file(qApp->applicationDirPath() + '/' + Window::ConfigFilename);
-	if(!config_file.exists()) {
-		QMessageBox::warning(this,
-			tr("Could not open configuration file"),
-			tr("<p>Could not locate <b>%1</b>").arg(config_file.fileName()));
-		return;
-	}
-	QDesktopServices::openUrl(QUrl::fromLocalFile(config_file.filePath()));
+	toggle_statusbar(settings.value("window/show-statusbar", false).toBool());
 }
 
 void Window::openImageLocation()
 {
-	util::open_file_in_gui_shell(tagger.currentFile());
+	util::open_file_in_gui_shell(m_tagger.currentFile());
 }
 
-//------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void Window::createActions()
 {
-	a_open.setShortcut(	Qt::CTRL + Qt::Key_O);
-	a_open_dir.setShortcut(	Qt::CTRL + Qt::Key_D);
-	a_next.setShortcut(	QKeySequence(Qt::Key_Right));
-	a_prev.setShortcut(	QKeySequence(Qt::Key_Left));
-	a_save.setShortcut(	Qt::CTRL + Qt::Key_S);
-	a_save_next.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Right));
-	a_save_prev.setShortcut(QKeySequence(Qt::ALT + Qt::Key_Left));
-	a_reload_tags.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-	a_iqdb_search.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_F));
-	a_open_loc.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_L));
-	a_help.setShortcut(	Qt::Key_F1);
+	a_open_file.setShortcut(    Qt::CTRL + Qt::Key_O);
+	a_open_dir.setShortcut(     Qt::CTRL + Qt::Key_D);
+	a_next_file.setShortcut(    QKeySequence(Qt::Key_Right));
+	a_prev_file.setShortcut(    QKeySequence(Qt::Key_Left));
+	a_save_file.setShortcut(    Qt::CTRL + Qt::Key_S);
+	a_save_next.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Right));
+	a_save_prev.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Left));
+	a_reload_tags.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_R));
+	a_open_post.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_P));
+	a_iqdb_search.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_F));
+	a_open_loc.setShortcut(	    QKeySequence(Qt::CTRL + Qt::Key_L));
+	a_help.setShortcut(         Qt::Key_F1);
 
-	a_next.setEnabled(false);
-	a_prev.setEnabled(false);
-	a_save.setEnabled(false);
+	a_next_file.setEnabled(false);
+	a_prev_file.setEnabled(false);
+	a_save_file.setEnabled(false);
 	a_save_next.setEnabled(false);
 	a_save_prev.setEnabled(false);
 	a_reload_tags.setEnabled(false);
+	a_open_post.setEnabled(false);
 	a_iqdb_search.setEnabled(false);
 	a_open_loc.setEnabled(false);
 
-	connect(&a_open,	SIGNAL(triggered()), this, SLOT(fileOpenDialog()));
-	connect(&a_open_dir,	SIGNAL(triggered()), this, SLOT(directoryOpenDialog()));
-	connect(&a_next,	SIGNAL(triggered()), this, SLOT(next()));
-	connect(&a_prev,	SIGNAL(triggered()), this, SLOT(prev()));
-	connect(&a_save,	SIGNAL(triggered()), this, SLOT(save()));
-	connect(&a_save_next,	SIGNAL(triggered()), this, SLOT(savenext()));
-	connect(&a_save_prev,	SIGNAL(triggered()), this, SLOT(saveprev()));
-	connect(&a_reload_tags,	SIGNAL(triggered()), this, SLOT(reload_tags()));
-	connect(&a_iqdb_search,	SIGNAL(triggered()), this, SLOT(search_iqdb()));
-	connect(&a_exit,	SIGNAL(triggered()), this, SLOT(close()));
-	connect(&a_about,	SIGNAL(triggered()), this, SLOT(about()));
-	connect(&a_about_qt,	SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-	connect(&a_help,	SIGNAL(triggered()), this, SLOT(help()));
-	connect(&a_open_config,	SIGNAL(triggered()), this, SLOT(openConfigFile()));
-	connect(&a_open_loc,	SIGNAL(triggered()), this, SLOT(openImageLocation()));
+	a_ib_replace.setCheckable(true);
+	a_ib_restore.setCheckable(true);
+	a_toggle_statusbar.setCheckable(true);
+
+	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
+	connect(&a_open_dir,    &QAction::triggered, this, &Window::directoryOpenDialog);
+	connect(&a_next_file,   &QAction::triggered, this, &Window::next);
+	connect(&a_prev_file,   &QAction::triggered, this, &Window::prev);
+	connect(&a_save_file,   &QAction::triggered, this, &Window::save);
+	connect(&a_save_next,   &QAction::triggered, this, &Window::savenext);
+	connect(&a_save_prev,   &QAction::triggered, this, &Window::saveprev);
+	connect(&a_reload_tags, &QAction::triggered, this, &Window::reload_tags);
+	connect(&a_open_post,   &QAction::triggered, this, &Window::open_post);
+	connect(&a_iqdb_search, &QAction::triggered, this, &Window::search_iqdb);
+	connect(&a_exit,        &QAction::triggered, this, &QWidget::close);
+	connect(&a_about,       &QAction::triggered, this, &Window::about);
+	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
+	connect(&a_help,        &QAction::triggered, this, &Window::help);
+	connect(&a_open_loc,    &QAction::triggered, this, &Window::openImageLocation);
+
+	connect(&a_ib_replace,  &QAction::triggered, this, &Window::replace_tags);
+	connect(&a_ib_restore,  &QAction::triggered, this, &Window::restore_tags);
+	connect(&a_toggle_statusbar, &QAction::triggered, this, &Window::toggle_statusbar);
+
+	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
+	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
+	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
 }
 
 void Window::createMenus() {
-	m_file.addAction(&a_open);
-	m_file.addAction(&a_open_dir);
-	m_file.addSeparator();
-	m_file.addAction(&a_save);
-	m_file.addSeparator();
-	m_file.addAction(&a_reload_tags);
-	m_file.addAction(&a_iqdb_search);
-	m_file.addSeparator();
-	m_file.addAction(&a_exit);
+	menu_file.addAction(&a_open_file);
+	menu_file.addAction(&a_open_dir);
+	menu_file.addSeparator();
+	menu_file.addAction(&a_save_file);
+	menu_file.addSeparator();
+	menu_file.addAction(&a_reload_tags);
+	menu_file.addSeparator();
+	menu_file.addAction(&a_open_post);
+	menu_file.addAction(&a_iqdb_search);
+	menu_file.addSeparator();
+	menu_file.addAction(&a_exit);
 
-	m_navigation.addAction(&a_next);
-	m_navigation.addAction(&a_prev);
-	m_navigation.addSeparator();
-	m_navigation.addAction(&a_save_next);
-	m_navigation.addAction(&a_save_prev);
-	m_navigation.addSeparator();
-	m_navigation.addAction(&a_open_loc);
-	m_navigation.addAction(&a_open_config);
+	menu_navigation.addAction(&a_next_file);
+	menu_navigation.addAction(&a_prev_file);
+	menu_navigation.addSeparator();
+	menu_navigation.addAction(&a_save_next);
+	menu_navigation.addAction(&a_save_prev);
+	menu_navigation.addSeparator();
+	menu_navigation.addAction(&a_open_loc);
 
-	m_help.addAction(&a_help);
-	m_help.addSeparator();
-	m_help.addAction(&a_about);
-	m_help.addAction(&a_about_qt);
+	menu_options.addAction(&a_ib_replace);
+	menu_options.addAction(&a_ib_restore);
+	menu_options.addSeparator();
+	menu_options.addAction(&a_toggle_statusbar);
 
-	menuBar()->addMenu(&m_file);
-	menuBar()->addMenu(&m_navigation);
-	menuBar()->addMenu(&m_help);
+	menu_help.addAction(&a_help);
+	menu_help.addSeparator();
+	menu_help.addAction(&a_about);
+	menu_help.addAction(&a_about_qt);
+
+	menuBar()->addMenu(&menu_file);
+	menuBar()->addMenu(&menu_navigation);
+	menuBar()->addMenu(&menu_options);
+	menuBar()->addMenu(&menu_help);
+
+	setStatusBar(&m_statusbar);
+	m_statusbar.setStyleSheet("border-top: 1px outset grey; background: rgba(0,0,0,0.1);");
+	m_statusbar_info_label.setStyleSheet("background: transparent; border: none;");
+	m_statusbar.setSizeGripEnabled(false);
+	m_statusbar.addPermanentWidget(&m_statusbar_info_label);
 }
 
 void Window::enableMenusOnFileOpen() {
-	a_next.setEnabled(true);
-	a_prev.setEnabled(true);
-	a_save.setEnabled(true);
+	a_next_file.setEnabled(true);
+	a_prev_file.setEnabled(true);
+	a_save_file.setEnabled(true);
 	a_save_next.setEnabled(true);
 	a_save_prev.setEnabled(true);
 	a_reload_tags.setEnabled(true);
+	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setEnabled(true);
 	a_open_loc.setEnabled(true);
 }
 
-//------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void Window::about()
 {
-	QMessageBox::about(this,
-		tr("About WiseTagger"),
-		tr("\
-<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2014 catgirl \
-&lt;<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>\
-<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. You can redistribute it \
-and/or modify it under the terms of the Do What The Fuck You Want To Public License, Version 2, as published by Sam Hocevar. \
-See <a href=\"http://www.wtfpl.net/\">http://www.wtfpl.net/</a> for more details.</p>").arg(qApp->applicationVersion()).arg(__DATE__).arg(__TIME__));
+	QMessageBox::about(nullptr,
+	tr("About WiseTagger"),
+	tr(	"<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2015 catgirl &lt;"
+		"<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>"
+		"<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. "
+		"You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, "
+		"Version 2, as published by Sam Hocevar. See <a href=\"http://www.wtfpl.net\">http://www.wtfpl.net/</a> "
+		"for more details.</p>"
+	).arg(qApp->applicationVersion()).arg(__DATE__).arg(__TIME__));
 }
 
 void Window::help()
 {
-	QMessageBox::about(this,
-		tr("Help"),
-		tr("\
-<h2>User Interface</h2>\
-<p><b>Tab</b> &ndash; list autocomplete suggestions</p>\
-<p><b>Enter</b> &ndash; apply changes and clear focus</p>\
-<p><b>Left</b> and <b>Right</b> arrows &ndash; show previous/next picture</p>\
-<p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"));
+	QMessageBox::about(nullptr,
+	tr("Help"),
+	tr(	"<h2>User Interface</h2>"
+		"<p><b>Tab</b> &ndash; list autocomplete suggestions</p>"
+		"<p><b>Enter</b> &ndash; apply changes and clear focus</p>"
+		"<p><b>Left</b> and <b>Right</b> arrows &ndash; show previous/next picture</p>"
+		"<p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
+	));
 }
 
 //------------------------------------------------------------------------
 bool Window::check_ext(const QString& ext) {
 	static const char* const exts[] = {"jpg", "jpeg", "png", "gif", "bmp"};
-	static const char len = sizeof(exts) / sizeof(*exts);
+	static const char len = util::size::array_size(exts);
 	for(int i = 0; i < len; ++i)
-		if(ext == exts[i])
+		if(QString::compare(ext, exts[i], Qt::CaseInsensitive) == 0)
 			return true;
 	return false;
 }
