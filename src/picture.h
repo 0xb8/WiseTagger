@@ -8,45 +8,47 @@
 #ifndef PICTURE_H
 #define PICTURE_H
 
-#include <QDragEnterEvent>
-#include <QDragMoveEvent>
-#include <QDropEvent>
 #include <QTimer>
 #include <QPixmap>
 #include <QString>
 #include <QLabel>
 
+class QResizeEvent;
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
+
 class Picture : public QLabel
 {
 	Q_OBJECT
 public:
-	explicit Picture(QWidget *_parent = nullptr);
+	explicit Picture(QWidget *parent = nullptr);
 	bool loadPicture(const QString& filename);
 
-	virtual QSize sizeHint() const;
+	QSize sizeHint() const override;
 	int width() const;
 	int height() const;
 
 protected:
-	void dragEnterEvent(QDragEnterEvent *e);
-	void dragMoveEvent(QDragMoveEvent *e);
-	void dropEvent(QDropEvent *e);
-	void resizeEvent(QResizeEvent *event);
+	void dragEnterEvent(QDragEnterEvent*)	override;
+	void dragMoveEvent(QDragMoveEvent*)	override;
+	void dropEvent(QDropEvent*)	override;
+	void resizeEvent(QResizeEvent*)	override;
 
 private slots:
 	void resizeTimeout();
 
 private:
-	QPixmap pixmap;
-	QSize pixmap_size;
-	QTimer resize_timer;
-
 	void resizeAndSetPixmap();
 	void setBackgroundStyle(bool has_alpha = false);
 
-	static const int resize_timeout = 100; //ms
-	static constexpr char const* TransparentBGFile = "://transparency.png";
-	static constexpr char const* BackgroundColor = "white";
+	QPixmap m_pixmap;
+	QSize   m_pixmap_size;
+	QTimer  m_resize_timer;
+
+	static const int m_resize_timeout = 100; //ms
+	static constexpr const char* m_transparent_background_file = "://transparency.png";
+	static constexpr const char* m_background_color = "white";
 };
 
 #endif // PICTURE_H
