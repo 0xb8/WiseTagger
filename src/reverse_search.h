@@ -15,6 +15,7 @@
 #include <QString>
 #include <QVector>
 #include <QFile>
+#include <QUrl>
 
 class QNetworkReply;
 class QObject;
@@ -31,30 +32,36 @@ class ReverseSearch : public QObject
 {
 	Q_OBJECT
 public:
-	ReverseSearch();
-	~ReverseSearch();
-	void search(const QString &file);
-	void setProxy(const QString& protocol,
-		const QString& host,
-		std::uint16_t port,
-		const QString& user = QString(),
-		const QString& pass = QString());
+	explicit ReverseSearch(QWidget *_parent = nullptr);
+	~ReverseSearch() override;
 
-	static constexpr char const* iqdb_post_url = "http://iqdb.org/";
-	static const int max_file_size = 8388608; // 8 Mb
+	void	search(const QString &file);
+	void	setProxy(const QUrl& proxy_url);
+	void	setProxyEnabled(bool);
+	bool	proxyEnabled() const;
+	QString	proxyURL() const;
+
+	static constexpr const char * const iqdb_url = "http://iqdb.org/";
+	static constexpr size_t iqdb_max_file_size = 8 * 1024 * 1024;
+
+signals:
+	void finished();
+	void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
 private slots:
 	void open_reply(QNetworkReply* reply);
-	void showProgress(qint64 bytesSent, qint64 bytesTotal);
 
 private:
 	void upload_file();
+	void load_proxy_settings();
 
-	QString current_file;
-	QFile imagefile;
-	QVector<QString> response_files;
-	QNetworkAccessManager network_access_manager;
-	QProgressDialog upload_progress;
+	QString m_current_file_name;
+	QFile m_image_file;
+	QVector<QString> m_response_files;
+	QNetworkAccessManager m_nam;
+	QNetworkProxy m_proxy;
+	QUrl m_proxy_url;
+	bool m_proxy_enabled;
 };
 
 #endif // REVERSESEARCH_H
