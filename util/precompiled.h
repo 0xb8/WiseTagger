@@ -10,8 +10,8 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QCommandLineParser>
 #include <QCollator>
+#include <QCommandLineParser>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDirIterator>
@@ -37,16 +37,25 @@
 #include <QResizeEvent>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QStatusBar>
 #include <QString>
 #include <QTextCodec>
 #include <QTextStream>
 #include <QUrl>
 #include <QVector>
 
+
+#ifdef Q_OS_WIN32
+#include <QtWinExtras>
+#endif
+
 #include <algorithm>
+#include <array>
+#include <cctype>
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
+
 
 #endif

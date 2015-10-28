@@ -16,8 +16,8 @@
 
 #define __PFUNC_SEP__ '\t'
 
-#define pdbg qDebug() << ___PREFUNCTION__ << __PFUNC_SEP__
-#define pwarn qWarning() << ___PREFUNCTION__ << __PFUNC_SEP__
+#define pdbg qDebug()
+#define pwarn qWarning()
 
 
 #endif // UTIL_DEBUG_H
