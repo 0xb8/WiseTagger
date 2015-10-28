@@ -10,12 +10,18 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QApplication>
+#include <QDesktopServices>
+#include <QSettings>
+#include <QDebug>
+#include <algorithm>
+#include "util/debug.h"
+#include "window.h"
 
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)
 {
-	installEventFilter(parent);
-	m_picture.installEventFilter(parent);
+	installEventFilter(_parent);
+	m_picture.installEventFilter(_parent);
 
 	mainlayout.setMargin(0);
 	mainlayout.setSpacing(0);
@@ -29,6 +35,8 @@ Tagger::Tagger(QWidget *_parent) :
 	mainlayout.addLayout(&inputlayout);
 	setLayout(&mainlayout);
 	setAcceptDrops(true);
+
+	connect(&m_input, &TagInput::postURLChanged, this, &Tagger::postURLChanged);
 }
 
 Tagger::~Tagger() { }
@@ -38,12 +46,15 @@ QString Tagger::currentFile() const
 	return m_current_file;
 }
 
-
 QString Tagger::currentFileName() const
 {
 	return QFileInfo(m_current_file).fileName();
 }
 
+QString Tagger::currentText() const
+{
+	return m_input.text();
+}
 
 int Tagger::picture_width() const
 {
@@ -56,83 +67,110 @@ int Tagger::picture_height() const
 	return m_picture.height();
 }
 
-
 bool Tagger::isModified() const
 {
 	return m_input.text() != QFileInfo(m_current_file).completeBaseName() && !m_current_file.isEmpty();
 }
-
 
 qint64 Tagger::picture_size() const
 {
 	return QFileInfo(m_current_file).size();
 }
 
+QString Tagger::postURL() const
+{
+	return m_input.getPostURL();
+}
+
+//------------------------------------------------------------------------------
+
 void Tagger::reloadTags()
 {
-	m_input.loadTagFile(m_current_tags_file);
+	m_input.loadTagFiles(m_current_tag_files);
 	m_input.reloadAdditionalTags();
 }
 
-void Tagger::clearDirTagfiles()
+void Tagger::findTagsFiles()
 {
-	tag_files_for_directories.clear();
-}
-
-void Tagger::insertToDirTagfiles(const QString &dir, const QString &tagfile)
-{
-	tag_files_for_directories.insert(std::pair<QString,QString>(dir,tagfile));
-}
-
-void Tagger::setFont(const QFont &f)
-{
-	m_input.setFont(f);
-}
-
-const QFont &Tagger::font() const
-{
-	return m_input.font();
-}
-
-void Tagger::locateTagsFile(const QString &file)
-{
-	QFileInfo fi(file);
-	/* If loading file from other directory */
-	if(m_current_dir != fi.absolutePath()) {
-		/* Determine file's parent directory */
-		m_current_dir = fi.absolutePath();
-		bool found = false;
-		QFileInfo directory;
-
-		for(auto&& entry : tag_files_for_directories) {
-			directory.setFile(entry.first);
-
-			/* Check if file's parent dir is inside mapped dir */
-			if(directory.exists() && m_current_dir.contains(directory.absoluteFilePath())) {
-				m_current_tags_file = entry.second;
-				found = true;
-				break;
-			}
-		}
-		if(!found) {
-			/* Use global tags file */
-			auto it = tag_files_for_directories.find("*");
-			if(it != tag_files_for_directories.end()) {
-				m_current_tags_file = it->second;
-			} else {
-				m_current_tags_file = "tags.txt";
-			}
-		}
-
-		m_input.loadTagFile(m_current_tags_file);
+	if(m_current_file.isEmpty())
 		return;
 
-	} // if(current_dir...
+	QFileInfo fi(m_current_file);
+	if(m_current_dir == fi.absolutePath()) {
+		m_input.reloadAdditionalTags();
+		return;
+	}
 
-	m_input.reloadAdditionalTags();
-	return;
+	QSettings settings;
+
+	const auto tagsfile = settings.value("tags/normal", "tags.txt").toString();
+	const auto override = settings.value("tags/override","tags!.txt").toString();
+
+	m_current_dir = fi.absolutePath();
+
+	QString parent_dir, tagpath, overridepath, errordirs = "<li>";
+
+	int max_height = 10;
+	while(max_height --> 0) {
+		parent_dir = fi.absolutePath();
+		errordirs += parent_dir;
+		errordirs += "</li><li>";
+
+		tagpath = parent_dir + '/' + tagsfile;
+		overridepath = parent_dir + '/' + override;
+
+		if(QFile::exists(overridepath)) {
+			m_current_tag_files.push_back(overridepath);
+			pdbg << "found override" << overridepath;
+			break;
+		}
+
+		if(QFile::exists(tagpath)) {
+			m_current_tag_files.push_back(tagpath);
+			pdbg << "found tag file" << tagpath;
+		}
+
+		if(fi.absoluteDir().isRoot())
+			break;
+
+		fi.setFile(parent_dir);
+	}
+
+	m_current_tag_files.removeDuplicates();
+
+	if(m_current_tag_files.isEmpty()) {
+		QString last_resort = qApp->applicationDirPath() + "/tags.txt";
+		errordirs += qApp->applicationDirPath();
+		errordirs += "</li>";
+		if(QFile::exists(last_resort)) {
+			m_current_tag_files.push_back(last_resort);
+		} else {
+			QMessageBox mbox;
+			mbox.setText(tr("<h3>Could not locate suitable tag file</h3>"));
+			mbox.setInformativeText(tr(
+				"<p>You can still browse and rename images, but tag autocomplete will not work.</p>"
+				"<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened image "
+				"and in directories directly above it."
+
+				"<p>Tag files we looked for:"
+				"<dd><dl>Appending tag file: <b>%1</b></dl>"
+				"<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
+				"<p>Directories where we looked for them, in search order:"
+				"<ol>%3</ol></p>"
+				"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/wiki/Tag%20Files\">"
+				"Appending and overriding tag files documentation"
+				"</a></p>")
+					.arg(tagsfile)
+					.arg(override)
+					.arg(errordirs));
+			mbox.setIcon(QMessageBox::Warning);
+			mbox.exec();
+		}
+	}
+
+	std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
+	reloadTags();
 }
-
 
 bool Tagger::loadFile(const QString &filename)
 {
@@ -140,26 +178,34 @@ bool Tagger::loadFile(const QString &filename)
 	if(!f.exists()) {
 		QMessageBox::critical(this,
 			tr("Error opening image"),
-			tr("File <b>%1</b> does not exist.").arg(f.fileName()));
+			tr("<p>File <b>%1</b> does not exist anymore.</p>"
+			   "<p>It may have been renamed, moved somewhere, or removed.</p>"
+			   "<p>Next file will be opened instead.</p>").arg(f.fileName()));
+		m_current_file.clear();
+		m_current_dir.clear();
+		m_current_tag_files.clear();
 		return false;
 	}
 
 	if(!m_picture.loadPicture(f.absoluteFilePath())) {
 		QMessageBox::critical(this,
 			tr("Error opening image"),
-			tr("File format is not supported or file is corrupted."));
-			return false;
+			tr("Error opening <b>%1</b><br/>File format is not supported or file corrupted.").arg(f.fileName()));
+		m_current_file.clear();
+		m_current_dir.clear();
+		m_current_tag_files.clear();
+		return false;
 	}
 
-	locateTagsFile(filename);
 	m_input.setText(f.completeBaseName());
 	m_current_file = f.absoluteFilePath();
+	findTagsFiles();
 	m_picture.setFocus();
 	return true;
 }
 
 
-int Tagger::rename(bool autosave, bool show_cancel_button)
+Tagger::RenameStatus Tagger::rename(bool force_save, bool show_cancel_button)
 {
 	QFileInfo file(m_current_file);
 	QString new_file_path;
@@ -170,7 +216,7 @@ int Tagger::rename(bool autosave, bool show_cancel_button)
 	new_file_path = QFileInfo(QDir(file.canonicalPath()), new_file_path).filePath();
 
 	if(new_file_path == m_current_file || m_input.text().isEmpty())
-		return 0; /* No need to save */
+		return RenameStatus::Failed;
 
 	/* Check for possible filename conflict */
 	if(QFileInfo::exists(new_file_path)) {
@@ -178,13 +224,13 @@ int Tagger::rename(bool autosave, bool show_cancel_button)
 			tr("Cannot rename file"),
 			tr("<p>File with this name already exists in <b>%1</b>.</p><p>Please change some of your tags.</p>")
 				.arg(file.canonicalPath()));
-		return 0;
+		return RenameStatus::Failed;
 	}
 
-	if(autosave) {
+	if(force_save) {
 		QFile(m_current_file).rename(new_file_path);
 		m_current_file = new_file_path;
-		return 1; // saved
+		return RenameStatus::Renamed;
 	}
 
 	/* Show save dialog */
@@ -198,17 +244,17 @@ int Tagger::rename(bool autosave, bool show_cancel_button)
 		renameMessageBox.addButton(QMessageBox::Cancel);
 	}
 
-	int reply = renameMessageBox.exec();
+	auto reply = renameMessageBox.exec();
 
 	if(reply == QMessageBox::Save) {
 		QFile(m_current_file).rename(new_file_path);
 		m_current_file = new_file_path;
-		return 1; // saved
+		return RenameStatus::Renamed;
 	}
 
 	if(reply == QMessageBox::Cancel) {
-		return -1; // cancelled
+		return RenameStatus::Cancelled;
 	}
 
-	return 0;
+	return RenameStatus::Failed;
 }

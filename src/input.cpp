@@ -17,8 +17,6 @@
 #include <QDebug>
 #include "util/debug.h"
 
-
-
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
 	setMinimumHeight(30);
@@ -110,12 +108,6 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 void TagInput::loadTagFiles(const QStringList &files)
 {
 	if(files.isEmpty()) {
-		QMessageBox mbox;
-		mbox.setText(tr("<h3>Could not locate suitable tags file</h3>"));
-		mbox.setInformativeText(
-			tr("<p>Please put tags.txt inside your pics directory or in directory one ore more levels above it.</p>"));
-		mbox.setIcon(QMessageBox::Warning);
-		mbox.exec();
 		return;
 	}
 

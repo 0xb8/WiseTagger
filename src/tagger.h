@@ -18,42 +18,50 @@
 #include "picture.h"
 #include "input.h"
 
-
 class Tagger : public QWidget
 {
 	Q_OBJECT
 
 public:
+	enum class RenameStatus : std::int8_t {
+		Cancelled = -1,
+		Failed = 0,
+		Renamed = 1
+	};
+
 	explicit Tagger(QWidget *_parent = nullptr);
-	virtual ~Tagger();
+	~Tagger() override;
 
 	bool loadFile(const QString& filename);
-	int  rename(bool autosave, bool show_cancel_button = true); // 1 = success, -1 = cancelled, 0 = failed
+	Tagger::RenameStatus rename(bool force_save, bool show_cancel_button = true);
 
 	void reloadTags();
-	void clearDirTagfiles();
-	void insertToDirTagfiles(const QString& dir, const QString& tagfile);
 
-	void setFont(const QFont& f);
-	const QFont &font() const;
 	bool isModified() const;
 	int picture_width() const;
 	int picture_height() const;
 	qint64 picture_size() const;
+
+	QString postURL() const;
 	QString currentFile() const;
+	QString currentText() const;
 	QString currentFileName() const;
+
+
+signals:
+	void postURLChanged(QString post_url);
 
 private:
 
-	void locateTagsFile(const QString& file);
+	void findTagsFiles();
+	QFrame hr_line;
 	Picture m_picture;
 	TagInput m_input;
-	QFrame hr_line;
 	QVBoxLayout mainlayout;
 	QVBoxLayout inputlayout;
 
-	QString m_current_file, m_current_dir, m_current_tags_file;
-	std::unordered_map<QString,QString> tag_files_for_directories;
+	QString m_current_file, m_current_dir;
+	QStringList m_current_tag_files;
 
 };
 
