@@ -10,14 +10,14 @@
 
 class MultiSelectCompleter : public QCompleter
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-	MultiSelectCompleter( const QStringList& items, QObject* _parent );
-	~MultiSelectCompleter();
+	MultiSelectCompleter(const QStringList& items, QObject* _parent);
+	~MultiSelectCompleter() override;
 
 public:
-	QString pathFromIndex( const QModelIndex& index ) const;
-	QStringList splitPath( const QString& path ) const;
+	QString pathFromIndex(const QModelIndex& index) const override;
+	QStringList splitPath(const QString& path) const override;
 };
 
 #endif // MULTICOMPLETER_H

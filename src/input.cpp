@@ -6,95 +6,116 @@
  */
 
 #include "input.h"
+#include "util/imageboard.h"
 #include <algorithm>
 #include <QMessageBox>
+#include <QTextStream>
+#include <QTextCodec>
+#include <QKeyEvent>
 #include <QFileInfo>
-#include <QApplication>
+#include <QSettings>
+#include <QDebug>
+#include "util/debug.h"
+
+
 
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
 	setMinimumHeight(30);
+	QSettings settings;
+	QFont f(settings.value("window/font", "Consolas").toString());
+	f.setPixelSize(14);
+	setFont(f);
 
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 }
 
 void TagInput::fixTags(bool sort)
 {
-	QStringList list = text().split(" ", QString::SkipEmptyParts);
+	m_text_list = text().split(" ", QString::SkipEmptyParts);
 
-	for(int i = 0; i < list.size(); ++i) {
-		list[i].toLower();
+	QSettings settings;
+	if(settings.value("imageboard/replace-tags", false).toBool())
+		ib::replace_imageboard_tags(m_text_list);
 
-		remove_if_short(list[i]);
-		remove_if_unwanted(list[i]);
-		replace_booru_and_id(list[i]);
-		list += replacement_tags(list[i]);
-		list += related_tags(list[i]);
+	if(settings.value("imageboard/restore-tags", true).toBool())
+		ib::restore_imageboard_tags(m_text_list);
+
+	for(int i = 0; i < m_text_list.size(); ++i) {
+		remove_if_unwanted(m_text_list[i]);
+		m_text_list += replacement_tags(m_text_list[i]);
+		m_text_list += related_tags(m_text_list[i]);
 	}
 
-	list.removeDuplicates();
+	m_text_list.removeDuplicates();
+	m_text_list.erase(
+		std::remove_if(
+			m_text_list.begin(),
+			m_text_list.end(),
+			[](const auto& s){ return s.isEmpty(); }),
+		m_text_list.end());
 
-	if(sort)
-		list.sort();
+	tag_iterator tag, id;
+	if(!ib::find_imageboard_tags(m_text_list.begin(), m_text_list.end(),tag,id)) {
+		id = m_text_list.begin();
+	}
+
+	if(sort) {
+		std::sort(id, m_text_list.end());
+	}
+
+	emit postURLChanged(ib::get_imageboard_post_url(m_text_list));
 
 	QString newname;
-	for(const auto& tag : list)
-		if( !tag.isEmpty() ) {
-			newname.append(tag);
-			newname.append(' ');
-		}
+	for(auto&& tag : m_text_list) {
+		newname.append(tag);
+		newname.append(' ');
+	}
 
 	newname.remove(newname.length()-1, 1); // remove trailing space
 	setText(newname);
 }
 
-void TagInput::keyPressEvent(QKeyEvent *event)
+void TagInput::keyPressEvent(QKeyEvent *m_event)
 {
-	if(event->key() == Qt::Key_Tab) {
+	if(m_event->key() == Qt::Key_Tab) {
 		if((!next_completer())&&(!next_completer()))
 			return;
 		setText(m_completer->currentCompletion());
 		return;
 	}
 
-	if(event->key() == Qt::Key_Escape) {
+	if(m_event->key() == Qt::Key_Escape) {
 		clearFocus();
 		return;
 	}
 
-	if(event->key() == Qt::Key_Enter || event->key()== Qt::Key_Return)
+	if(m_event->key() == Qt::Key_Enter || m_event->key()== Qt::Key_Return)
 	{
 		fixTags();
 		clearFocus();
 		return;
 	}
 
-	if(event->key() == Qt::Key_Space) {
+	if(m_event->key() == Qt::Key_Space && !(m_event->modifiers() & Qt::ShiftModifier)) {
 		/* Don't sort tags, haven't finished editing yet */
 		fixTags(false);
 	}
 
-	QLineEdit::keyPressEvent(event);
+	QLineEdit::keyPressEvent(m_event);
 	m_completer->setCompletionPrefix(text());
 	m_index = 0;
 }
 
-void TagInput::loadTagFile(const QString& file)
+void TagInput::loadTagFiles(const QStringList &files)
 {
-	QFileInfo fi(file);
-	QFile f;
-	if(!fi.exists()) {
-		if(fi.isRelative()) {
-			f.setFileName(qApp->applicationDirPath() + "/" + file);
-		}
-	} else {
-		f.setFileName(file);
-	}
-
-	if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-		QMessageBox::warning(this,
-			tr("Error opening tag file"),
-			tr("<p>Could not open <b>%1</b>.</p><p>Tag autocomplete will be disabled.</p>").arg(file));
+	if(files.isEmpty()) {
+		QMessageBox mbox;
+		mbox.setText(tr("<h3>Could not locate suitable tags file</h3>"));
+		mbox.setInformativeText(
+			tr("<p>Please put tags.txt inside your pics directory or in directory one ore more levels above it.</p>"));
+		mbox.setIcon(QMessageBox::Warning);
+		mbox.exec();
 		return;
 	}
 
@@ -102,10 +123,22 @@ void TagInput::loadTagFile(const QString& file)
 	m_replaced_tags.clear();
 	m_removed_tags.clear();
 
-	QTextStream in(&f);
-	in.setCodec("UTF-8");
+	QStringList tags;
+	for(const auto& file: files) {
+		QFile f(file);
+		if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
+			QMessageBox::warning(this,
+				tr("Error opening tag file"),
+				tr("Could not open <b>%1</b>").arg(file));
+			continue;
+		}
 
-	m_completer = std::make_unique<MultiSelectCompleter>(parse_tags_file(in), nullptr);
+		QTextStream in(&f);
+		in.setCodec("UTF-8");
+		tags += parse_tags_file(&in);
+	}
+
+	m_completer = std::make_unique<MultiSelectCompleter>(tags, nullptr);
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
 }
@@ -133,9 +166,21 @@ void TagInput::reloadAdditionalTags()
 	}
 }
 
+void TagInput::setText(const QString &t)
+{
+	// split by space and "-"
+	m_text_list = t.split(" ", QString::SkipEmptyParts);
+	QLineEdit::setText(t);
+}
+
+QString TagInput::getPostURL() const
+{
+	return ib::get_imageboard_post_url(m_text_list);
+}
+
 //------------------------------------------------------------------------------
 
-QStringList TagInput::parse_tags_file(QTextStream &input)
+QStringList TagInput::parse_tags_file(QTextStream *input)
 {
 	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, mapped_tags_list;
@@ -156,8 +201,8 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 		return c.isLetterOrNumber() || c == '_' || c == ';';
 	};
 
-	while(!input.atEnd()) {
-		current_line = input.readLine();
+	while(!input->atEnd()) {
+		current_line = input->readLine();
 
 		main_tag.clear();
 		removed_tag.clear();
@@ -276,27 +321,16 @@ QStringList TagInput::parse_tags_file(QTextStream &input)
 	return main_tags_list;
 }
 
-void TagInput::remove_if_short(QString& tag)
-{
-	if(tag.length() == 1) {
-		/* Allow single digits */
-		if(!tag[0].isDigit())
-			tag.clear();
-	}
-}
-
-using qs_ummap = std::unordered_multimap<QString,QString>;
-
 QStringList TagInput::related_tags(const QString &tag)
 {
 	QStringList ret;
 	auto mapped_range = m_related_tags.equal_range(tag);
-	auto key_eq_val = std::find_if(mapped_range.first, mapped_range.second, [](qs_ummap::value_type p) { return p.first == p.second; });
+	auto key_eq_val = std::find_if(mapped_range.first, mapped_range.second, [](const auto& p) { return p.first == p.second; });
 	/* Check if tag hasn't been added already */
 	if((mapped_range.first != m_related_tags.end()) && (key_eq_val == mapped_range.second)) {
 		/* Add all related tags for this tag */
 		std::for_each( mapped_range.first, mapped_range.second,
-			[&](qs_ummap::value_type p) {
+			[&](const auto& p) {
 				ret.push_back(p.second);
 			});
 		/* Mark this tag as processed by inserting additional element into hashmap,
@@ -310,12 +344,12 @@ QStringList TagInput::replacement_tags(QString &tag)
 {
 	QStringList ret;
 	auto replaced_range = m_replaced_tags.equal_range(tag);
-	auto key_eq_val = std::find_if(replaced_range.first, replaced_range.second, [](qs_ummap::value_type p) { return p.first == p.second; });
+	auto key_eq_val = std::find_if(replaced_range.first, replaced_range.second, [](const auto& p) { return p.first == p.second; });
 	/* Check if tag hasn't been added already */
 	if((replaced_range.first != m_replaced_tags.end()) && (key_eq_val == replaced_range.second)) {
 		/* Add all replacement tags for this tag and remove it */
 		std::for_each( replaced_range.first, replaced_range.second,
-			[&](qs_ummap::value_type p) {
+			[&](const auto& p) {
 				ret.push_back(p.second);
 			});
 			/* Mark this tag as processed by inserting additional element into hashmap,
@@ -335,33 +369,6 @@ void TagInput::remove_if_unwanted(QString &tag)
 			tag.clear();
 			/* Mark this tag as processed */
 			removed_pos->second = true;
-		}
-	}
-}
-
-void TagInput::replace_booru_and_id(QString &tag)
-{
-	const char* boorus[]  = {"yande.re", "Konachan.com"};
-	const char* replacement[] = { "yandere_", "konachan_"};
-	constexpr int len = sizeof(boorus) / sizeof(*boorus);
-
-	static bool found_booru[len] = {0};
-	static int id;
-
-	for(int i = 0; i < len; ++i) {
-		if(tag == boorus[i]) {
-			found_booru[i] = true;
-			tag.clear();
-			break;
-		}
-	}
-
-	if((id = tag.toInt()) != 0) {
-		for(int i = 0; i < len; ++i) {
-			if(found_booru[i]) {
-				tag = QString(replacement[i]) + QString::number(id);
-			}
-			found_booru[i] = false;
 		}
 	}
 }
