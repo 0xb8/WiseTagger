@@ -17,6 +17,20 @@ Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setBackgroundStyle();
 	connect(&m_resize_timer, &QTimer::timeout, this, &Picture::resizeTimeout);
+
+	const QString welcome_text = tr("<html><body style=\"color:rgba(0,0,0,0.4); font-size:13px\">"
+		"<div align='center'>"
+		"<div style=\"font-size:20px\">Open image</div>"
+		"<table><tr><td>"
+		"<hr/>"
+		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open File</div>"
+		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open Directory</div>"
+		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;Drag and drop files or directories here</div>"
+		"</td></tr></table>"
+		"</div>"
+		"</body></html>");
+
+	setText(welcome_text);
 }
 
 // Implement empty event handlers to allow filtering by MainWindow
