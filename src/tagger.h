@@ -35,8 +35,6 @@ public:
 	bool loadFile(const QString& filename);
 	Tagger::RenameStatus rename(bool force_save, bool show_cancel_button = true);
 
-	void reloadTags();
-
 	bool isModified() const;
 	int picture_width() const;
 	int picture_height() const;
@@ -46,7 +44,10 @@ public:
 	QString currentFile() const;
 	QString currentText() const;
 	QString currentFileName() const;
+	QString currentFileType() const;
 
+public slots:
+	void reloadTags();
 
 signals:
 	void postURLChanged(QString post_url);

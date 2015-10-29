@@ -51,6 +51,12 @@ QString Tagger::currentFileName() const
 	return QFileInfo(m_current_file).fileName();
 }
 
+QString Tagger::currentFileType() const
+{
+	QFileInfo fi(m_current_file);
+	return fi.suffix().toUpper();
+}
+
 QString Tagger::currentText() const
 {
 	return m_input.text();

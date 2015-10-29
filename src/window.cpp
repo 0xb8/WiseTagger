@@ -38,24 +38,25 @@ Window::Window(QWidget *_parent) :
 	, m_reverse_search(this)
 	, a_open_file(	tr("Open File..."), nullptr)
 	, a_open_dir(	tr("Open Directory..."), nullptr)
+	, a_delete_file(tr("Delete current file"), nullptr)
+	, a_open_post(	tr("Open imageboard post"), nullptr)
+	, a_iqdb_search(tr("IQDB.org search"), nullptr)
+	, a_exit(	tr("Exit"), nullptr)
 	, a_next_file(	tr("Next file"), nullptr)
 	, a_prev_file(	tr("Previous file"), nullptr)
 	, a_save_file(	tr("Save"), nullptr)
 	, a_save_next(	tr("Save and open next file"), nullptr)
 	, a_save_prev(	tr("Save and open previous file"), nullptr)
-	, a_reload_tags(tr("Reload tag file"), nullptr)
-	, a_open_post(	tr("Open imageboard post"), nullptr)
-	, a_iqdb_search(tr("IQDB.org search"), nullptr)
-	, a_exit(	tr("Exit"), nullptr)
-	, a_about(	tr("About"), nullptr)
-	, a_about_qt(	tr("About Qt"), nullptr)
-	, a_help(	tr("Help"), nullptr)
 	, a_open_loc(	tr("Open file location"), nullptr)
+	, a_reload_tags(tr("Reload tag file"), nullptr)
 	, a_ib_replace(	tr("Replace imageboard tags"), nullptr)
 	, a_ib_restore(	tr("Restore imageboard tags"), nullptr)
 	, a_toggle_statusbar(tr("Toggle status bar"), nullptr)
+	, a_about(	tr("About"), nullptr)
+	, a_about_qt(	tr("About Qt"), nullptr)
+	, a_help(	tr("Help"), nullptr)
 	, menu_file(	tr("File"))
-	, menu_navigation(	tr("Navigation"))
+	, menu_navigation(tr("Navigation"))
 	, menu_options(	tr("Options"))
 	, menu_help(	tr("Help"))
 	, m_statusbar(nullptr)
@@ -84,15 +85,14 @@ void Window::openSingleFile(const QString &filename)
 	} else {
 		// FIXME: may crash when no files left in folder
 		pdbg << "erasing re{named,moved} files from queue";
-		auto rem = std::next(m_files.begin(), m_current_file_index);
 
+		auto rem = std::next(m_files.begin(), m_current_file_index);
 		if(rem >= m_files.end())
 			return;
-
 		m_files.erase(std::remove(rem, m_files.end(), filename));
 	}
 }
-/* open first file in directory and enqueue the rest */
+/* open first file in directory */
 void Window::openSingleDirectory(const QString &directory)
 {
 	QDirIterator it(directory);
@@ -107,9 +107,10 @@ void Window::openSingleDirectory(const QString &directory)
 	}
 }
 
-/* enqueue directory contents and open selected file */
+/* open file and enqueue rest of directory */
 void Window::openFileFromDirectory(const QString &filename)
 {
+	m_files.clear();
 	loadDirContents(QFileInfo(filename).absolutePath());
 
 	const auto pos = std::find(m_files.cbegin(), m_files.cend(), filename);
@@ -123,7 +124,6 @@ void Window::openFileFromDirectory(const QString &filename)
 void Window::loadDirContents(const QString &directory)
 {
 	m_last_directory = directory;
-	m_files.clear();
 	QDirIterator it(directory);
 
 	QFileInfo file;
@@ -213,65 +213,34 @@ void Window::prevFile(bool autosave) {
 		openSingleFile(m_files[m_current_file_index]);
 }
 
-void Window::save()
+void Window::deleteCurrentFile()
 {
-	/* autosave = f, show_cancel_button = f */
-	saveFile(false, false);
-}
+	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
+		tr("<p>Are you sure you want to delete <b>%1</b> permanently?</p>"
+		   "<dd><dl>File type: %2</dl>"
+		   "<dl>File size: %3</dl>"
+		   "<dl>Dimensions: %4 x %5</dl>"
+		   "<dl>Modified: %6</dl></dd>")
+			.arg(m_tagger.currentFileName())
+			.arg(m_tagger.currentFileType())
+			.arg(util::size::printable(m_tagger.picture_size()))
+			.arg(m_tagger.picture_width())
+			.arg(m_tagger.picture_height())
+			.arg(QFileInfo(m_tagger.currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss"))),
+		QMessageBox::Save|QMessageBox::Discard);
+	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
 
-void Window::next()
-{
-	nextFile(false);
-}
+	auto reply = delete_msgbox.exec();
 
-void Window::prev()
-{
-	prevFile(false);
-}
+	if(reply == QMessageBox::Save) {
+		QFile to_delete(m_files[m_current_file_index]);
+		to_delete.remove();
 
-void Window::savenext()
-{
-	nextFile(true);
-}
-
-void Window::saveprev()
-{
-	nextFile(true);
-}
-
-void Window::reload_tags()
-{
-	m_tagger.reloadTags();
-}
-
-void Window::open_post()
-{
-	QDesktopServices::openUrl(m_post_url);
-}
-
-void Window::search_iqdb()
-{
-	m_reverse_search.search(m_tagger.currentFile());
-}
-
-void Window::replace_tags(bool checked)
-{
-	QSettings settings;
-	settings.setValue("imageboard/replace-tags", checked);
-}
-
-void Window::restore_tags(bool checked)
-{
-	QSettings settings;
-	settings.setValue("imageboard/restore-tags", checked);
-}
-
-void Window::toggle_statusbar(bool checked)
-{
-	QSettings settings;
-	settings.setValue("window/show-statusbar", checked);
-
-	checked ? m_statusbar.show() : m_statusbar.hide();
+		auto pos = std::next(m_files.begin(), m_current_file_index);
+		m_files.erase(pos);
+		--m_current_file_index;
+		nextFile(false);
+	}
 }
 
 void Window::updateWindowTitle()
@@ -335,7 +304,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		for(auto&& dropfileurl : drag_event->mimeData()->urls()) {
 			dropfile.setFile(dropfileurl.toLocalFile());
-			if( !(dropfile.isDir() || Window::check_ext(dropfile.suffix()) ) ) {
+			if(!(dropfile.isDir() || Window::check_ext(dropfile.suffix()))) {
 				return true;
 			}
 		}
@@ -365,15 +334,15 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		m_files.clear();
 		for(auto&& fileurl : fileurls) {
 			fileinfo.setFile(fileurl.toLocalFile());
-			if(fileinfo.isFile()) {
+
+			if(fileinfo.isFile())
 				m_files.push_back(fileinfo.absoluteFilePath());
-			}
-			if(fileinfo.isDir()) {
+
+			if(fileinfo.isDir())
 				loadDirContents(fileinfo.absoluteFilePath());
-			}
 		}
 
-		openSingleFile(0);
+		openSingleFile(m_files[0]);
 		m_current_file_index = 0;
 		return true;
 	}
@@ -523,12 +492,7 @@ void Window::loadWindowSettings()
 	a_toggle_statusbar.setChecked(
 		settings.value("window/show-statusbar", false).toBool());
 
-	toggle_statusbar(settings.value("window/show-statusbar", false).toBool());
-}
-
-void Window::openImageLocation()
-{
-	util::open_file_in_gui_shell(m_tagger.currentFile());
+	m_statusbar.setVisible(settings.value("window/show-statusbar", false).toBool());
 }
 
 //------------------------------------------------------------------------------
@@ -541,6 +505,7 @@ void Window::createActions()
 	a_save_file.setShortcut(    Qt::CTRL + Qt::Key_S);
 	a_save_next.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Left));
+	a_delete_file.setShortcut(  QKeySequence(Qt::SHIFT + Qt::Key_Delete));
 	a_reload_tags.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_R));
 	a_open_post.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_P));
 	a_iqdb_search.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_F));
@@ -552,10 +517,11 @@ void Window::createActions()
 	a_save_file.setEnabled(false);
 	a_save_next.setEnabled(false);
 	a_save_prev.setEnabled(false);
-	a_reload_tags.setEnabled(false);
+	a_delete_file.setEnabled(false);
 	a_open_post.setEnabled(false);
 	a_iqdb_search.setEnabled(false);
 	a_open_loc.setEnabled(false);
+	a_reload_tags.setEnabled(false);
 
 	a_ib_replace.setCheckable(true);
 	a_ib_restore.setCheckable(true);
@@ -563,36 +529,80 @@ void Window::createActions()
 
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
 	connect(&a_open_dir,    &QAction::triggered, this, &Window::directoryOpenDialog);
-	connect(&a_next_file,   &QAction::triggered, this, &Window::next);
-	connect(&a_prev_file,   &QAction::triggered, this, &Window::prev);
-	connect(&a_save_file,   &QAction::triggered, this, &Window::save);
-	connect(&a_save_next,   &QAction::triggered, this, &Window::savenext);
-	connect(&a_save_prev,   &QAction::triggered, this, &Window::saveprev);
-	connect(&a_reload_tags, &QAction::triggered, this, &Window::reload_tags);
-	connect(&a_open_post,   &QAction::triggered, this, &Window::open_post);
-	connect(&a_iqdb_search, &QAction::triggered, this, &Window::search_iqdb);
+	connect(&a_delete_file, &QAction::triggered, this, &Window::deleteCurrentFile);
 	connect(&a_exit,        &QAction::triggered, this, &QWidget::close);
 	connect(&a_about,       &QAction::triggered, this, &Window::about);
 	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
-	connect(&a_open_loc,    &QAction::triggered, this, &Window::openImageLocation);
-
-	connect(&a_ib_replace,  &QAction::triggered, this, &Window::replace_tags);
-	connect(&a_ib_restore,  &QAction::triggered, this, &Window::restore_tags);
-	connect(&a_toggle_statusbar, &QAction::triggered, this, &Window::toggle_statusbar);
+	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
 	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
+
+	connect(&a_save_file,   &QAction::triggered, [this]()
+	{
+		this->saveFile(false, false); // !autosave, !show_cancel_button
+	});
+
+	connect(&a_next_file,   &QAction::triggered, [this]()
+	{
+		nextFile(false); // !autosave
+	});
+	connect(&a_prev_file,   &QAction::triggered, [this]()
+	{
+		prevFile(false); // !autosave
+	});
+	connect(&a_save_next,   &QAction::triggered, [this]()
+	{
+		nextFile(true); // autosave
+	});
+	connect(&a_save_prev,   &QAction::triggered, [this]()
+	{
+		prevFile(true); //autosave
+	});
+	connect(&a_open_post,   &QAction::triggered, [this]()
+	{
+		QDesktopServices::openUrl(this->m_post_url);
+	});
+	connect(&a_iqdb_search, &QAction::triggered, [this]()
+	{
+		this->m_reverse_search.search(m_tagger.currentFile());
+	});
+	connect(&a_open_loc,    &QAction::triggered, [this]()
+	{
+		util::open_file_in_gui_shell(this->m_tagger.currentFile());
+	});
+
+	connect(&a_ib_replace,  &QAction::triggered, [](bool checked)
+	{
+		QSettings settings;
+		settings.setValue("imageboard/replace-tags", checked);
+	});
+	connect(&a_ib_restore,  &QAction::triggered, [](bool checked)
+	{
+		QSettings settings;
+		settings.setValue("imageboard/restore-tags", checked);
+	});
+	connect(&a_toggle_statusbar, &QAction::triggered, [this](bool checked)
+	{
+		QSettings settings;
+		settings.setValue("window/show-statusbar", checked);
+		this->m_statusbar.setVisible(checked);
+	});
+
+
 }
 
-void Window::createMenus() {
+void Window::createMenus()
+{
 	menu_file.addAction(&a_open_file);
 	menu_file.addAction(&a_open_dir);
 	menu_file.addSeparator();
 	menu_file.addAction(&a_save_file);
 	menu_file.addSeparator();
-	menu_file.addAction(&a_reload_tags);
+	menu_file.addAction(&a_delete_file);
+
 	menu_file.addSeparator();
 	menu_file.addAction(&a_open_post);
 	menu_file.addAction(&a_iqdb_search);
@@ -606,6 +616,7 @@ void Window::createMenus() {
 	menu_navigation.addAction(&a_save_prev);
 	menu_navigation.addSeparator();
 	menu_navigation.addAction(&a_open_loc);
+	menu_navigation.addAction(&a_reload_tags);
 
 	menu_options.addAction(&a_ib_replace);
 	menu_options.addAction(&a_ib_restore);
@@ -629,12 +640,14 @@ void Window::createMenus() {
 	m_statusbar.addPermanentWidget(&m_statusbar_info_label);
 }
 
-void Window::enableMenusOnFileOpen() {
+void Window::enableMenusOnFileOpen()
+{
 	a_next_file.setEnabled(true);
 	a_prev_file.setEnabled(true);
 	a_save_file.setEnabled(true);
 	a_save_next.setEnabled(true);
 	a_save_prev.setEnabled(true);
+	a_delete_file.setEnabled(true);
 	a_reload_tags.setEnabled(true);
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setEnabled(true);
@@ -668,7 +681,8 @@ void Window::help()
 }
 
 //------------------------------------------------------------------------
-bool Window::check_ext(const QString& ext) {
+bool Window::check_ext(const QString& ext)
+{
 	static const char* const exts[] = {"jpg", "jpeg", "png", "gif", "bmp"};
 	static const char len = util::size::array_size(exts);
 	for(int i = 0; i < len; ++i)

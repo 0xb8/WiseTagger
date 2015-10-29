@@ -27,15 +27,15 @@ public:
 	explicit Window(QWidget *_parent = nullptr);
 	~Window() override;
 
-	static bool check_ext(const QString& file);
-	// TODO: move all loading to tagger class
-	void openFileFromDirectory(const QString& filename);	// enqueue directory contents and open selected file
-	void openSingleDirectory(const QString &directory);	// open first file in directory and enqueue the rest
+	void openFileFromDirectory(const QString& filename);	// open file and enqueue rest of directory
+	void openSingleDirectory(const QString &directory);	// open first file in directory
 	void loadDirContents(const QString &directory);		// enqueue files in directory
 
 	Tagger::RenameStatus saveFile(bool autosave, bool show_cancel_button = true);
 	void nextFile(bool autosave);
 	void prevFile(bool autosave);
+
+	static bool check_ext(const QString& file);
 
 public slots:
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
@@ -53,20 +53,9 @@ protected:
 private slots:
 	void fileOpenDialog();
 	void directoryOpenDialog();
-	void openImageLocation();
 	void about();
 	void help();
-	void save();
-	void next();
-	void prev();
-	void savenext();
-	void saveprev();
-	void reload_tags();
-	void open_post();
-	void search_iqdb();
-	void replace_tags(bool checked);
-	void restore_tags(bool checked);
-	void toggle_statusbar(bool checked);
+	void deleteCurrentFile();
 
 private:
 	void createActions();
@@ -77,7 +66,7 @@ private:
 	void loadWindowSettings();
 	void saveWindowSettings();
 
-	void openSingleFile(const QString& filename);		// load file w/o adding it to queue
+	void openSingleFile(const QString& filename); // just load file into tagger
 
 	static constexpr const char* MainWindowTitle = "%1 [%3x%4] (%5)  –  WiseTagger v%2";
 	static constexpr const char* MainWindowTitleProgress = "%6%  –  %1 [%3x%4] (%5)  –  WiseTagger v%2";
@@ -86,30 +75,30 @@ private:
 	ReverseSearch m_reverse_search;
 
 	std::vector<QString> m_files;
-	size_t m_current_file_index;
+	size_t  m_current_file_index;
 
 	QString m_last_directory;
 	QString m_post_url;
 
 	QAction a_open_file;
 	QAction a_open_dir;
+	QAction a_delete_file;
+	QAction a_open_post;
+	QAction a_iqdb_search;
+	QAction a_exit;
 	QAction a_next_file;
 	QAction a_prev_file;
 	QAction a_save_file;
 	QAction a_save_next;
 	QAction a_save_prev;
-	QAction a_reload_tags;
-	QAction a_open_post;
-	QAction a_iqdb_search;
-	QAction a_exit;
-	QAction a_about;
-	QAction a_about_qt;
-	QAction a_help;
 	QAction a_open_loc;
-
+	QAction a_reload_tags;
 	QAction a_ib_replace;
 	QAction a_ib_restore;
 	QAction a_toggle_statusbar;
+	QAction a_about;
+	QAction a_about_qt;
+	QAction a_help;
 
 	QMenu menu_file;
 	QMenu menu_navigation;
