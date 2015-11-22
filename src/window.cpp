@@ -148,7 +148,7 @@ void Window::loadDirContents(const QString &directory)
 //------------------------------------------------------------------------------
 void Window::fileOpenDialog()
 {
-	QString fileName = QFileDialog::getOpenFileName(nullptr,
+	QString fileName = QFileDialog::getOpenFileName(this,
 		tr("Open File"),
 		m_last_directory,
 		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png)"));
@@ -368,7 +368,7 @@ void Window::closeEvent(QCloseEvent *e)
 void Window::showEvent(QShowEvent *e)
 {
 #ifdef Q_OS_WIN32
-	// workaround for taskbar button not working
+	// NOTE: workaround for taskbar button not working
 	m_win_taskbar_button.setWindow(this->windowHandle());
 #endif
 	e->accept();
@@ -457,7 +457,7 @@ void Window::parseCommandLineArguments()
 	}
 
 	if(!m_files.empty()) {
-		openSingleFile(0);
+		openSingleFile(m_files.front());
 		m_current_file_index = 0;
 	}
 }
@@ -505,7 +505,7 @@ void Window::createActions()
 	a_save_file.setShortcut(    Qt::CTRL + Qt::Key_S);
 	a_save_next.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Left));
-	a_delete_file.setShortcut(  QKeySequence(Qt::SHIFT + Qt::Key_Delete));
+	a_delete_file.setShortcut(  QKeySequence(Qt::Key_Delete));
 	a_reload_tags.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_R));
 	a_open_post.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_P));
 	a_iqdb_search.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_F));
@@ -544,7 +544,6 @@ void Window::createActions()
 	{
 		this->saveFile(false, false); // !autosave, !show_cancel_button
 	});
-
 	connect(&a_next_file,   &QAction::triggered, [this]()
 	{
 		nextFile(false); // !autosave
@@ -573,7 +572,6 @@ void Window::createActions()
 	{
 		util::open_file_in_gui_shell(this->m_tagger.currentFile());
 	});
-
 	connect(&a_ib_replace,  &QAction::triggered, [](bool checked)
 	{
 		QSettings settings;
@@ -590,8 +588,6 @@ void Window::createActions()
 		settings.setValue("window/show-statusbar", checked);
 		this->m_statusbar.setVisible(checked);
 	});
-
-
 }
 
 void Window::createMenus()
