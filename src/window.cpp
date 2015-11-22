@@ -477,6 +477,13 @@ void Window::saveWindowSettings()
 
 void Window::loadWindowSettings()
 {
+	// check if running in portable mode
+	if(QFile(qApp->applicationDirPath() + "/portable.dat").exists()) {
+		QSettings::setDefaultFormat(QSettings::IniFormat);
+		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
+			qApp->applicationDirPath() + "/settings");
+	}
+
 	QSettings settings;
 	settings.beginGroup("window");
 		m_last_directory = settings.value("last-directory").toString();

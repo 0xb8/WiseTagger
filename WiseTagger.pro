@@ -10,7 +10,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network widgets
+QT += core gui network widgets
 
 win32 {
     QT += winextras
@@ -23,22 +23,25 @@ QMAKE_TARGET_PRODUCT = WiseTagger
 QMAKE_TARGET_DESCRIPTION = Simple picture tagger
 QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 
-VERSION = "0.4.6"
+VERSION = "0.4.7"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
-DEFINES += APP_VERSION=\\\"$$VERSION\\\" TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\" TARGET_COMPANY=\\\"$$QMAKE_TARGET_COMPANY\\\"
+DEFINES +=                                           \
+    APP_VERSION=\\\"$$VERSION\\\"                    \
+    TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"    \
+    TARGET_COMPANY=\\\"$$QMAKE_TARGET_COMPANY\\\"
+
 QMAKE_CXXFLAGS += -std=c++14
-QMAKE_CXXFLAGS_RELEASE += -flto
 
 PRECOMPILED_HEADER += util/precompiled.h
 
-SOURCES +=\
-    $$PWD/src/*.cpp \
+SOURCES +=                                           \
+    $$PWD/src/*.cpp                                  \
     $$PWD/util/*.cpp
 
-HEADERS  += \
-    $$PWD/src/*.h \
+HEADERS  +=                                          \
+    $$PWD/src/*.h                                    \
     $$PWD/util/*.h
 
-RESOURCES += \
+RESOURCES +=                                         \
     resources.qrc
