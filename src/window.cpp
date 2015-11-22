@@ -292,18 +292,18 @@ void Window::updateImageboardPostURL(QString url)
 bool Window::eventFilter(QObject*, QEvent *e)
 {
 	if(e->type() == QEvent::DragEnter) {
-		QDragEnterEvent *drag_event = static_cast<QDragEnterEvent *> (e);
+		auto drag_event = static_cast<QDragEnterEvent*>(e);
 
 		if(!drag_event->mimeData()->hasUrls())
 			return true;
 
-		if(drag_event->mimeData()->urls().empty())
+		const auto urls = drag_event->mimeData()->urls();
+
+		if(urls.empty())
 			return true;
 
-		QFileInfo dropfile;
-
-		for(auto&& dropfileurl : drag_event->mimeData()->urls()) {
-			dropfile.setFile(dropfileurl.toLocalFile());
+		if(urls.size() == 1) {
+			QFileInfo dropfile(urls.first().toLocalFile());
 			if(!(dropfile.isDir() || Window::check_ext(dropfile.suffix()))) {
 				return true;
 			}
@@ -313,36 +313,38 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		return true;
 	}
 	if(e->type() == QEvent::Drop) {
-		QDropEvent *drop_event = static_cast<QDropEvent *> (e);
+		auto drop_event = static_cast<QDropEvent*>(e);
+		const auto fileurls = drop_event->mimeData()->urls();
+		QFileInfo dropfile;
 
-		QList<QUrl> fileurls = drop_event->mimeData()->urls();
-		QFileInfo fileinfo;
+		Q_ASSERT(!fileurls.empty());
 
-		// empty urls list case is checked by dragEnter
 		if(fileurls.size() == 1) {
-			fileinfo.setFile(fileurls.first().toLocalFile());
+			dropfile.setFile(fileurls.first().toLocalFile());
 
-			if(fileinfo.isFile())
-				openFileFromDirectory(fileinfo.absoluteFilePath());
+			if(dropfile.isFile())
+				openFileFromDirectory(dropfile.absoluteFilePath());
 
-			if(fileinfo.isDir())
-				openSingleDirectory(fileinfo.absoluteFilePath());
+			if(dropfile.isDir())
+				openSingleDirectory(dropfile.absoluteFilePath());
 
 			return true;
 		}
 
 		m_files.clear();
 		for(auto&& fileurl : fileurls) {
-			fileinfo.setFile(fileurl.toLocalFile());
+			dropfile.setFile(fileurl.toLocalFile());
 
-			if(fileinfo.isFile())
-				m_files.push_back(fileinfo.absoluteFilePath());
+			if(dropfile.isFile() && Window::check_ext(dropfile.suffix()))
+				m_files.push_back(dropfile.absoluteFilePath());
 
-			if(fileinfo.isDir())
-				loadDirContents(fileinfo.absoluteFilePath());
+			if(dropfile.isDir())
+				loadDirContents(dropfile.absoluteFilePath());
 		}
 
-		openSingleFile(m_files[0]);
+		pdbg << "loaded" << m_files.size() << "images from" << fileurls.size() << "dropped items";
+
+		openSingleFile(m_files.front());
 		m_current_file_index = 0;
 		return true;
 	}
