@@ -35,13 +35,15 @@ public:
 	explicit ReverseSearch(QWidget *_parent = nullptr);
 	~ReverseSearch() override;
 
+public slots:
 	void	search(const QString &file);
 	void	setProxy(const QUrl& proxy_url);
 	void	setProxyEnabled(bool);
+public:
 	bool	proxyEnabled() const;
 	QString	proxyURL() const;
 
-	static constexpr const char * const iqdb_url = "http://iqdb.org/";
+	static constexpr const char * const iqdb_url = "https://iqdb.org/";
 	static constexpr size_t iqdb_max_file_size = 8 * 1024 * 1024;
 
 signals:

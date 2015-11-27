@@ -128,8 +128,8 @@ void ReverseSearch::upload_file()
 		return;
 	}
 
-	QUrl post_url(iqdb_url);
-	QNetworkRequest post_request(post_url);
+	;
+	QNetworkRequest post_request(QUrl{iqdb_url});
 
 	auto multipart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
 	IqdbHttpParts iqdb_parts;
@@ -171,6 +171,11 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 
 	if(reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0) {
 		QByteArray response = reply->readAll();
+
+		// FIXME: DIRTY HACK - thx iqdb...
+		response.replace("<img src=\'/", "<img src=\'https://iqdb.org/");
+		response.replace("<a href=\"//", "<a href=\"https://");
+
 		QFileInfo curr_file(m_current_file_name);
 		QString response_filename = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 		response_filename.append("/iqdb_");
