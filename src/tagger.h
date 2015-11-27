@@ -28,21 +28,22 @@ public:
 		Failed = 0,
 		Renamed = 1
 	};
+	using Status = Tagger::RenameStatus;
 
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override;
 
-	bool loadFile(const QString& filename);
-	Tagger::RenameStatus rename(bool force_save, bool show_cancel_button = true);
+	bool    loadFile(const QString& filename);
+	Status  rename(bool force_save, bool show_cancel_button = true);
 
-	bool isModified() const;
-	int picture_width() const;
-	int picture_height() const;
-	qint64 picture_size() const;
+	bool    isModified()      const;
+	int     picture_width()   const;
+	int     picture_height()  const;
+	qint64  picture_size()    const;
 
-	QString postURL() const;
-	QString currentFile() const;
-	QString currentText() const;
+	QString postURL()         const;
+	QString currentFile()     const;
+	QString currentText()     const;
 	QString currentFileName() const;
 	QString currentFileType() const;
 

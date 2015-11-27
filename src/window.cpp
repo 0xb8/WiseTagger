@@ -38,23 +38,23 @@ Window::Window(QWidget *_parent) :
 	, m_reverse_search(this)
 	, a_open_file(	tr("Open File..."), nullptr)
 	, a_open_dir(	tr("Open Directory..."), nullptr)
-	, a_delete_file(tr("Delete current file"), nullptr)
-	, a_open_post(	tr("Open imageboard post"), nullptr)
-	, a_iqdb_search(tr("IQDB.org search"), nullptr)
+	, a_delete_file(tr("Delete Current Image"), nullptr)
+	, a_open_post(	tr("Open Imageboard Post..."), nullptr)
+	, a_iqdb_search(tr("Reverse Search Image..."), nullptr)
 	, a_exit(	tr("Exit"), nullptr)
-	, a_next_file(	tr("Next file"), nullptr)
-	, a_prev_file(	tr("Previous file"), nullptr)
+	, a_next_file(	tr("Next Image"), nullptr)
+	, a_prev_file(	tr("Previous Image"), nullptr)
 	, a_save_file(	tr("Save"), nullptr)
-	, a_save_next(	tr("Save and open next file"), nullptr)
-	, a_save_prev(	tr("Save and open previous file"), nullptr)
-	, a_open_loc(	tr("Open file location"), nullptr)
-	, a_reload_tags(tr("Reload tag file"), nullptr)
-	, a_ib_replace(	tr("Replace imageboard tags"), nullptr)
-	, a_ib_restore(	tr("Restore imageboard tags"), nullptr)
-	, a_toggle_statusbar(tr("Toggle status bar"), nullptr)
-	, a_about(	tr("About"), nullptr)
-	, a_about_qt(	tr("About Qt"), nullptr)
-	, a_help(	tr("Help"), nullptr)
+	, a_save_next(	tr("Save and Open Next Image"), nullptr)
+	, a_save_prev(	tr("Save and Open Previous Image"), nullptr)
+	, a_open_loc(	tr("Open Containing Directory"), nullptr)
+	, a_reload_tags(tr("Reload Tag File"), nullptr)
+	, a_ib_replace(	tr("Replace Imageboard Tags"), nullptr)
+	, a_ib_restore(	tr("Restore Imageboard Tags"), nullptr)
+	, a_toggle_statusbar(tr("Toggle Statusbar"), nullptr)
+	, a_about(	tr("About..."), nullptr)
+	, a_about_qt(	tr("About Qt..."), nullptr)
+	, a_help(	tr("Help..."), nullptr)
 	, menu_file(	tr("File"))
 	, menu_navigation(tr("Navigation"))
 	, menu_options(	tr("Options"))
@@ -220,7 +220,8 @@ void Window::deleteCurrentFile()
 		   "<dd><dl>File type: %2</dl>"
 		   "<dl>File size: %3</dl>"
 		   "<dl>Dimensions: %4 x %5</dl>"
-		   "<dl>Modified: %6</dl></dd>")
+		   "<dl>Modified: %6</dl></dd>"
+		   "<p><em>This action cannot be undone!</em></p>")
 			.arg(m_tagger.currentFileName())
 			.arg(m_tagger.currentFileType())
 			.arg(util::size::printable(m_tagger.picture_size()))
@@ -514,8 +515,8 @@ void Window::createActions()
 	a_next_file.setShortcut(    QKeySequence(Qt::Key_Right));
 	a_prev_file.setShortcut(    QKeySequence(Qt::Key_Left));
 	a_save_file.setShortcut(    Qt::CTRL + Qt::Key_S);
-	a_save_next.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Right));
-	a_save_prev.setShortcut(    QKeySequence(Qt::ALT + Qt::Key_Left));
+	a_save_next.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Right));
+	a_save_prev.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Left));
 	a_delete_file.setShortcut(  QKeySequence(Qt::Key_Delete));
 	a_reload_tags.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_R));
 	a_open_post.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_P));
