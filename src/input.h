@@ -29,7 +29,7 @@ public:
 	QString getPostURL() const;
 
 signals:
-	void postURLChanged(QString url);
+	void postURLChanged(const QString&);
 
 protected:
 	void keyPressEvent(QKeyEvent* event) override;

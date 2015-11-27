@@ -247,10 +247,11 @@ void Window::updateWindowTitle()
 {
 	setWindowTitle(tr(Window::MainWindowTitle)
 		.arg(m_tagger.currentFileName())
-		.arg(qApp->applicationVersion())
+		.arg(m_tagger.isModified() ? "*" : "")
 		.arg(m_tagger.picture_width())
 		.arg(m_tagger.picture_height())
-		.arg(util::size::printable(m_tagger.picture_size())));
+		.arg(util::size::printable(m_tagger.picture_size()))
+		.arg(qApp->applicationVersion()));
 
 	updateStatusBarText();
 }
@@ -259,11 +260,12 @@ void Window::updateWindowTitleProgress(int progress)
 {
 	setWindowTitle(tr(Window::MainWindowTitleProgress)
 		.arg(m_tagger.currentFileName())
-		.arg(qApp->applicationVersion())
+		.arg(m_tagger.isModified() ? "*" : "")
 		.arg(m_tagger.picture_width())
 		.arg(m_tagger.picture_height())
 		.arg(util::size::printable(m_tagger.picture_size()))
-		       .arg(progress));
+		.arg(qApp->applicationVersion())
+		.arg(progress));
 }
 
 void Window::updateStatusBarText()
@@ -548,6 +550,7 @@ void Window::createActions()
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
 	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
+	connect(&m_tagger,         &Tagger::tagsEdited,            this, &Window::updateWindowTitle);
 
 	connect(&a_save_file,   &QAction::triggered, [this]()
 	{

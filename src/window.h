@@ -68,8 +68,8 @@ private:
 
 	void openSingleFile(const QString& filename); // just load file into tagger
 
-	static constexpr const char* MainWindowTitle = "%1 [%3x%4] (%5)  –  WiseTagger v%2";
-	static constexpr const char* MainWindowTitleProgress = "%6%  –  %1 [%3x%4] (%5)  –  WiseTagger v%2";
+	static constexpr const char* MainWindowTitle = "%1%2 [%3x%4] (%5)  –  WiseTagger v%6";
+	static constexpr const char* MainWindowTitleProgress = "%7%  –  %1%2 [%3x%4] (%5)  –  WiseTagger v%6";
 
 	Tagger m_tagger;
 	ReverseSearch m_reverse_search;

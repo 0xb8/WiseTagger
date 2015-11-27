@@ -50,10 +50,10 @@ public slots:
 	void reloadTags();
 
 signals:
-	void postURLChanged(QString post_url);
+	void postURLChanged(const QString&);
+	void tagsEdited(const QString&);
 
 private:
-
 	void findTagsFiles();
 	QFrame hr_line;
 	Picture m_picture;

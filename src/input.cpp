@@ -62,7 +62,8 @@ void TagInput::fixTags(bool sort)
 		std::sort(id, m_text_list.end());
 	}
 
-	emit postURLChanged(ib::get_imageboard_post_url(m_text_list));
+	auto url = ib::get_imageboard_post_url(m_text_list);
+	emit postURLChanged(url); // NOTE: (probably) not UB as long as reciever is in the same thread
 
 	QString newname;
 	for(auto&& tag : m_text_list) {

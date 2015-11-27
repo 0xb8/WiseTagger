@@ -37,6 +37,7 @@ Tagger::Tagger(QWidget *_parent) :
 	setAcceptDrops(true);
 
 	connect(&m_input, &TagInput::postURLChanged, this, &Tagger::postURLChanged);
+	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
 }
 
 Tagger::~Tagger() { }
