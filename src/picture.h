@@ -28,6 +28,8 @@ public:
 	QSize sizeHint() const override;
 	int width() const;
 	int height() const;
+public slots:
+	void clear();
 
 protected:
 	void dragEnterEvent(QDragEnterEvent*)	override;

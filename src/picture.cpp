@@ -11,25 +11,24 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 
+static const QString welcome_text = QApplication::tr("<html><body style=\"color:rgba(0,0,0,0.4); font-size:13px\">"
+	"<div align='center'>"
+	"<div style=\"font-size:20px\">Open image</div>"
+	"<table><tr><td>"
+	"<hr/>"
+	"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open File</div>"
+	"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open Directory</div>"
+	"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;Drag and drop files or directories here</div>"
+	"</td></tr></table>"
+	"</div>"
+	"</body></html>");
+
 Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setFocusPolicy(Qt::ClickFocus);
 	setMinimumSize(1,1);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setBackgroundStyle();
 	connect(&m_resize_timer, &QTimer::timeout, this, &Picture::resizeTimeout);
-
-	const QString welcome_text = tr("<html><body style=\"color:rgba(0,0,0,0.4); font-size:13px\">"
-		"<div align='center'>"
-		"<div style=\"font-size:20px\">Open image</div>"
-		"<table><tr><td>"
-		"<hr/>"
-		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open File</div>"
-		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open Directory</div>"
-		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;Drag and drop files or directories here</div>"
-		"</td></tr></table>"
-		"</div>"
-		"</body></html>");
-
 	setText(welcome_text);
 }
 
@@ -79,6 +78,13 @@ int Picture::width() const
 int Picture::height() const
 {
 	return m_pixmap.height();
+}
+
+void Picture::clear()
+{
+	m_pixmap.loadFromData(nullptr);
+	m_pixmap_size = QSize(0,0);
+	setText(welcome_text);
 }
 
 /* Restart timer on resize */
