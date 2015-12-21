@@ -26,7 +26,7 @@ public:
 	void loadTagFiles(const QStringList& files);
 	void reloadAdditionalTags();
 	void setText(const QString &t);
-	QString getPostURL() const;
+	QString postURL() const;
 
 signals:
 	void postURLChanged(const QString&);

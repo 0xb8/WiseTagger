@@ -166,7 +166,7 @@ void TagInput::setText(const QString &t)
 	QLineEdit::setText(t);
 }
 
-QString TagInput::getPostURL() const
+QString TagInput::postURL() const
 {
 	return ib::get_imageboard_post_url(m_text_list);
 }
