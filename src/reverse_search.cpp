@@ -128,7 +128,6 @@ void ReverseSearch::upload_file()
 		return;
 	}
 
-	;
 	QNetworkRequest post_request(QUrl{iqdb_url});
 
 	auto multipart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
