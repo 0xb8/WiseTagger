@@ -12,6 +12,7 @@
 #include <QApplication>
 #include <QCollator>
 #include <QCommandLineParser>
+#include <QCompleter>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDirIterator>
@@ -21,9 +22,11 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFrame>
 #include <QHash>
 #include <QKeyEvent>
 #include <QKeySequence>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMenu>
@@ -39,10 +42,13 @@
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QString>
+#include <QStringList>
 #include <QTextCodec>
 #include <QTextStream>
 #include <QUrl>
+#include <QVBoxLayout>
 #include <QVector>
+#include <QWidget>
 
 
 #ifdef Q_OS_WIN32
@@ -52,10 +58,15 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <deque>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <vector>
+
 
 
 #endif
