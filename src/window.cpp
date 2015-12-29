@@ -25,7 +25,6 @@
 #include <QDropEvent>
 
 #include <QMenuBar>
-#include <QSizeGrip>
 
 #include "window.h"
 #include "util/open_graphical_shell.h"
@@ -36,29 +35,29 @@ Window::Window(QWidget *_parent) :
 	QMainWindow(_parent)
 	, m_tagger(this)
 	, m_reverse_search(this)
-	, a_open_file(	tr("Open File..."), nullptr)
-	, a_open_dir(	tr("Open Directory..."), nullptr)
-	, a_delete_file(tr("Delete Current Image"), nullptr)
-	, a_open_post(	tr("Open Imageboard Post..."), nullptr)
-	, a_iqdb_search(tr("Reverse Search Image..."), nullptr)
-	, a_exit(	tr("Exit"), nullptr)
-	, a_next_file(	tr("Next Image"), nullptr)
-	, a_prev_file(	tr("Previous Image"), nullptr)
-	, a_save_file(	tr("Save"), nullptr)
+	, a_open_file(	tr("&Open File..."), nullptr)
+	, a_open_dir(	tr("Open &Folder..."), nullptr)
+	, a_delete_file(tr("&Delete Current Image"), nullptr)
+	, a_open_post(	tr("Open Imageboard &Post..."), nullptr)
+	, a_iqdb_search(tr("&Reverse Search Image..."), nullptr)
+	, a_exit(	tr("&Exit"), nullptr)
+	, a_next_file(	tr("&Next Image"), nullptr)
+	, a_prev_file(	tr("&Previous Image"), nullptr)
+	, a_save_file(	tr("&Save"), nullptr)
 	, a_save_next(	tr("Save and Open Next Image"), nullptr)
 	, a_save_prev(	tr("Save and Open Previous Image"), nullptr)
-	, a_open_loc(	tr("Open Containing Directory"), nullptr)
-	, a_reload_tags(tr("Reload Tag File"), nullptr)
-	, a_ib_replace(	tr("Replace Imageboard Tags"), nullptr)
-	, a_ib_restore(	tr("Restore Imageboard Tags"), nullptr)
-	, a_toggle_statusbar(tr("Toggle Statusbar"), nullptr)
-	, a_about(	tr("About..."), nullptr)
-	, a_about_qt(	tr("About Qt..."), nullptr)
-	, a_help(	tr("Help..."), nullptr)
-	, menu_file(	tr("File"))
-	, menu_navigation(tr("Navigation"))
-	, menu_options(	tr("Options"))
-	, menu_help(	tr("Help"))
+	, a_open_loc(	tr("Open &Containing Folder"), nullptr)
+	, a_reload_tags(tr("&Reload Tag File"), nullptr)
+	, a_ib_replace(	tr("Re&place Imageboard Tags"), nullptr)
+	, a_ib_restore(	tr("Re&store Imageboard Tags"), nullptr)
+	, a_toggle_statusbar(tr("&Toggle Statusbar"), nullptr)
+	, a_about(	tr("&About..."), nullptr)
+	, a_about_qt(	tr("About &Qt..."), nullptr)
+	, a_help(	tr("&Help..."), nullptr)
+	, menu_file(	tr("&File"))
+	, menu_navigation(tr("&Navigation"))
+	, menu_options(	tr("&Options"))
+	, menu_help(	tr("&Help"))
 	, m_statusbar(nullptr)
 	, m_statusbar_info_label(nullptr)
 {
@@ -69,81 +68,11 @@ Window::Window(QWidget *_parent) :
 	createMenus();
 
 	loadWindowSettings();
+	loadWindowStyles();
 	parseCommandLineArguments();
 }
 
 Window::~Window() { }
-
-//------------------------------------------------------------------------------
-/* just load picture into tagger */
-void Window::openSingleFile(const QString &filename)
-{
-	if(m_tagger.loadFile(filename)) {
-		m_post_url = m_tagger.postURL();
-		enableMenusOnFileOpen();
-		updateWindowTitle();
-	} else {
-		// FIXME: may crash when no files left in folder
-		pdbg << "erasing re{named,moved} files from queue";
-
-		auto rem = std::next(m_files.begin(), m_current_file_index);
-		if(rem >= m_files.end())
-			return;
-		m_files.erase(std::remove(rem, m_files.end(), filename));
-	}
-}
-/* open first file in directory */
-void Window::openSingleDirectory(const QString &directory)
-{
-	QDirIterator it(directory);
-	QFileInfo file;
-	while(it.hasNext()) {
-		it.next();
-		file.setFile(it.filePath());
-		if(check_ext(file.suffix())) {
-			openFileFromDirectory(it.filePath());
-			break;
-		}
-	}
-}
-
-/* open file and enqueue rest of directory */
-void Window::openFileFromDirectory(const QString &filename)
-{
-	m_files.clear();
-	loadDirContents(QFileInfo(filename).absolutePath());
-
-	const auto pos = std::find(m_files.cbegin(), m_files.cend(), filename);
-	Q_ASSERT(pos <= m_files.cend());
-
-	m_current_file_index = std::distance(m_files.cbegin(), pos);
-	openSingleFile(*pos);
-}
-
-/* enqueue files in directory */
-void Window::loadDirContents(const QString &directory)
-{
-	m_last_directory = directory;
-	QDirIterator it(directory);
-
-	QFileInfo file;
-	while(it.hasNext() && !it.next().isNull()) {
-		file.setFile(it.filePath());
-
-		if(Window::check_ext(file.suffix())) {
-			m_files.push_back(it.filePath());
-		}
-	}
-
-	QCollator collator;
-	collator.setNumericMode(true);
-
-	std::sort(m_files.begin(), m_files.end(),
-		[&collator](const auto& a, const auto& b)
-		{
-			return collator.compare(a,b) < 0;
-		});
-}
 
 //------------------------------------------------------------------------------
 void Window::fileOpenDialog()
@@ -153,10 +82,7 @@ void Window::fileOpenDialog()
 		m_last_directory,
 		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png)"));
 
-	if(fileName.isEmpty())
-		return;
-
-	openFileFromDirectory(fileName);
+	m_tagger.openFile(fileName);
 }
 
 void Window::directoryOpenDialog()
@@ -166,217 +92,64 @@ void Window::directoryOpenDialog()
 		m_last_directory,
 		QFileDialog::ShowDirsOnly);
 
-	if(dir.isEmpty())
-		return;
-
-	openSingleDirectory(dir);
+	m_tagger.openDir(dir);
 }
 
-//------------------------------------------------------------------------------
-Tagger::RenameStatus Window::saveFile(bool autosave, bool show_cancel_button)
-{
-	auto ret = m_tagger.rename(autosave, show_cancel_button);
-	if(ret == Tagger::RenameStatus::Renamed) {
-		updateWindowTitle();
-		m_files[m_current_file_index] = m_tagger.currentFile();
-	}
-	return ret;
-}
-
-void Window::nextFile(bool autosave)
-{
-	if(m_tagger.isModified()) {
-		if(saveFile(autosave) == Tagger::RenameStatus::Cancelled)
-			return;
-	}
-	++m_current_file_index;
-	if(m_current_file_index >= m_files.size()) {
-		m_current_file_index = 0;
-	}
-
-	if(!m_files.empty())
-		openSingleFile(m_files[m_current_file_index]);
-}
-
-void Window::prevFile(bool autosave) {
-	if(m_tagger.isModified()) {
-		if(saveFile(autosave) == Tagger::RenameStatus::Cancelled)
-			return;
-	}
-
-	--m_current_file_index;
-	if(m_current_file_index >= m_files.size()) {
-		m_current_file_index = m_files.size()-1;
-	}
-
-	if(!m_files.empty())
-		openSingleFile(m_files[m_current_file_index]);
-}
-
-void Window::deleteCurrentFile()
-{
-	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
-		tr("<p>Are you sure you want to delete <b>%1</b> permanently?</p>"
-		   "<dd><dl>File type: %2</dl>"
-		   "<dl>File size: %3</dl>"
-		   "<dl>Dimensions: %4 x %5</dl>"
-		   "<dl>Modified: %6</dl></dd>"
-		   "<p><em>This action cannot be undone!</em></p>")
-			.arg(m_tagger.currentFileName())
-			.arg(m_tagger.currentFileType())
-			.arg(util::size::printable(m_tagger.picture_size()))
-			.arg(m_tagger.picture_width())
-			.arg(m_tagger.picture_height())
-			.arg(QFileInfo(m_tagger.currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss"))),
-		QMessageBox::Save|QMessageBox::Discard);
-	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
-
-	auto reply = delete_msgbox.exec();
-
-	if(reply == QMessageBox::Save) {
-		QFile to_delete(m_files[m_current_file_index]);
-		to_delete.remove();
-
-		auto pos = std::next(m_files.begin(), m_current_file_index);
-		m_files.erase(pos);
-		--m_current_file_index;
-		nextFile(false);
-	}
-}
 
 void Window::updateWindowTitle()
 {
+	if(m_tagger.queue().empty()) {
+		setWindowTitle(tr(Window::MainWindowTitleEmpty)
+			.arg(qApp->applicationVersion()));
+		return;
+	}
+	m_last_directory = m_tagger.currentDir();
 	setWindowTitle(tr(Window::MainWindowTitle)
 		.arg(m_tagger.currentFileName())
-		.arg(m_tagger.isModified() ? "*" : "")
-		.arg(m_tagger.picture_width())
-		.arg(m_tagger.picture_height())
-		.arg(util::size::printable(m_tagger.picture_size()))
+		.arg(m_tagger.fileModified() ? QChar('*') : QStringLiteral(""))
+		.arg(m_tagger.pictureWidth())
+		.arg(m_tagger.pictureHeight())
+		.arg(util::size::printable(m_tagger.pictureSize()))
 		.arg(qApp->applicationVersion()));
-
-	updateStatusBarText();
 }
 
 void Window::updateWindowTitleProgress(int progress)
 {
+	if(m_tagger.queue().empty()) {
+		setWindowTitle(tr(Window::MainWindowTitleEmpty)
+			.arg(qApp->applicationVersion()));
+		return;
+	}
 	setWindowTitle(tr(Window::MainWindowTitleProgress)
 		.arg(m_tagger.currentFileName())
-		.arg(m_tagger.isModified() ? "*" : "")
-		.arg(m_tagger.picture_width())
-		.arg(m_tagger.picture_height())
-		.arg(util::size::printable(m_tagger.picture_size()))
+		.arg(m_tagger.fileModified() ? QChar('*') : QStringLiteral(""))
+		.arg(m_tagger.pictureWidth())
+		.arg(m_tagger.pictureHeight())
+		.arg(util::size::printable(m_tagger.pictureSize()))
 		.arg(qApp->applicationVersion())
 		.arg(progress));
 }
 
 void Window::updateStatusBarText()
 {
-	QString statusbar_text;
-
-	statusbar_text.append(tr("Reverse search proxy is "));
-	statusbar_text.append(m_reverse_search.proxyEnabled()
-			? tr("<b>enabled</b>, proxy URL: <code>%1</code>. ").arg(m_reverse_search.proxyURL())
-			: tr("<b>disabled</b>. "));
-	m_statusbar_info_label.setText(statusbar_text);
+	if(m_tagger.queue().empty()) {
+		m_statusbar_info_label.clear();
+		return;
+	}
+	auto current = m_tagger.queue().currentIndex() + 1u;
+	auto size    = m_tagger.queue().size();
+	m_statusbar_info_label.setText(tr("%1 / %2  ").arg(current).arg(size));
 }
 
 void Window::updateImageboardPostURL(QString url)
 {
-	if(!url.isEmpty()) {
-		m_post_url = url;
-		a_open_post.setEnabled(true);
-	} else {
+	a_open_post.setDisabled(url.isEmpty());
+	if(url.isEmpty()) {
 		m_post_url.clear();
-		a_open_post.setEnabled(false);
+	} else {
+		m_post_url = url;
 	}
-}
 
-//------------------------------------------------------------------------------
-bool Window::eventFilter(QObject*, QEvent *e)
-{
-	if(e->type() == QEvent::DragEnter) {
-		auto drag_event = static_cast<QDragEnterEvent*>(e);
-
-		if(!drag_event->mimeData()->hasUrls())
-			return true;
-
-		const auto urls = drag_event->mimeData()->urls();
-
-		if(urls.empty())
-			return true;
-
-		if(urls.size() == 1) {
-			QFileInfo dropfile(urls.first().toLocalFile());
-			if(!(dropfile.isDir() || Window::check_ext(dropfile.suffix()))) {
-				return true;
-			}
-		}
-
-		drag_event->acceptProposedAction();
-		return true;
-	}
-	if(e->type() == QEvent::Drop) {
-		auto drop_event = static_cast<QDropEvent*>(e);
-		const auto fileurls = drop_event->mimeData()->urls();
-		QFileInfo dropfile;
-
-		Q_ASSERT(!fileurls.empty());
-
-		if(fileurls.size() == 1) {
-			dropfile.setFile(fileurls.first().toLocalFile());
-
-			if(dropfile.isFile())
-				openFileFromDirectory(dropfile.absoluteFilePath());
-
-			if(dropfile.isDir())
-				openSingleDirectory(dropfile.absoluteFilePath());
-
-			return true;
-		}
-
-		m_files.clear();
-		for(auto&& fileurl : fileurls) {
-			dropfile.setFile(fileurl.toLocalFile());
-
-			if(dropfile.isFile() && Window::check_ext(dropfile.suffix()))
-				m_files.push_back(dropfile.absoluteFilePath());
-
-			if(dropfile.isDir())
-				loadDirContents(dropfile.absoluteFilePath());
-		}
-
-		pdbg << "loaded" << m_files.size() << "images from" << fileurls.size() << "dropped items";
-
-		openSingleFile(m_files.front());
-		m_current_file_index = 0;
-		return true;
-	}
-	return false;
-}
-
-void Window::closeEvent(QCloseEvent *e)
-{
-	if(m_tagger.isModified()) {
-		auto r = saveFile(false);
-		if(r == Tagger::RenameStatus::Renamed || r == Tagger::RenameStatus::Failed) {
-			saveWindowSettings();
-			e->accept();
-			return;
-		}
-		e->ignore();
-		return;
-	}
-	saveWindowSettings();
-	e->accept();
-}
-
-void Window::showEvent(QShowEvent *e)
-{
-#ifdef Q_OS_WIN32
-	// NOTE: workaround for taskbar button not working
-	m_win_taskbar_button.setWindow(this->windowHandle());
-#endif
-	e->accept();
 }
 
 void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
@@ -412,6 +185,106 @@ void Window::hideUploadProgress()
 	statusBar()->showMessage(tr("Done."), 3000);
 }
 
+void Window::updateCurrentDirectory()
+{
+	m_last_directory = m_tagger.currentDir();
+}
+
+//------------------------------------------------------------------------------
+bool Window::eventFilter(QObject*, QEvent *e)
+{
+	if(e->type() == QEvent::DragEnter) {
+		auto drag_event = static_cast<QDragEnterEvent*>(e);
+
+		if(!drag_event->mimeData()->hasUrls())
+			return true;
+
+		const auto urls = drag_event->mimeData()->urls();
+
+		if(urls.empty())
+			return true;
+
+		if(urls.size() == 1) {
+			QFileInfo dropfile(urls.first().toLocalFile());
+			if(!(dropfile.isDir() || m_tagger.queue().checkExtension(dropfile.suffix()))) {
+				return true;
+			}
+		}
+
+		drag_event->acceptProposedAction();
+		return true;
+	}
+	if(e->type() == QEvent::Drop) {
+		auto drop_event = static_cast<QDropEvent*>(e);
+		const auto fileurls = drop_event->mimeData()->urls();
+		QFileInfo dropfile;
+
+		Q_ASSERT(!fileurls.empty());
+
+		if(fileurls.size() == 1) {
+			dropfile.setFile(fileurls.first().toLocalFile());
+
+			if(dropfile.isFile())
+				m_tagger.openFile(dropfile.absoluteFilePath());
+
+			if(dropfile.isDir())
+				m_tagger.openDir(dropfile.absoluteFilePath());
+
+			return true;
+		}
+
+		m_tagger.queue().clear();
+		for(auto&& fileurl : fileurls) {
+			dropfile.setFile(fileurl.toLocalFile());
+
+			if(dropfile.isFile() && m_tagger.queue().checkExtension(dropfile.suffix())) {
+				m_tagger.queue().push(dropfile.absoluteFilePath());
+				pdbg << "added file" << dropfile.absoluteFilePath();
+			}
+
+			if(dropfile.isDir()) {
+				m_tagger.queue().push(dropfile.absoluteFilePath());
+				pdbg << "added dir" << dropfile.absoluteFilePath();
+			}
+		}
+
+		pdbg << "loaded" << m_tagger.queue().size() << "images from" << fileurls.size() << "dropped items";
+
+		m_tagger.queue().sort();
+		m_tagger.queue().select(0u);
+		m_tagger.loadCurrentFile();
+		return true;
+	}
+	return false;
+}
+
+void Window::closeEvent(QCloseEvent *e)
+{
+	if(m_tagger.fileModified()) {
+		auto r = m_tagger.rename();
+		if(r == RenameStatus::Renamed || r == RenameStatus::Failed) {
+			saveWindowSettings();
+			e->accept();
+			return;
+		}
+		e->ignore();
+		return;
+	}
+	saveWindowSettings();
+	e->accept();
+}
+
+void Window::showEvent(QShowEvent *e)
+{
+#ifdef Q_OS_WIN32
+	// NOTE: workaround for taskbar button not working
+	m_win_taskbar_button.setWindow(this->windowHandle());
+#endif
+	e->accept();
+}
+
+//------------------------------------------------------------------------------
+
 void Window::parseCommandLineArguments()
 {
 	QFileInfo f;
@@ -420,14 +293,17 @@ void Window::parseCommandLineArguments()
 	QCommandLineParser parser;
 	parser.addVersionOption();
 	parser.addHelpOption();
-	QCommandLineOption proxy_option("proxy", "Set proxy for IQDB search", "proxy");
-	QCommandLineOption no_proxy_option("no-proxy", "Disable proxy");
+	QCommandLineOption proxy_option(QStringLiteral("proxy"),
+					QStringLiteral("Set proxy for IQDB search"),
+					QStringLiteral("proxy"));
+	QCommandLineOption no_proxy_option(QStringLiteral("no-proxy"),
+					   QStringLiteral("Disable proxy"));
 	parser.addOption(proxy_option);
 	parser.addOption(no_proxy_option);
 	parser.process(args);
 
 	if(parser.isSet(proxy_option)) {
-		QString proxy_arg = parser.value("proxy");
+		QString proxy_arg = parser.value(QStringLiteral("proxy"));
 		pdbg << "proxy arg" << proxy_arg;
 		m_reverse_search.setProxy({proxy_arg, QUrl::StrictMode});
 	}
@@ -438,7 +314,7 @@ void Window::parseCommandLineArguments()
 	}
 
 	for(const auto& arg : parser.positionalArguments()) {
-		if(arg.startsWith('-')) {
+		if(arg.startsWith(QChar('-'))) {
 			continue;
 		}
 		f.setFile(arg);
@@ -447,82 +323,101 @@ void Window::parseCommandLineArguments()
 			continue;
 		}
 
-		if(f.isFile() && Window::check_ext(f.suffix())) {
-			m_files.push_back(f.absoluteFilePath());
+		if(f.isFile()) {
+			m_tagger.queue().push(f.absoluteFilePath());
 		}
 
 		if(f.isDir()) {
-			loadDirContents(f.absoluteFilePath());
+			m_tagger.queue().push(f.absoluteFilePath());
 		}
 	}
-
-	if(m_files.size() == 1) {
-		openFileFromDirectory(m_files.front());
-		return;
+	if(m_tagger.queue().size() == 1) {
+		m_tagger.openFile(m_tagger.queue().select(0u));
 	}
-
-	if(!m_files.empty()) {
-		openSingleFile(m_files.front());
-		m_current_file_index = 0;
+	else {
+		m_tagger.queue().sort();
+		m_tagger.queue().select(0u);
+		m_tagger.loadCurrentFile();
 	}
 }
+
+//------------------------------------------------------------------------------
 
 void Window::saveWindowSettings()
 {
 	QSettings settings;
-	settings.beginGroup("window");
-		settings.setValue("size", this->size());
-		settings.setValue("position", this->pos());
-		settings.setValue("maximized", this->isMaximized());
-		settings.setValue("last-directory", m_last_directory);
+	settings.beginGroup(QStringLiteral("window"));
+	settings.setValue(QStringLiteral("size"), this->size());
+	settings.setValue(QStringLiteral("position"), this->pos());
+	settings.setValue(QStringLiteral("maximized"), this->isMaximized());
+	settings.setValue(QStringLiteral("last-directory"), m_last_directory);
 	settings.endGroup();
+}
+
+void Window::loadWindowStyles()
+{
+	QFile styles_file(QStringLiteral(":/css/style.default.css"));
+	auto open = styles_file.open(QIODevice::ReadOnly);
+	Q_ASSERT(open);
+	qApp->setStyleSheet(styles_file.readAll());
 }
 
 void Window::loadWindowSettings()
 {
 	// check if running in portable mode
-	if(QFile(qApp->applicationDirPath() + "/portable.dat").exists()) {
+	if(QFile(qApp->applicationDirPath() +
+			QStringLiteral("/portable.dat")).exists())
+	{
 		QSettings::setDefaultFormat(QSettings::IniFormat);
 		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
-			qApp->applicationDirPath() + "/settings");
+			qApp->applicationDirPath()+QStringLiteral("/settings"));
 	}
 
 	QSettings settings;
-	settings.beginGroup("window");
-		m_last_directory = settings.value("last-directory").toString();
-		resize(settings.value("size", QSize(1024,600)).toSize());
-		if(settings.contains("position"))
-			move(settings.value("position").toPoint());
-		if(settings.value("maximized", false).toBool())
-			showMaximized();
+	settings.beginGroup(QStringLiteral("window"));
+	m_last_directory = settings.value(QStringLiteral("last-directory")).toString();
+	resize(settings.value(QStringLiteral("size"), QSize(1024,600)).toSize());
+
+	if(settings.contains(QStringLiteral("position")))
+		move(settings.value(QStringLiteral("position")).toPoint());
+
+	if(settings.value(QStringLiteral("maximized"), false).toBool())
+		showMaximized();
+
+	a_toggle_statusbar.setChecked(settings.value(
+		QStringLiteral("show-statusbar"), false).toBool());
+
+	m_statusbar.setVisible(settings.value(
+		QStringLiteral("show-statusbar"), false).toBool());
+
 	settings.endGroup();
 
-	a_ib_replace.setChecked(
-		settings.value("imageboard/replace-tags", false).toBool());
-	a_ib_restore.setChecked(
-		settings.value("imageboard/restore-tags", true).toBool());
-	a_toggle_statusbar.setChecked(
-		settings.value("window/show-statusbar", false).toBool());
+	a_ib_replace.setChecked(settings.value(
+		QStringLiteral("imageboard/replace-tags"), false).toBool());
 
-	m_statusbar.setVisible(settings.value("window/show-statusbar", false).toBool());
+	a_ib_restore.setChecked(settings.value(
+		QStringLiteral("imageboard/restore-tags"), true).toBool());
+
+
 }
 
 //------------------------------------------------------------------------------
 void Window::createActions()
 {
-	a_open_file.setShortcut(    Qt::CTRL + Qt::Key_O);
-	a_open_dir.setShortcut(     Qt::CTRL + Qt::Key_D);
+	a_open_file.setShortcut(    QKeySequence::Open);
+	a_open_dir.setShortcut(     QKeySequence(tr("Ctrl+D", "File|Open Directory")));
 	a_next_file.setShortcut(    QKeySequence(Qt::Key_Right));
 	a_prev_file.setShortcut(    QKeySequence(Qt::Key_Left));
-	a_save_file.setShortcut(    Qt::CTRL + Qt::Key_S);
+	a_save_file.setShortcut(    QKeySequence::Save);
 	a_save_next.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Left));
-	a_delete_file.setShortcut(  QKeySequence(Qt::Key_Delete));
-	a_reload_tags.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_R));
-	a_open_post.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_P));
-	a_iqdb_search.setShortcut(  QKeySequence(Qt::CTRL + Qt::Key_F));
-	a_open_loc.setShortcut(	    QKeySequence(Qt::CTRL + Qt::Key_L));
-	a_help.setShortcut(         Qt::Key_F1);
+	a_delete_file.setShortcut(  QKeySequence::Delete);
+	a_reload_tags.setShortcut(  QKeySequence(tr("Ctrl+R", "Reload Tags")));
+	a_open_post.setShortcut(    QKeySequence(tr("Ctrl+P", "Open post")));
+	a_iqdb_search.setShortcut(  QKeySequence(tr("Ctrl+F", "Reverse search")));
+	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
+	a_help.setShortcut(         QKeySequence::HelpContents);
+	a_exit.setShortcut(         QKeySequence::Close);
 
 	a_next_file.setEnabled(false);
 	a_prev_file.setEnabled(false);
@@ -539,67 +434,74 @@ void Window::createActions()
 	a_ib_restore.setCheckable(true);
 	a_toggle_statusbar.setCheckable(true);
 
+	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
+	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
+	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
+
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
 	connect(&a_open_dir,    &QAction::triggered, this, &Window::directoryOpenDialog);
-	connect(&a_delete_file, &QAction::triggered, this, &Window::deleteCurrentFile);
-	connect(&a_exit,        &QAction::triggered, this, &QWidget::close);
+	connect(&a_exit,        &QAction::triggered, this, &Window::close);
 	connect(&a_about,       &QAction::triggered, this, &Window::about);
 	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
+	connect(&a_delete_file, &QAction::triggered, &m_tagger, &Tagger::deleteCurrentFile);
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
+	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
+	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
+	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
+	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
 
-	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
-	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
-	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
-	connect(&m_tagger,         &Tagger::tagsEdited,            this, &Window::updateWindowTitle);
-
+	connect(&m_tagger,      &Tagger::fileOpened, [this]()
+	{
+		updateImageboardPostURL(m_tagger.postURL());
+	});
 	connect(&a_save_file,   &QAction::triggered, [this]()
 	{
-		this->saveFile(false, false); // !autosave, !show_cancel_button
+		m_tagger.rename();
 	});
 	connect(&a_next_file,   &QAction::triggered, [this]()
 	{
-		nextFile(false); // !autosave
+		m_tagger.nextFile();
 	});
 	connect(&a_prev_file,   &QAction::triggered, [this]()
 	{
-		prevFile(false); // !autosave
+		m_tagger.prevFile();
 	});
 	connect(&a_save_next,   &QAction::triggered, [this]()
 	{
-		nextFile(true); // autosave
+		m_tagger.nextFile(RenameFlags::Force);
 	});
 	connect(&a_save_prev,   &QAction::triggered, [this]()
 	{
-		prevFile(true); //autosave
+		m_tagger.prevFile(RenameFlags::Force);
 	});
 	connect(&a_open_post,   &QAction::triggered, [this]()
 	{
-		QDesktopServices::openUrl(this->m_post_url);
+		QDesktopServices::openUrl(m_post_url);
 	});
 	connect(&a_iqdb_search, &QAction::triggered, [this]()
 	{
-		this->m_reverse_search.search(m_tagger.currentFile());
+		m_reverse_search.search(m_tagger.currentFile());
 	});
 	connect(&a_open_loc,    &QAction::triggered, [this]()
 	{
-		util::open_file_in_gui_shell(this->m_tagger.currentFile());
+		util::open_file_in_gui_shell(m_tagger.currentFile());
 	});
 	connect(&a_ib_replace,  &QAction::triggered, [](bool checked)
 	{
 		QSettings settings;
-		settings.setValue("imageboard/replace-tags", checked);
+		settings.setValue(QStringLiteral("imageboard/replace-tags"), checked);
 	});
 	connect(&a_ib_restore,  &QAction::triggered, [](bool checked)
 	{
 		QSettings settings;
-		settings.setValue("imageboard/restore-tags", checked);
+		settings.setValue(QStringLiteral("imageboard/restore-tags"), checked);
 	});
 	connect(&a_toggle_statusbar, &QAction::triggered, [this](bool checked)
 	{
 		QSettings settings;
-		settings.setValue("window/show-statusbar", checked);
-		this->m_statusbar.setVisible(checked);
+		settings.setValue(QStringLiteral("window/show-statusbar"), checked);
+		m_statusbar.setVisible(checked);
 	});
 }
 
@@ -643,24 +545,25 @@ void Window::createMenus()
 	menuBar()->addMenu(&menu_help);
 
 	setStatusBar(&m_statusbar);
-	m_statusbar.setStyleSheet("border-top: 1px outset grey; background: rgba(0,0,0,0.1);");
-	m_statusbar_info_label.setStyleSheet("background: transparent; border: none;");
+	m_statusbar.setObjectName(QStringLiteral("StatusBar"));
+	m_statusbar_info_label.setObjectName(QStringLiteral("StatusbarInfo"));
 	m_statusbar.setSizeGripEnabled(false);
 	m_statusbar.addPermanentWidget(&m_statusbar_info_label);
 }
 
-void Window::enableMenusOnFileOpen()
+void Window::updateMenus()
 {
-	a_next_file.setEnabled(true);
-	a_prev_file.setEnabled(true);
-	a_save_file.setEnabled(true);
-	a_save_next.setEnabled(true);
-	a_save_prev.setEnabled(true);
-	a_delete_file.setEnabled(true);
-	a_reload_tags.setEnabled(true);
+	bool val = m_tagger.queue().empty();
+	a_next_file.setDisabled(val);
+	a_prev_file.setDisabled(val);
+	a_save_file.setDisabled(val);
+	a_save_next.setDisabled(val);
+	a_save_prev.setDisabled(val);
+	a_delete_file.setDisabled(val);
+	a_reload_tags.setDisabled(val);
 	a_open_post.setDisabled(m_post_url.isEmpty());
-	a_iqdb_search.setEnabled(true);
-	a_open_loc.setEnabled(true);
+	a_iqdb_search.setDisabled(val);
+	a_open_loc.setDisabled(val);
 }
 
 //------------------------------------------------------------------------------
@@ -668,34 +571,25 @@ void Window::about()
 {
 	QMessageBox::about(nullptr,
 	tr("About WiseTagger"),
-	tr(	"<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2015 catgirl &lt;"
-		"<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>"
-		"<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. "
-		"You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, "
-		"Version 2, as published by Sam Hocevar. See <a href=\"http://www.wtfpl.net\">http://www.wtfpl.net/</a> "
-		"for more details.</p>"
-	).arg(qApp->applicationVersion()).arg(__DATE__).arg(__TIME__));
+	tr("<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2015 catgirl &lt;"
+	   "<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>"
+	   "<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. "
+	   "You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, "
+	   "Version 2, as published by Sam Hocevar. See <a href=\"http://www.wtfpl.net\">http://www.wtfpl.net/</a> "
+	   "for more details.</p>"
+	).arg(qApp->applicationVersion(), QStringLiteral(__DATE__), QStringLiteral(__TIME__)));
 }
 
 void Window::help()
 {
 	QMessageBox::about(nullptr,
 	tr("Help"),
-	tr(	"<h2>User Interface</h2>"
-		"<p><b>Tab</b> &ndash; list autocomplete suggestions</p>"
-		"<p><b>Enter</b> &ndash; apply changes and clear focus</p>"
-		"<p><b>Left</b> and <b>Right</b> arrows &ndash; show previous/next picture</p>"
-		"<p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
+	tr("<h2>User Interface</h2>"
+	   "<p><b>Tab</b> &ndash; list autocomplete suggestions</p>"
+	   "<p><b>Enter</b> &ndash; apply changes and clear focus</p>"
+	   "<p><b>Left</b> and <b>Right</b> arrows &ndash; show previous/next picture</p>"
+	   "<p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
 	));
 }
 
 //------------------------------------------------------------------------
-bool Window::check_ext(const QString& ext)
-{
-	static const char* const exts[] = {"jpg", "jpeg", "png", "gif", "bmp"};
-	static const char len = util::size::array_size(exts);
-	for(int i = 0; i < len; ++i)
-		if(QString::compare(ext, exts[i], Qt::CaseInsensitive) == 0)
-			return true;
-	return false;
-}

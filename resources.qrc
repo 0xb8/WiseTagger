@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
-        <file>transparency.png</file>
+	<file>transparency.png</file>
+    </qresource>
+    <qresource prefix="/css">
+	<file>style.default.css</file>
     </qresource>
 </RCC>

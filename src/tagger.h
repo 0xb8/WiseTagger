@@ -17,54 +17,64 @@
 #include "util/unordered_map_qt.h"
 #include "picture.h"
 #include "input.h"
+#include "tagger_enums.h"
+#include "file_queue.h"
+
 
 class Tagger : public QWidget
 {
 	Q_OBJECT
 
 public:
-	enum class RenameStatus : std::int8_t {
-		Cancelled = -1,
-		Failed = 0,
-		Renamed = 1
-	};
-	using Status = Tagger::RenameStatus;
-
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override;
 
-	bool    loadFile(const QString& filename);
-	Status  rename(bool force_save, bool show_cancel_button = true);
+	void openFile(const QString&);  /// opens specified file and enqueues rest of directory.
+	void openDir (const QString&);  /// opens first file and enqueues rest of specified directory.
 
-	bool    isModified()      const;
-	int     picture_width()   const;
-	int     picture_height()  const;
-	qint64  picture_size()    const;
+	RenameStatus rename(RenameFlags flags  = RenameFlags::Default);
 
+	void nextFile(RenameFlags flags = RenameFlags::Default);
+	void prevFile(RenameFlags flags = RenameFlags::Default);
+	void loadCurrentFile();   /// displays currently selected file.
+	void deleteCurrentFile(); /// deletes currently selected file.
+
+	bool    fileModified()    const;
+	int     pictureWidth()    const;
+	int     pictureHeight()   const;
+	qint64  pictureSize()     const;
 	QString postURL()         const;
 	QString currentFile()     const;
+	QString currentDir()      const;
 	QString currentText()     const;
 	QString currentFileName() const;
 	QString currentFileType() const;
+
+	FileQueue& queue();
 
 public slots:
 	void reloadTags();
 
 signals:
-	void postURLChanged(const QString&);
+	void fileOpened(const QString&);
 	void tagsEdited(const QString&);
+	void postURLChanged(const QString&);
 
 private:
+	bool loadFile(size_t index);
 	void findTagsFiles();
-	QFrame hr_line;
-	Picture m_picture;
-	TagInput m_input;
-	QVBoxLayout mainlayout;
-	QVBoxLayout inputlayout;
+	void clear();
 
-	QString m_current_file, m_current_dir;
+	QVBoxLayout m_main_layout;
+	QVBoxLayout m_tag_input_layout;
+
+	QFrame      m_separator;
+	Picture     m_picture;
+	TagInput    m_input;
+
+	FileQueue   m_file_queue;
+	QString     m_previous_dir;
 	QStringList m_current_tag_files;
-
 };
 
 #endif // WISETAGGER_H

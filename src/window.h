@@ -27,19 +27,10 @@ public:
 	explicit Window(QWidget *_parent = nullptr);
 	~Window() override;
 
-	void openFileFromDirectory(const QString& filename);	// open file and enqueue rest of directory
-	void openSingleDirectory(const QString &directory);	// open first file in directory
-	void loadDirContents(const QString &directory);		// enqueue files in directory
-
-	Tagger::RenameStatus saveFile(bool autosave, bool show_cancel_button = true);
-	void nextFile(bool autosave);
-	void prevFile(bool autosave);
-
-	static bool check_ext(const QString& file);
-
 public slots:
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 	void hideUploadProgress();
+	void updateCurrentDirectory();
 	void updateWindowTitle();
 	void updateWindowTitleProgress(int progress);
 	void updateStatusBarText();
@@ -55,27 +46,24 @@ private slots:
 	void directoryOpenDialog();
 	void about();
 	void help();
-	void deleteCurrentFile();
 
 private:
 	void createActions();
 	void createMenus();
-	void enableMenusOnFileOpen();
+	void updateMenus();
 	void parseCommandLineArguments();
 
 	void loadWindowSettings();
 	void saveWindowSettings();
+	void loadWindowStyles();
 
-	void openSingleFile(const QString& filename); // just load file into tagger
 
 	static constexpr const char* MainWindowTitle = "%1%2 [%3x%4] (%5)  –  WiseTagger v%6";
+	static constexpr const char* MainWindowTitleEmpty = "WiseTagger v%1";
 	static constexpr const char* MainWindowTitleProgress = "%7%  –  %1%2 [%3x%4] (%5)  –  WiseTagger v%6";
 
 	Tagger m_tagger;
 	ReverseSearch m_reverse_search;
-
-	std::vector<QString> m_files;
-	size_t  m_current_file_index;
 
 	QString m_last_directory;
 	QString m_post_url;

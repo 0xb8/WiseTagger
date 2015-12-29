@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <algorithm>
 #include "util/debug.h"
+#include "util/size.h"
 #include "window.h"
 
 Tagger::Tagger(QWidget *_parent) :
@@ -22,39 +23,153 @@ Tagger::Tagger(QWidget *_parent) :
 {
 	installEventFilter(_parent);
 	m_picture.installEventFilter(_parent);
+	m_file_queue.setNameFilter(QStringList({QStringLiteral("*.jpg"),
+						QStringLiteral("*.jpeg"),
+						QStringLiteral("*.png"),
+						QStringLiteral("*.gif"),
+						QStringLiteral("*.bmp")}));
 
-	mainlayout.setMargin(0);
-	mainlayout.setSpacing(0);
+	m_main_layout.setMargin(0);
+	m_main_layout.setSpacing(0);
 
-	inputlayout.setMargin(10);
-	inputlayout.addWidget(&m_input);
+	m_tag_input_layout.setMargin(10);
+	m_tag_input_layout.addWidget(&m_input);
 
-	hr_line.setFrameStyle(QFrame::HLine | QFrame::Sunken);
-	mainlayout.addWidget(&m_picture);
-	mainlayout.addWidget(&hr_line);
-	mainlayout.addLayout(&inputlayout);
-	setLayout(&mainlayout);
+	m_separator.setFrameStyle(QFrame::HLine | QFrame::Sunken);
+	m_main_layout.addWidget(&m_picture);
+	m_main_layout.addWidget(&m_separator);
+	m_main_layout.addLayout(&m_tag_input_layout);
+	setLayout(&m_main_layout);
 	setAcceptDrops(true);
 
+	m_picture.setObjectName(QStringLiteral("Picture"));
+	m_input.setObjectName(QStringLiteral("Input"));
+	m_separator.setObjectName(QStringLiteral("Separator"));
+
+	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
 	connect(&m_input, &TagInput::postURLChanged, this, &Tagger::postURLChanged);
-	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
+	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
 }
+
 
 Tagger::~Tagger() { }
 
+void Tagger::openFile(const QString &filename)
+{
+	QFileInfo fi(filename);
+	if(!fi.isReadable() || !fi.isFile() || !fi.isAbsolute()) {
+		pwarn << "invalid file path";
+		return;
+	}
+	m_file_queue.clear();
+	m_file_queue.push(fi.absolutePath());
+	m_file_queue.sort();
+	m_file_queue.select(m_file_queue.find(fi.absoluteFilePath()));
+	loadCurrentFile();
+}
+
+void Tagger::openDir(const QString &dir)
+{
+	QFileInfo fi(dir);
+	if(!fi.isReadable() || !fi.isDir() || !fi.isAbsolute()) {
+		pwarn << "invalid directory path";
+		return;
+	}
+	m_file_queue.clear();
+	m_file_queue.push(dir);
+	m_file_queue.sort();
+	m_file_queue.select(0u);
+	loadCurrentFile();
+}
+
+void Tagger::deleteCurrentFile()
+{
+	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
+		tr("<p>Are you sure you want to delete <b>%1</b> permanently?</p>"
+		   "<dd><dl>File type: %2</dl>"
+		   "<dl>File size: %3</dl>"
+		   "<dl>Dimensions: %4 x %5</dl>"
+		   "<dl>Modified: %6</dl></dd>"
+		   "<p><em>This action cannot be undone!</em></p>")
+			.arg(currentFileName())
+			.arg(currentFileType())
+			.arg(util::size::printable(pictureSize()))
+			.arg(pictureWidth())
+			.arg(pictureHeight())
+			.arg(QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss"))),
+		QMessageBox::Save|QMessageBox::Discard);
+	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
+
+	auto reply = delete_msgbox.exec();
+
+	if(reply == QMessageBox::Save) {
+		if(!m_file_queue.deleteCurrentFile()) {
+			QMessageBox::warning(this,
+				tr("Could not delete file"),
+				tr("<p>Could not delete current file.</p>"
+				   "<p>This can happen when you don\'t have write permissions to that file, "
+				   "or when file has been renamed or removed by another application.</p>"
+				   "<p>Next file will be opened instead.</p>"));
+		}
+		loadCurrentFile();
+	}
+}
+
+FileQueue& Tagger::queue()
+{
+	return m_file_queue;
+}
+
+void Tagger::nextFile(RenameFlags flags)
+{
+	if(fileModified() && (rename(flags) == RenameStatus::Cancelled))
+		return;
+	m_file_queue.forward();
+	loadCurrentFile();
+}
+
+void Tagger::prevFile(RenameFlags flags)
+{
+	if(fileModified() && (rename(flags) == RenameStatus::Cancelled))
+		return;
+	m_file_queue.backward();
+	loadCurrentFile();
+}
+
+
+/* just load picture into tagger */
+void Tagger::loadCurrentFile()
+{
+	while(!loadFile(m_file_queue.currentIndex()) && !m_file_queue.empty()) {
+		pdbg << "erasing invalid file from queue:" << m_file_queue.current();
+		m_file_queue.eraseCurrent();
+	}
+
+	if(m_file_queue.empty())
+		clear();
+
+	emit fileOpened(m_file_queue.current());
+}
+//------------------------------------------------------------------------------
+
 QString Tagger::currentFile() const
 {
-	return m_current_file;
+	return m_file_queue.current();
+}
+
+QString Tagger::currentDir() const
+{
+	return QFileInfo(m_file_queue.current()).absolutePath();
 }
 
 QString Tagger::currentFileName() const
 {
-	return QFileInfo(m_current_file).fileName();
+	return QFileInfo(m_file_queue.current()).fileName();
 }
 
 QString Tagger::currentFileType() const
 {
-	QFileInfo fi(m_current_file);
+	QFileInfo fi(m_file_queue.current());
 	return fi.suffix().toUpper();
 }
 
@@ -63,30 +178,34 @@ QString Tagger::currentText() const
 	return m_input.text();
 }
 
-int Tagger::picture_width() const
+int Tagger::pictureWidth() const
 {
 	return m_picture.width();
 }
 
 
-int Tagger::picture_height() const
+int Tagger::pictureHeight() const
 {
 	return m_picture.height();
 }
 
-bool Tagger::isModified() const
+bool Tagger::fileModified() const
 {
-	return m_input.text() != QFileInfo(m_current_file).completeBaseName() && !m_current_file.isEmpty();
+	if(m_file_queue.empty()) // NOTE: important
+		return false;
+
+	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
 }
 
-qint64 Tagger::picture_size() const
+
+qint64 Tagger::pictureSize() const
 {
-	return QFileInfo(m_current_file).size();
+	return QFileInfo(m_file_queue.current()).size();
 }
 
 QString Tagger::postURL() const
 {
-	return m_input.getPostURL();
+	return m_input.postURL();
 }
 
 //------------------------------------------------------------------------------
@@ -99,32 +218,37 @@ void Tagger::reloadTags()
 
 void Tagger::findTagsFiles()
 {
-	if(m_current_file.isEmpty())
+	if(m_file_queue.empty())
 		return;
 
-	QFileInfo fi(m_current_file);
-	if(m_current_dir == fi.absolutePath()) {
-		m_input.reloadAdditionalTags();
+	auto c = currentDir();
+	if(c == m_previous_dir)
 		return;
-	}
 
+	m_previous_dir = c;
+
+	QFileInfo fi(m_file_queue.current());
 	QSettings settings;
 
-	const auto tagsfile = settings.value("tags/normal", "tags.txt").toString();
-	const auto override = settings.value("tags/override","tags!.txt").toString();
+	const auto tagsfile = settings.value(QStringLiteral("tags/normal"),
+					     QStringLiteral("tags.txt")).toString();
 
-	m_current_dir = fi.absolutePath();
+	const auto override = settings.value(QStringLiteral("tags/override"),
+					     QStringLiteral("tags!.txt")).toString();
 
-	QString parent_dir, tagpath, overridepath, errordirs = "<li>";
+	QString parent_dir,
+		tagpath,
+		overridepath,
+		errordirs = QStringLiteral("<li>");
 
 	int max_height = 10;
 	while(max_height --> 0) {
 		parent_dir = fi.absolutePath();
 		errordirs += parent_dir;
-		errordirs += "</li><li>";
+		errordirs += QStringLiteral("</li><li>");
 
-		tagpath = parent_dir + '/' + tagsfile;
-		overridepath = parent_dir + '/' + override;
+		tagpath = parent_dir + QChar('/') + tagsfile;
+		overridepath = parent_dir + QChar('/') + override;
 
 		if(QFile::exists(overridepath)) {
 			m_current_tag_files.push_back(overridepath);
@@ -146,9 +270,12 @@ void Tagger::findTagsFiles()
 	m_current_tag_files.removeDuplicates();
 
 	if(m_current_tag_files.isEmpty()) {
-		QString last_resort = qApp->applicationDirPath() + "/tags.txt";
+		QString last_resort = qApp->applicationDirPath() +
+					    QStringLiteral("/tags.txt");
+
 		errordirs += qApp->applicationDirPath();
-		errordirs += "</li>";
+		errordirs += QStringLiteral("</li>");
+
 		if(QFile::exists(last_resort)) {
 			m_current_tag_files.push_back(last_resort);
 		} else {
@@ -179,65 +306,81 @@ void Tagger::findTagsFiles()
 	reloadTags();
 }
 
-bool Tagger::loadFile(const QString &filename)
+void Tagger::clear()
 {
+	m_file_queue.clear();
+	m_picture.clear();
+	m_input.clear();
+}
+
+bool Tagger::loadFile(size_t index)
+{
+	auto filename = m_file_queue.select(index);
+	if(filename.size() == 0)
+		return false;
+
 	QFileInfo f(filename);
+	QFileInfo fd(f.absolutePath());
+
+	if(!fd.exists()) {
+		QMessageBox::critical(this,
+			tr("Error opening file"),
+			tr("<p>Directory <b>%1</b> does not exist anymore.</p>")
+				.arg(fd.absoluteFilePath()));
+		clear();
+		return false;
+	}
+
 	if(!f.exists()) {
 		QMessageBox::critical(this,
-			tr("Error opening image"),
+			tr("Error opening file"),
 			tr("<p>File <b>%1</b> does not exist anymore.</p>"
-			   "<p>It may have been renamed, moved somewhere, or removed.</p>"
-			   "<p>Next file will be opened instead.</p>").arg(f.fileName()));
-		m_current_file.clear();
-		m_current_dir.clear();
-		m_current_tag_files.clear();
+			   "<p>Next file will be opened instead.</p>")
+				.arg(f.fileName()));
 		return false;
 	}
 
 	if(!m_picture.loadPicture(f.absoluteFilePath())) {
 		QMessageBox::critical(this,
 			tr("Error opening image"),
-			tr("Error opening <b>%1</b><br/>File format is not supported or file corrupted.").arg(f.fileName()));
-		m_current_file.clear();
-		m_current_dir.clear();
-		m_current_tag_files.clear();
+			tr("<p>Could not open <b>%1</b></p>"
+			   "<p>File format is not supported or file corrupted.</p>")
+				.arg(f.fileName()));
 		return false;
 	}
 
 	m_input.setText(f.completeBaseName());
-	m_current_file = f.absoluteFilePath();
 	findTagsFiles();
 	m_picture.setFocus();
 	return true;
 }
 
 
-Tagger::RenameStatus Tagger::rename(bool force_save, bool show_cancel_button)
+RenameStatus Tagger::rename(RenameFlags flags)
 {
-	QFileInfo file(m_current_file);
+	QFileInfo file(m_file_queue.current());
 	QString new_file_path;
 
 	m_input.fixTags();
 	/* Make new file path from input text */
-	new_file_path = m_input.text() + "." + file.suffix();
+	new_file_path += m_input.text();
+	new_file_path += QChar('.');
+	new_file_path += file.suffix();
 	new_file_path = QFileInfo(QDir(file.canonicalPath()), new_file_path).filePath();
 
-	if(new_file_path == m_current_file || m_input.text().isEmpty())
+	if(new_file_path == m_file_queue.current() || m_input.text().isEmpty())
 		return RenameStatus::Failed;
 
 	/* Check for possible filename conflict */
 	if(QFileInfo::exists(new_file_path)) {
 		QMessageBox::critical(this,
 			tr("Cannot rename file"),
-			tr("<p>File with this name already exists in <b>%1</b>.</p><p>Please change some of your tags.</p>")
+			tr("<p>Cannot rename file <b>%1</b></p>"
+			   "<p>File with this name already exists in <b>%2</b></p>"
+			   "<p>Please change some of your tags.</p>")
+				.arg(file.fileName())
 				.arg(file.canonicalPath()));
-		return RenameStatus::Failed;
-	}
-
-	if(force_save) {
-		QFile(m_current_file).rename(new_file_path);
-		m_current_file = new_file_path;
-		return RenameStatus::Renamed;
+		return RenameStatus::Cancelled;
 	}
 
 	/* Show save dialog */
@@ -247,15 +390,19 @@ Tagger::RenameStatus Tagger::rename(bool force_save, bool show_cancel_button)
 		QMessageBox::Save|QMessageBox::Discard);
 
 	renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
-	if(show_cancel_button) {
+	if(!(flags & RenameFlags::Uncancelable)) { // FIXME: is this even needed?
 		renameMessageBox.addButton(QMessageBox::Cancel);
 	}
 
-	auto reply = renameMessageBox.exec();
-
-	if(reply == QMessageBox::Save) {
-		QFile(m_current_file).rename(new_file_path);
-		m_current_file = new_file_path;
+	int reply;
+	if(flags & RenameFlags::Force || (reply = renameMessageBox.exec()) == QMessageBox::Save ) {
+		if(!m_file_queue.renameCurrentFile(new_file_path)) {
+			QMessageBox::warning(this,
+				tr("Could not rename file"),
+				tr("<p>Could not rename <b>%1</b></p>"
+				   "<p>File may have been renamed or removed by another application.</p>").arg(file.fileName()));
+			return RenameStatus::Failed;
+		}
 		return RenameStatus::Renamed;
 	}
 
@@ -265,3 +412,7 @@ Tagger::RenameStatus Tagger::rename(bool force_save, bool show_cancel_button)
 
 	return RenameStatus::Failed;
 }
+
+
+
+
