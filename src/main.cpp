@@ -10,12 +10,13 @@
 
 int main(int argc, char *argv[])
 {
-	qSetMessagePattern("%{if-warning}[WARN] %{endif}[%{time h:mm:ss.zzz}] %{function}  \t%{message}");
+	qSetMessagePattern(QStringLiteral("%{if-warning}[WARN] %{endif}[%{time h:mm:ss.zzz}] %{function}  \t%{message}"));
 	QApplication a(argc, argv);
-	a.setApplicationVersion(APP_VERSION);
-	a.setApplicationName(TARGET_PRODUCT);
-	a.setOrganizationName(TARGET_COMPANY);
-	a.setOrganizationDomain("wolfgirl.org");
+	a.setApplicationVersion(QStringLiteral(APP_VERSION));
+	a.setApplicationName(QStringLiteral(TARGET_PRODUCT));
+	a.setOrganizationName(QStringLiteral(TARGET_COMPANY));
+	a.setOrganizationDomain(QStringLiteral("wolfgirl.org"));
+
 	Window w;
 	w.show();
 

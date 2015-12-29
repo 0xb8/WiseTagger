@@ -21,26 +21,26 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
 	setMinimumHeight(30);
 	QSettings settings;
-	QFont f(settings.value("window/font", "Consolas").toString());
-	f.setPixelSize(14);
-	setFont(f);
+	QFont font(settings.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
+	font.setPixelSize(settings.value(QStringLiteral("window/font-size"), 14).toInt());
+	setFont(font);
 
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 }
 
 void TagInput::fixTags(bool sort)
 {
-	m_text_list = text().split(" ", QString::SkipEmptyParts);
+	m_text_list = text().split(QChar::fromLatin1(' '), QString::SkipEmptyParts);
 
 	QSettings settings;
-	if(settings.value("imageboard/replace-tags", false).toBool())
+	if(settings.value(QStringLiteral("imageboard/replace-tags"), false).toBool())
 		ib::replace_imageboard_tags(m_text_list);
 
-	if(settings.value("imageboard/restore-tags", true).toBool())
+	if(settings.value(QStringLiteral("imageboard/restore-tags"), true).toBool())
 		ib::restore_imageboard_tags(m_text_list);
 
 	for(int i = 0; i < m_text_list.size(); ++i) {
-		remove_if_unwanted(m_text_list[i]);
+		remove_if_unwanted(m_text_list[i]); // TODO: refactor using iterators
 		m_text_list += replacement_tags(m_text_list[i]);
 		m_text_list += related_tags(m_text_list[i]);
 	}
@@ -66,9 +66,9 @@ void TagInput::fixTags(bool sort)
 	emit postURLChanged(url); // NOTE: (probably) not UB as long as reciever is in the same thread
 
 	QString newname;
-	for(auto&& tag : m_text_list) {
+	for(const auto& tag : m_text_list) {
 		newname.append(tag);
-		newname.append(' ');
+		newname.append(QChar::fromLatin1(' '));
 	}
 
 	newname.remove(newname.length()-1, 1); // remove trailing space
@@ -95,7 +95,7 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 		clearFocus();
 		return;
 	}
-
+	// NOTE: Shift+Space - workaround for space not working as expected when typing in the middle of the word
 	if(m_event->key() == Qt::Key_Space && !(m_event->modifiers() & Qt::ShiftModifier)) {
 		/* Don't sort tags, haven't finished editing yet */
 		fixTags(false);
@@ -122,7 +122,8 @@ void TagInput::loadTagFiles(const QStringList &files)
 		if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
 			QMessageBox::warning(this,
 				tr("Error opening tag file"),
-				tr("Could not open <b>%1</b>").arg(file));
+				tr("</p>Could not open <b>%1</b></p>"
+				   "<p>File may have been renamed or removed by another application.</p>").arg(file));
 			continue;
 		}
 
@@ -138,7 +139,7 @@ void TagInput::loadTagFiles(const QStringList &files)
 
 void TagInput::reloadAdditionalTags()
 {
-	/* Remove elements with value == key to restore original state */
+	/* Remove elements where (value == key) to restore original state */
 	for(auto it = m_related_tags.begin(); it != m_related_tags.end(); ) {
 		if (it->second == it->first) {
 			it = m_related_tags.erase(it);
@@ -161,8 +162,7 @@ void TagInput::reloadAdditionalTags()
 
 void TagInput::setText(const QString &t)
 {
-	// split by space and "-"
-	m_text_list = t.split(" ", QString::SkipEmptyParts);
+	m_text_list = t.split(QChar::fromLatin1(' '), QString::SkipEmptyParts);
 	QLineEdit::setText(t);
 }
 
@@ -322,7 +322,7 @@ QStringList TagInput::related_tags(const QString &tag)
 	/* Check if tag hasn't been added already */
 	if((mapped_range.first != m_related_tags.end()) && (key_eq_val == mapped_range.second)) {
 		/* Add all related tags for this tag */
-		std::for_each( mapped_range.first, mapped_range.second,
+		std::for_each(mapped_range.first, mapped_range.second,
 			[&](const auto& p) {
 				ret.push_back(p.second);
 			});
@@ -341,7 +341,7 @@ QStringList TagInput::replacement_tags(QString &tag)
 	/* Check if tag hasn't been added already */
 	if((replaced_range.first != m_replaced_tags.end()) && (key_eq_val == replaced_range.second)) {
 		/* Add all replacement tags for this tag and remove it */
-		std::for_each( replaced_range.first, replaced_range.second,
+		std::for_each(replaced_range.first, replaced_range.second,
 			[&](const auto& p) {
 				ret.push_back(p.second);
 			});

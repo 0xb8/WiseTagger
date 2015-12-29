@@ -3,7 +3,8 @@
  */
 
 #include "multicompleter.h"
-#include <QLineEdit>
+
+class QLineEdit;
 
 MultiSelectCompleter::MultiSelectCompleter(const QStringList& items, QObject* _parent)
 	: QCompleter(items, _parent){}
@@ -12,23 +13,23 @@ MultiSelectCompleter::~MultiSelectCompleter(){}
 
 QString MultiSelectCompleter::pathFromIndex(const QModelIndex& index) const
 {
-	QString path = QCompleter::pathFromIndex(index);
+	auto path = QCompleter::pathFromIndex(index);
+	auto text = static_cast<QLineEdit*>(widget())->text();
+	int pos   = text.lastIndexOf(QChar::fromLatin1(' '));
 
-	QString text = static_cast<QLineEdit*>(widget())->text();
-
-	int pos = text.lastIndexOf(' ');
-	if (pos >= 0)
-		path = text.left(pos) + " " + path;
-
+	if (pos >= 0) {
+		path = text.left(pos) + QChar::fromLatin1(' ') + path;
+	}
 	return path;
 }
 
 QStringList MultiSelectCompleter::splitPath(const QString& path) const
 {
-	int pos = path.lastIndexOf(' ') + 1;
+	int pos = path.lastIndexOf(QChar::fromLatin1(' ')) + 1;
+	const int path_length = path.length();
 
-	while (pos < path.length() && path[pos] == QLatin1Char(' '))
-		pos++;
-
+	while (pos < path_length && path[pos] == QChar::fromLatin1(' ')) {
+		++pos;
+	}
 	return QStringList(path.mid(pos));
 }

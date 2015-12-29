@@ -25,6 +25,7 @@ namespace ib {
 
 namespace detail {
 	using string_t = QString;
+	#define IB_STRING_LITERAL QStringLiteral
 
 	struct imageboard_tag
 	{
@@ -36,16 +37,16 @@ namespace detail {
 
 	const std::array<imageboard_tag,2> imageboard_tags = {
 		imageboard_tag {
-			"yande.re",
-			"yandere_",
-			"yande.re",
-			"https://yande.re/post/show/"
+			IB_STRING_LITERAL("yande.re"),
+			IB_STRING_LITERAL("yandere_"),
+			IB_STRING_LITERAL("yande.re"),
+			IB_STRING_LITERAL("https://yande.re/post/show/")
 		},
 		imageboard_tag {
-			"Konachan.com",
-			"konachan_",
-			"Konachan.com -",
-			"https://konachan.net/post/show/"
+			IB_STRING_LITERAL("Konachan.com"),
+			IB_STRING_LITERAL("konachan_"),
+			IB_STRING_LITERAL("Konachan.com -"),
+			IB_STRING_LITERAL("https://konachan.net/post/show/")
 		}
 	};
 

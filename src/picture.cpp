@@ -10,18 +10,7 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
-
-static const QString welcome_text = QApplication::tr("<html><body style=\"color:rgba(0,0,0,0.4); font-size:13px\">"
-	"<div align='center'>"
-	"<div style=\"font-size:20px\">Open image</div>"
-	"<table><tr><td>"
-	"<hr/>"
-	"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open File</div>"
-	"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open Directory</div>"
-	"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;Drag and drop files or directories here</div>"
-	"</td></tr></table>"
-	"</div>"
-	"</body></html>");
+#include <QApplication>
 
 Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setFocusPolicy(Qt::ClickFocus);
@@ -29,7 +18,7 @@ Picture::Picture(QWidget *parent) : QLabel(parent) {
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setBackgroundStyle();
 	connect(&m_resize_timer, &QTimer::timeout, this, &Picture::resizeTimeout);
-	setText(welcome_text);
+	clear();
 }
 
 // Implement empty event handlers to allow filtering by MainWindow
@@ -65,9 +54,9 @@ void Picture::resizeAndSetPixmap()
 void Picture::setBackgroundStyle(bool has_alpha)
 {
 	if(has_alpha)
-		setStyleSheet(tr("background-image: url(%1);background-color: %2;").arg(m_transparent_background_file).arg(m_background_color));
+		setStyleSheet(QStringLiteral("background-image: url(://transparency.png);"));
 
-	else	setStyleSheet(tr("background-image: none;background-color: %1;").arg(m_background_color));
+	else	setStyleSheet(QStringLiteral("background-image: none;"));
 }
 
 int Picture::width() const
@@ -84,7 +73,18 @@ void Picture::clear()
 {
 	m_pixmap.loadFromData(nullptr);
 	m_pixmap_size = QSize(0,0);
-	setText(welcome_text);
+	setText(Picture::tr(
+		"<html><body>"
+		"<div align='center'>"
+		"<div style=\"font-size:20px\">Open image</div>"
+		"<table><tr><td>"
+		"<hr/>"
+		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open File</div>"
+		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open Directory</div>"
+		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;Drag and drop files or directories here</div>"
+		"</td></tr></table>"
+		"</div>"
+		"</body></html>"));
 }
 
 /* Restart timer on resize */

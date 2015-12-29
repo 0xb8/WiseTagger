@@ -49,8 +49,6 @@ private:
 	QTimer  m_resize_timer;
 
 	static const int m_resize_timeout = 100; //ms
-	static constexpr const char* m_transparent_background_file = "://transparency.png";
-	static constexpr const char* m_background_color = "white";
 };
 
 #endif // PICTURE_H

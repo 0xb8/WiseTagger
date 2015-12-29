@@ -27,10 +27,10 @@ void util::open_file_in_gui_shell(const QString &file) {
 
 #ifdef Q_OS_WIN32
 	QStringList params;
-	params += "/select,";
+	params += QStringLiteral("/select,");
 	params += QDir::toNativeSeparators(file);
 	qint64 pid = 0ll;
-	QProcess::startDetached("explorer.exe", params, QString(), &pid);
+	QProcess::startDetached(QStringLiteral("explorer.exe"), params, QStringLiteral(""), &pid);
 
 	if(pid == 0ll) {
 		QMessageBox::critical(nullptr,

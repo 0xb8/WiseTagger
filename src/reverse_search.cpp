@@ -42,24 +42,24 @@ void ReverseSearch::search(const QString &file)
 
 void ReverseSearch::setProxy(const QUrl &proxy_url)
 {
-	if(!proxy_url.isValid()
-		|| proxy_url.port() == -1
-		|| (proxy_url.scheme() != "http" && proxy_url.scheme() != "socks"))
+	bool scheme_valid = (proxy_url.scheme() == QStringLiteral("http")
+			  || proxy_url.scheme() == QStringLiteral("socks"));
+
+	if(!proxy_url.isValid() || proxy_url.port() == -1 || !scheme_valid)
 	{
 		QMessageBox::warning(nullptr,
 			tr("Invalid proxy"),
-			tr("Supplied proxy URL is invalid. Proxy <b>will not</b> be used!"
-			   "<br/>Note that scheme (http or socks) and port number are mandatory."
-			   "<br/>Example proxy URLs: "
-			   "<ol><li><pre>http://proxy.example.com:80</pre></li>"
-			   "<li><pre>socks://192.168.0.1:9050</pre></li></ol>"));
+			tr("<p>Proxy URL <em><code>%1</code></em> is invalid. Proxy <b>will not</b> be used!</p>"
+			   "<p>Example valid proxy URL: "
+			   "<ul><li><pre>http://proxy.example.com:81</pre></li>"
+			   "<li><pre>socks://127.0.0.1:9050</pre></li></ul></p>").arg(proxy_url.toString()));
 		return;
 	}
 
 	QNetworkProxy::ProxyType type = QNetworkProxy::NoProxy;
-	if(proxy_url.scheme() == "socks")
+	if(proxy_url.scheme() == QStringLiteral("socks"))
 		type = QNetworkProxy::Socks5Proxy;
-	else if(proxy_url.scheme() == "http")
+	else if(proxy_url.scheme() == QStringLiteral("http"))
 		type = QNetworkProxy::HttpProxy;
 
 	m_proxy = QNetworkProxy(type, proxy_url.host(), proxy_url.port());
@@ -90,13 +90,13 @@ QString ReverseSearch::proxyURL() const
 void ReverseSearch::load_proxy_settings()
 {
 	QSettings settings;
-	settings.beginGroup("proxy");
-	setProxyEnabled(settings.value("enabled", false).toBool());
+	settings.beginGroup(QStringLiteral("proxy"));
+	setProxyEnabled(settings.value(QStringLiteral("enabled"), false).toBool());
 
 	if(m_proxy_enabled) {
-		auto protocol = settings.value("protocol").toString();
-		auto host = settings.value("host").toString();
-		auto port = settings.value("port").toInt();
+		auto protocol = settings.value(QStringLiteral("protocol")).toString();
+		auto host = settings.value(QStringLiteral("host")).toString();
+		auto port = settings.value(QStringLiteral("port")).toInt();
 		QUrl proxy_url;
 		proxy_url.setScheme(protocol);
 		proxy_url.setHost(host);
@@ -136,7 +136,7 @@ void ReverseSearch::upload_file()
 	/* Add filename, mime type and file data to file part */
 	iqdb_parts.file.setHeader(
 		QNetworkRequest::ContentDispositionHeader,
-		QString("form-data; name=\"file\"; filename=\"%1\"")
+		QStringLiteral("form-data; name=\"file\"; filename=\"%1\"")
 			.arg(file_info.completeBaseName()).toLatin1());
 
 	iqdb_parts.file.setHeader(
@@ -177,9 +177,9 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 
 		QFileInfo curr_file(m_current_file_name);
 		QString response_filename = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-		response_filename.append("/iqdb_");
+		response_filename.append(QStringLiteral("/iqdb_"));
 		response_filename.append(curr_file.completeBaseName());
-		response_filename.append(".html");
+		response_filename.append(QStringLiteral(".html"));
 		m_response_files.push_back(response_filename);
 
 		QFile rf(response_filename);
@@ -197,15 +197,15 @@ IqdbHttpParts::IqdbHttpParts()
 {
 	maxsize.setHeader(
 		QNetworkRequest::ContentDispositionHeader,
-		"form-data; name=\"MAX_FILE_SIZE\"");
+		QStringLiteral("form-data; name=\"MAX_FILE_SIZE\""));
 
 	service.setHeader(
 		QNetworkRequest::ContentDispositionHeader,
-		"form-data; name=\"service[]\"");
+		QStringLiteral("form-data; name=\"service[]\""));
 
 	url.setHeader(
 		QNetworkRequest::ContentDispositionHeader,
-		"form-data; name=\"url\"");
+		QStringLiteral("form-data; name=\"url\""));
 
 	maxsize.setBody(QString::number(ReverseSearch::iqdb_max_file_size).toLatin1());
 	url.setBody("http://");
