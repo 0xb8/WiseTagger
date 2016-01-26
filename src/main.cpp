@@ -7,6 +7,10 @@
 
 #include "window.h"
 #include <QApplication>
+#include <QLocale>
+#include <QTranslator>
+#include <QSettings>
+#include <QFile>
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +20,27 @@ int main(int argc, char *argv[])
 	a.setApplicationName(QStringLiteral(TARGET_PRODUCT));
 	a.setOrganizationName(QStringLiteral(TARGET_COMPANY));
 	a.setOrganizationDomain(QStringLiteral("wolfgirl.org"));
+
+	bool portable = false;
+	// check if running in portable mode
+	if(QFile(qApp->applicationDirPath() +
+		 QStringLiteral("/portable.dat")).exists())
+	{
+		QSettings::setDefaultFormat(QSettings::IniFormat);
+		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
+			qApp->applicationDirPath()+QStringLiteral("/settings"));
+		portable = true;
+	}
+
+	QSettings settings;
+	settings.setValue(QStringLiteral("settings-portable"), portable);
+	auto l = settings.value(QStringLiteral("window/locale"), QStringLiteral("en")).toString();
+	QLocale locale(l);
+	QLocale::setDefault(locale);
+
+	QTranslator translator;
+	if(translator.load(QString(":/i18n/wisetagger_%1.qm").arg(l)))
+		qApp->installTranslator(&translator);
 
 	Window w;
 	w.show();

@@ -57,10 +57,10 @@ Window::Window(QWidget *_parent) :
 	, menu_file(	tr("&File"))
 	, menu_navigation(tr("&Navigation"))
 	, menu_options(	tr("&Options"))
+	, menu_options_language(tr("&Language"))
 	, menu_help(	tr("&Help"))
 	, m_statusbar(nullptr)
-	, m_statusbar_info_label(nullptr),
-	  m_settings_is_portable_mode(false)
+	, m_statusbar_info_label(nullptr)
 {
 	setCentralWidget(&m_tagger);
 	setAcceptDrops(true);
@@ -357,23 +357,14 @@ void Window::saveWindowSettings()
 
 void Window::loadWindowStyles()
 {
-	QFile styles_file(QStringLiteral(":/css/style.default.css"));
-	Q_ASSERT(styles_file.open(QIODevice::ReadOnly));
+	QFile styles_file(QStringLiteral(":/css/default.css"));
+	bool open = styles_file.open(QIODevice::ReadOnly);
+	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
 }
 
 void Window::loadWindowSettings()
 {
-	// check if running in portable mode
-	if(QFile(qApp->applicationDirPath() +
-		 QStringLiteral("/portable.dat")).exists())
-	{
-		QSettings::setDefaultFormat(QSettings::IniFormat);
-		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
-			qApp->applicationDirPath()+QStringLiteral("/settings"));
-		m_settings_is_portable_mode = true;
-	}
-
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("window"));
 	m_last_directory = settings.value(QStringLiteral("last-directory")).toString();
@@ -540,6 +531,42 @@ void Window::createMenus()
 	menu_options.addAction(&a_ib_replace);
 	menu_options.addAction(&a_ib_restore);
 	menu_options.addSeparator();
+	menu_options.addMenu(&menu_options_language);
+	menu_options.addSeparator();
+	auto lang_group = new QActionGroup(&menu_options_language);
+	lang_group->setExclusive(true);
+
+	connect(lang_group, &QActionGroup::triggered, [](QAction* a) {
+		QSettings settings;
+		if(a) {
+			settings.setValue(QStringLiteral("window/locale"),
+					  a->data().toString());
+			QMessageBox::information(nullptr,
+				tr("Language changed"),
+				tr("<p>Please restart the application to apply language change.</p>"));
+		}
+	});
+
+	QDir locales_dir(QStringLiteral(":/i18n/"));
+	auto locales = locales_dir.entryList(QStringList({QStringLiteral("wisetagger_*.qm")}));
+
+	QSettings settings;
+	for(const auto& l : locales) {
+		QString locale(l);
+		locale.truncate(locale.lastIndexOf('.'));
+		locale.remove(0, locale.lastIndexOf('_') +1);
+
+		QString lang = QLocale::languageToString(QLocale(locale).language());
+
+		auto action = new QAction(lang, this);
+		action->setCheckable(true);
+		action->setData(locale);
+		menu_options_language.addAction(action);
+		lang_group->addAction(action);
+		if(settings.value(QStringLiteral("window/locale"), QStringLiteral("en")).toString() == locale)
+			action->setChecked(true);
+	}
+
 	menu_options.addAction(&a_toggle_statusbar);
 
 	menu_help.addAction(&a_help);
@@ -590,6 +617,8 @@ void Window::about()
 
 void Window::help()
 {
+	QSettings settings;
+	bool portable = settings.value(QStringLiteral("settings-portable"), false).toBool();
 	QMessageBox::about(nullptr,
 	tr("Help"),
 	tr("<h2>User Interface</h2>"
@@ -609,18 +638,14 @@ void Window::help()
 	   "<h3>Portable Mode</h3>"
 	   "<p>This application supports running in portable mode. To enable it, create file <code>portable.dat</code> inside application\'s directory.</p>"
 	   "<p>When portable mode is enabled, all settings will be saved in an <code>.ini</code> file inside application\'s directory"
-#ifdef Q_OS_WIN32
 	   " and system registry will not be used."
-#else
-	   "."
-#endif
 	   "</p><p>Portable mode is currently <strong>%5</strong>.</p>"
 	   "<hr><p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
 	).arg(a_ib_replace.text().remove('&'))
 	 .arg(a_ib_restore.text().remove('&'))
-	 .arg(m_reverse_search.proxyEnabled() ? QStringLiteral("enabled") : QStringLiteral("disabled"))
-	 .arg(m_reverse_search.proxyEnabled() ? QStringLiteral(", proxy URL: <code>") + m_reverse_search.proxyURL() : QStringLiteral("<code>"))
-	 .arg(m_settings_is_portable_mode ? QStringLiteral("enabled") : QStringLiteral("disabled")));
+	 .arg(m_reverse_search.proxyEnabled() ? tr("enabled", "proxy") : tr("disabled", "proxy"))
+	 .arg(m_reverse_search.proxyEnabled() ? tr(", proxy URL: <code>") + m_reverse_search.proxyURL() : tr("<code>"))
+	 .arg(portable ? tr("enabled", "portable") : tr("disabled", "portable")));
 }
 
 //------------------------------------------------------------------------

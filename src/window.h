@@ -57,7 +57,6 @@ private:
 	void saveWindowSettings();
 	void loadWindowStyles();
 
-
 	static constexpr const char* MainWindowTitle = "%1%2 [%3x%4] (%5)  –  WiseTagger v%6";
 	static constexpr const char* MainWindowTitleEmpty = "WiseTagger v%1";
 	static constexpr const char* MainWindowTitleProgress = "%7%  –  %1%2 [%3x%4] (%5)  –  WiseTagger v%6";
@@ -91,6 +90,7 @@ private:
 	QMenu menu_file;
 	QMenu menu_navigation;
 	QMenu menu_options;
+	QMenu menu_options_language;
 	QMenu menu_help;
 
 	QStatusBar m_statusbar;
@@ -99,6 +99,5 @@ private:
 #ifdef Q_OS_WIN32
 	QWinTaskbarButton m_win_taskbar_button;
 #endif
-	bool m_settings_is_portable_mode;
 };
 #endif // WINDOW_H

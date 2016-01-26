@@ -1,9 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file>transparency.png</file>
-    </qresource>
-    <qresource prefix="/css">
-        <file>style.default.css</file>
-        <file>style.dark.css</file>
+	<file>transparency.png</file>
+	<file>i18n/wisetagger_ru.qm</file>
+	<file>i18n/wisetagger_en.qm</file>
+	<file>css/default.css</file>
+	<file>css/dark.css</file>
     </qresource>
 </RCC>
