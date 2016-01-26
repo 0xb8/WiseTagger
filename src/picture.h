@@ -12,6 +12,8 @@
 #include <QPixmap>
 #include <QString>
 #include <QLabel>
+#include <QMovie>
+#include <memory>
 
 class QResizeEvent;
 class QDragEnterEvent;
@@ -23,12 +25,23 @@ class Picture : public QLabel
 	Q_OBJECT
 public:
 	explicit Picture(QWidget *parent = nullptr);
+
+	/*!
+	 * \brief Loads and displays image.
+	 * \param filename Image to show.
+	 * \retval true Loaded successfully.
+	 * \retval false Failed to load image.
+	 */
 	bool loadPicture(const QString& filename);
 
 	QSize sizeHint() const override;
-	int width() const;
-	int height() const;
+
+	/// Returns dimensions of loaded image.
+	QSize imageSize() const;
+
 public slots:
+
+	/// Clears image and displays welcome text.
 	void clear();
 
 protected:
@@ -41,12 +54,20 @@ private slots:
 	void resizeTimeout();
 
 private:
+	enum class Type : std::int8_t {
+		Image, Movie
+	};
+
 	void resizeAndSetPixmap();
 	void setBackgroundStyle(bool has_alpha = false);
 
+	QSize   m_current_size;
+	QSize   m_initial_size;
+
 	QPixmap m_pixmap;
-	QSize   m_pixmap_size;
 	QTimer  m_resize_timer;
+	std::unique_ptr<QMovie> m_movie;
+	Type    m_which;
 
 	static const int m_resize_timeout = 100; //ms
 };

@@ -12,6 +12,13 @@
 #include <QObject>
 #include <deque>
 
+/*!
+ * File Queue class allows to select certain file as current and perform typical
+ * operations on it, such as removing or deleting that file.
+ *
+ * Stored file paths are absolute and all member functions taking file paths as
+ * parameters expect them to be absolute too.
+ */
 class FileQueue : public QObject {
 	Q_OBJECT
 public:
@@ -30,93 +37,107 @@ public:
 
 
 	/*!
-	 * \brief Sets file extensions filter used by FileQueue::push and FileQueue::checkExtension
+	 * \brief Sets file extensions filter used by FileQueue::push
+	 *        and FileQueue::checkExtension
+	 * \param filters List of extension wildcards, e.g. \a *.jpg
 	 */
-	void setNameFilter(const QStringList&);
+	void setNameFilter(const QStringList& filters);
 
 
 	/*!
 	 * \brief Checks if extension is allowed by currently set name filter.
-	 * \param File path or extension.
+	 * \param path File path or extension.
 	 */
-	bool checkExtension(const QString&) noexcept;
+	bool checkExtension(const QString& path) noexcept;
 
 
 	/*!
-	 * \brief enqueues file or directory contents.
+	 * \brief Enqueues a file or all files inside a directory.
 	 * \param path Path to file or directory.
 	 *
 	 * If \p path is a file, enqueues it. If \p path is a directory,
 	 * enqueues files inside \p path, according to to filters set by
-	 * FielQueue::setNameFilter
+	 * FileQueue::setNameFilter
 	 */
 	void push(const QString& path);
 
 
 	/*!
-	 * \brief Sorts queue respecting natural numbering.
+	 * \brief Sorts queue taking natural numbering into account.
+	 *
+	 * Numbers in file names are compared by their value. This makes sorted
+	 * file sequence feel more natural, as apposed to \a "1, 10, 11, 2, 20, 21, ..."
 	 */
 	void sort()  noexcept;
 
 
 	/*!
-	 * \brief Clears queue.
+	 * \brief Clears queue contents.
 	 */
 	void clear() noexcept;
 
 
 	/*!
 	 * \brief Selects next file in queue, possibly wrapping around.
-	 * \return Empty string if queue is empty. Next file otherwise.
+	 * \return Next file.
+	 * \retval EmptyString - Queue is empty.
 	 */
 	const QString& forward();
 
 
 	/*!
 	 * \brief Selects previous file in queue, possibly wrapping around.
-	 * \return Empty string if queue is empty. Previous file otherwise.
+	 * \return Previous file.
+	 * \retval EmptyString - Queue is empty.
 	 */
 	const QString& backward();
 
 
 	/*!
 	 * \brief Selects file.
-	 * \param Index to select.
-	 * \return Empty string if index is out of bounds. Selected file otherwise.
+	 * \param index Index to select.
+	 * \return Selected file.
+	 * \retval EmptyString - Index is out of bounds or queue is empty.
 	 */
-	const QString& select(size_t);
+	const QString& select(size_t index);
 
 
 	/*!
 	 * \brief Returns current file.
-	 * \return Empty string if queue is empty. Current file otherwise.
+	 * \return Current file.
+	 * \retval EmptyString - Queue is empty.
 	 */
 	const QString& current() const;
 
 
 	/*!
-	 * \brief Checks if queue is empty.
+	 * \brief Checks if the queue is empty.
+	 * \retval TRUE - Queue is empty.
+	 * \retval FALSE - Queue is not expty.
 	 */
 	bool   empty()        const noexcept;
 
 
 	/*!
-	 * \brief Returns number of enqueued files.
+	 * \return Number of files in queue.
 	 */
 	size_t size()         const noexcept;
 
 
 	/*!
 	 * \brief Returns index of currently selected file.
-	 * \return FileQueue::npos if queue is empty. Index of currently selected file otherwise.
+	 * \return Index of currently selected file.
+	 * \retval FileQueue::npos - Queue is empty
 	 */
 	size_t currentIndex() const noexcept;
 
 
 	/*!
-	 * \brief Finds file in queue.
-	 * \param path Absolute path to file.
-	 * \return FileQueue::npos if \p path is not found in queue. Index of \p path otherwise.
+	 * \brief Finds a file in queue.
+	 * \param path Path to file.
+	 *
+	 * \return Index of \p path in queue.
+	 * \retval FileQueue::npos - \p path was not found.
 	 */
 	size_t find(const QString& path) noexcept;
 
@@ -125,8 +146,8 @@ public:
 	 * \brief Renames currently selected file.
 	 * \param New file name.
 	 *
-	 * \retval \c TRUE  Renamed successfully.
-	 * \retval \c FALSE Could not rename.
+	 * \retval true  - Renamed successfully.
+	 * \retval false - Could not rename.
 	 */
 	bool renameCurrentFile(const QString&);
 
@@ -134,8 +155,8 @@ public:
 	/*!
 	 * \brief Deletes currently selected file permanently.
 	 *
-	 * \retval \c TRUE  Deleted successfully.
-	 * \retval \c FALSE Could not delete file. Queue was not modified.
+	 * \retval true  - Deleted successfully.
+	 * \retval false - Could not delete file. Queue not modified.
 	 */
 	bool deleteCurrentFile();
 

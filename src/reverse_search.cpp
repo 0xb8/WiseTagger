@@ -193,7 +193,7 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 	reply->deleteLater();
 }
 
-IqdbHttpParts::IqdbHttpParts()
+ReverseSearch::IqdbHttpParts::IqdbHttpParts()
 {
 	maxsize.setHeader(
 		QNetworkRequest::ContentDispositionHeader,

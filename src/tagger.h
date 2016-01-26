@@ -20,7 +20,9 @@
 #include "tagger_enums.h"
 #include "file_queue.h"
 
-
+/*!
+ * Main widget of application. Contains Picture viewer and TagInput.
+ */
 class Tagger : public QWidget
 {
 	Q_OBJECT
@@ -29,35 +31,89 @@ public:
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override;
 
-	void openFile(const QString&);  /// opens specified file and enqueues rest of directory.
-	void openDir (const QString&);  /// opens first file and enqueues rest of specified directory.
+	/*!
+	 * \brief Opens file and enqueues its directory.
+	 */
+	void openFile(const QString&);
 
+
+	/*!
+	 * \brief Enqueues directory contents and opens first file.
+	 */
+	void openDir (const QString&);
+
+	/*!
+	 * \brief Renames current file
+	 * \param flags UI behavior modifiers. See ::RenameFlags description.
+	 * \retval RenameStatus::Renamed Renamed successfully
+	 * \retval RenameStatus::Cancelled Rename cancelled by user.
+	 * \retval RenameStatus::Failed Failed to rename.
+	 */
 	RenameStatus rename(RenameFlags flags  = RenameFlags::Default);
 
-	void nextFile(RenameFlags flags = RenameFlags::Default);
-	void prevFile(RenameFlags flags = RenameFlags::Default);
-	void loadCurrentFile();   /// displays currently selected file.
-	void deleteCurrentFile(); /// deletes currently selected file.
 
+	/*!
+	 * \brief Asks to rename current file and opens next.
+	 * \param flags UI behavior modifiers. See ::RenameFlags description.
+	 */
+	void nextFile(RenameFlags flags = RenameFlags::Default);
+
+
+	/*!
+	 * \brief Asks to rename current file and opens previous.
+	 * \param flags UI behavior modifiers. See ::RenameFlags description.
+	 */
+	void prevFile(RenameFlags flags = RenameFlags::Default);
+
+
+	/// Loads currently selected file.
+	void loadCurrentFile();
+
+	/// Asks to delete currently selected file.
+	void deleteCurrentFile();
+
+	/// Returns whether current file name is modified by user.
 	bool    fileModified()    const;
-	int     pictureWidth()    const;
-	int     pictureHeight()   const;
+
+	/// Returns dimensions of current image.
+	QSize   pictureDimensions() const;
+
+	/// Returns file size of current image.
 	qint64  pictureSize()     const;
+
+	/// Returns imageboard post URL of current image.
 	QString postURL()         const;
+
+	/// Returns current image path.
 	QString currentFile()     const;
+
+	/// Returns path to directory of current image.
 	QString currentDir()      const;
-	QString currentText()     const;
+
+	/// Returns file name of current image.
 	QString currentFileName() const;
+
+	/// Returns file type of current image.
 	QString currentFileType() const;
 
+	/// Returns reference to FileQueue.
 	FileQueue& queue();
 
 public slots:
+
+
+	/// Reloads tag files used for autocomplete.
 	void reloadTags();
 
 signals:
+
+	/// File successfully opened.
 	void fileOpened(const QString&);
+
+	/// File name modified by user.
 	void tagsEdited(const QString&);
+
+	/// Imageboad post url changed.
 	void postURLChanged(const QString&);
 
 private:

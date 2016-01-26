@@ -94,8 +94,8 @@ void Tagger::deleteCurrentFile()
 			.arg(currentFileName())
 			.arg(currentFileType())
 			.arg(util::size::printable(pictureSize()))
-			.arg(pictureWidth())
-			.arg(pictureHeight())
+			.arg(pictureDimensions().width())
+			.arg(pictureDimensions().height())
 			.arg(QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss"))),
 		QMessageBox::Save|QMessageBox::Discard);
 	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
@@ -173,28 +173,17 @@ QString Tagger::currentFileType() const
 	return fi.suffix().toUpper();
 }
 
-QString Tagger::currentText() const
-{
-	return m_input.text();
-}
-
-int Tagger::pictureWidth() const
-{
-	return m_picture.width();
-}
-
-
-int Tagger::pictureHeight() const
-{
-	return m_picture.height();
-}
-
 bool Tagger::fileModified() const
 {
 	if(m_file_queue.empty()) // NOTE: important
 		return false;
 
 	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
+}
+
+QSize Tagger::pictureDimensions() const
+{
+	return m_picture.imageSize();
 }
 
 
