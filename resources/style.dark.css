@@ -1,0 +1,87 @@
+/* Copyright © 2015 cat <cat@wolfgirl.org>
+ * This program is free software. It comes without any warranty, to the extent
+ * permitted by applicable law. You can redistribute it and/or modify it under
+ * the terms of the Do What The Fuck You Want To Public License, Version 2, as
+ * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+ */
+
+QLabel#Picture {
+    color: #999;
+    font-size: 13px;
+    background-color: #333;
+    border-top: 1px solid #444;
+}
+
+QLabel#StatusbarInfo {
+    background-color: transparent;
+    border: none;
+    color: #999;
+}
+
+QStatusBar#StatusBar {
+    background-color: rgba(0,0,0,0.3);
+    border-top: 1px outset #111;
+}
+QLineEdit#Input {
+    border: 1px outset black;
+    border-radius: 2px;
+    padding: 0 8px;
+    background: #555;
+    selection-background-color: darkgray;
+    color: #eee;
+}
+
+QMainWindow, QMainWindow QFrame {
+    background-color: #232323;
+    color: #eee;
+}
+
+QMenuBar {
+    margin: 2px;
+    background-color: #232323;
+}
+
+QMenuBar::item {
+    background: transparent;
+    color: white;
+    padding: 2px 5px;
+}
+QMenuBar::item::selected {
+    background-color: #4e4e4e;
+}
+
+QMenu {
+    border: 1px solid black;
+    background-color: #333;
+    color: #eee;
+}
+
+QMenu::item {
+    padding: 3px 10px 3px 25px;
+    border: 1px solid transparent;
+}
+
+QMenu::item::disabled {
+    color: grey;
+}
+/*
+QMenu::indicator {
+    background-color: rgba(0,0,0,.2);
+    width: 20px;
+}
+*/
+
+QMenu::separator {
+    height: 1px;
+    background: grey;
+    margin: 3px 10px 3px 25px;
+}
+
+QMenu::item:selected { /* when user selects item using mouse or keyboard */
+    background-color: #4e4e4e;
+}
+
+QMenu::item::disabled:selected { /* when user selects item using mouse or keyboard */
+    background-color: transparent;
+}
+

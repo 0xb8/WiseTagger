@@ -44,4 +44,7 @@ HEADERS  +=                                          \
     $$PWD/util/*.h
 
 RESOURCES +=                                         \
-    resources.qrc
+    resources/resources.qrc
+
+# lupdate cannot into wildcard expansion
+TRANSLATIONS = $$PWD/i18n/wisetagger_ru.ts
