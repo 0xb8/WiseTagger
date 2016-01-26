@@ -59,7 +59,8 @@ Window::Window(QWidget *_parent) :
 	, menu_options(	tr("&Options"))
 	, menu_help(	tr("&Help"))
 	, m_statusbar(nullptr)
-	, m_statusbar_info_label(nullptr)
+	, m_statusbar_info_label(nullptr),
+	  m_settings_is_portable_mode(false)
 {
 	setCentralWidget(&m_tagger);
 	setAcceptDrops(true);
@@ -171,7 +172,7 @@ void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 
 	updateWindowTitleProgress(util::size::percent(bytesSent, bytesTotal));
 	statusBar()->showMessage(
-		tr("Uploading <b>%1</b> to iqdb.org...  %2% complete")
+		tr("Uploading %1 to iqdb.org...  %2% complete")
 			.arg(m_tagger.currentFileName())
 			.arg(util::size::percent(bytesSent, bytesTotal)));
 }
@@ -250,7 +251,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		pdbg << "loaded" << m_tagger.queue().size() << "images from" << fileurls.size() << "dropped items";
 
-		m_tagger.queue().sort();
+		//m_tagger.queue().sort();
 		m_tagger.queue().select(0u);
 		m_tagger.loadCurrentFile();
 		return true;
@@ -357,8 +358,7 @@ void Window::saveWindowSettings()
 void Window::loadWindowStyles()
 {
 	QFile styles_file(QStringLiteral(":/css/style.default.css"));
-	auto open = styles_file.open(QIODevice::ReadOnly);
-	Q_ASSERT(open);
+	Q_ASSERT(styles_file.open(QIODevice::ReadOnly));
 	qApp->setStyleSheet(styles_file.readAll());
 }
 
@@ -366,11 +366,12 @@ void Window::loadWindowSettings()
 {
 	// check if running in portable mode
 	if(QFile(qApp->applicationDirPath() +
-			QStringLiteral("/portable.dat")).exists())
+		 QStringLiteral("/portable.dat")).exists())
 	{
 		QSettings::setDefaultFormat(QSettings::IniFormat);
 		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
 			qApp->applicationDirPath()+QStringLiteral("/settings"));
+		m_settings_is_portable_mode = true;
 	}
 
 	QSettings settings;
@@ -429,6 +430,13 @@ void Window::createActions()
 	a_iqdb_search.setEnabled(false);
 	a_open_loc.setEnabled(false);
 	a_reload_tags.setEnabled(false);
+
+	a_open_post.setStatusTip(  tr("Open imageboard post of this image."));
+	a_iqdb_search.setStatusTip(tr("Upload this image to iqdb.org and open search results page in default browser."));
+	a_open_loc.setStatusTip(   tr("Open folder where this image is located."));
+	a_reload_tags.setStatusTip(tr("Reload changes in tag files."));
+	a_ib_replace.setStatusTip( tr("Toggle replacing certain imageboard tags with their shorter version."));
+	a_ib_restore.setStatusTip( tr("Toggle restoring imageboard tags back to their original version."));
 
 	a_ib_replace.setCheckable(true);
 	a_ib_restore.setCheckable(true);
@@ -571,7 +579,7 @@ void Window::about()
 {
 	QMessageBox::about(nullptr,
 	tr("About WiseTagger"),
-	tr("<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2015 catgirl &lt;"
+	tr("<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2016 catgirl &lt;"
 	   "<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>"
 	   "<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. "
 	   "You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, "
@@ -585,11 +593,34 @@ void Window::help()
 	QMessageBox::about(nullptr,
 	tr("Help"),
 	tr("<h2>User Interface</h2>"
-	   "<p><b>Tab</b> &ndash; list autocomplete suggestions</p>"
-	   "<p><b>Enter</b> &ndash; apply changes and clear focus</p>"
-	   "<p><b>Left</b> and <b>Right</b> arrows &ndash; show previous/next picture</p>"
-	   "<p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
-	));
+	   "<p><u>Tab</u> &nbsp;&ndash;&nbsp; list autocomplete suggestions.</p>"
+	   "<p><u>Enter</u>&nbsp; &ndash;&nbsp; apply changes and clear focus.</p>"
+	   "<p><u>Left</u> and <u>Right</u> arrows &nbsp;&ndash;&nbsp; show previous/next picture.</p>"
+	   "<hr/>"
+	   "<h2>Settings</h2>"
+	   "<p><u>%1</u> &nbsp;&ndash;&nbsp; replaces certain imageboard tags with their shorter version.</p>"
+	   "<p><u>%2</u> &nbsp;&ndash;&nbsp; restores replaced imageboard tags back to their original version.</p>"
+	   "<h3>Proxy</h3>"
+	   "<p>This application accesses internet only when <em>Reverse Searching</em> a picture. It uses a site <a href=\"https://iqdb.org\">iqdb.org</a>.</p>"
+	   "In some cases a proxy is needed to access internet, or to protect your privacy (using Tor for example), or to circumvent state censorship.</p>"
+	   "<p>It is possible to specify a proxy URL in command line: <em><pre>--proxy=socks://localhost:9050</pre></em>"
+	   "This setting is not saved, so you have to specify it each time. Most convenient way to do this is to edit application shortcut.</p>"
+	   "<p>Proxy is currently <b>%3</b>%4</code>.</p>"
+	   "<h3>Portable Mode</h3>"
+	   "<p>This application supports running in portable mode. To enable it, create file <code>portable.dat</code> inside application\'s directory.</p>"
+	   "<p>When portable mode is enabled, all settings will be saved in an <code>.ini</code> file inside application\'s directory"
+#ifdef Q_OS_WIN32
+	   " and system registry will not be used."
+#else
+	   "."
+#endif
+	   "</p><p>Portable mode is currently <strong>%5</strong>.</p>"
+	   "<hr><p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
+	).arg(a_ib_replace.text().remove('&'))
+	 .arg(a_ib_restore.text().remove('&'))
+	 .arg(m_reverse_search.proxyEnabled() ? QStringLiteral("enabled") : QStringLiteral("disabled"))
+	 .arg(m_reverse_search.proxyEnabled() ? QStringLiteral(", proxy URL: <code>") + m_reverse_search.proxyURL() : QStringLiteral("<code>"))
+	 .arg(m_settings_is_portable_mode ? QStringLiteral("enabled") : QStringLiteral("disabled")));
 }
 
 //------------------------------------------------------------------------

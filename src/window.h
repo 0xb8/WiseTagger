@@ -99,5 +99,6 @@ private:
 #ifdef Q_OS_WIN32
 	QWinTaskbarButton m_win_taskbar_button;
 #endif
+	bool m_settings_is_portable_mode;
 };
 #endif // WINDOW_H
