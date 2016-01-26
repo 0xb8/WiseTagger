@@ -55,19 +55,20 @@ private slots:
 
 private:
 	enum class Type : std::int8_t {
-		Image, Movie
+		None, Image, ImageWithAlpha, Movie, MovieWithAlpha
 	};
+	using movie = std::unique_ptr<QMovie>;
 
 	void resizeAndSetPixmap();
-	void setBackgroundStyle(bool has_alpha = false);
+	void setBackgroundStyle();
 
 	QSize   m_current_size;
 	QSize   m_initial_size;
 
 	QPixmap m_pixmap;
 	QTimer  m_resize_timer;
-	std::unique_ptr<QMovie> m_movie;
-	Type    m_which;
+	movie   m_movie;
+	Type    m_type;
 
 	static const int m_resize_timeout = 100; //ms
 };
