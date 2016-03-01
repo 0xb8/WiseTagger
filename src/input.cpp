@@ -33,7 +33,7 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 
 void TagInput::fixTags(bool sort)
 {
-	m_text_list = text().split(QChar::fromLatin1(' '), QString::SkipEmptyParts);
+	m_text_list = text().split(QChar(' '), QString::SkipEmptyParts);
 
 	QSettings settings;
 	if(settings.value(QStringLiteral("imageboard/replace-tags"), false).toBool())
@@ -71,11 +71,11 @@ void TagInput::fixTags(bool sort)
 	QString newname;
 	for(const auto& tag : m_text_list) {
 		newname.append(tag);
-		newname.append(QChar::fromLatin1(' '));
+		newname.append(QChar(' '));
 	}
 
 	newname.remove(newname.length()-1, 1); // remove trailing space
-	setText(newname);
+	updateText(newname);
 }
 
 void TagInput::keyPressEvent(QKeyEvent *m_event)
@@ -83,7 +83,7 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 	if(m_event->key() == Qt::Key_Tab) {
 		if((!next_completer())&&(!next_completer()))
 			return;
-		setText(m_completer->currentCompletion());
+		updateText(m_completer->currentCompletion());
 		return;
 	}
 
@@ -140,7 +140,13 @@ void TagInput::loadTagFiles(const QStringList &files)
 	setCompleter(m_completer.get());
 }
 
-void TagInput::reloadAdditionalTags()
+void TagInput::setText(const QString &s)
+{
+	clearTagState();
+	updateText(s);
+}
+
+void TagInput::clearTagState()
 {
 	/* Remove elements where (value == key) to restore original state */
 	for(auto it = m_related_tags.begin(); it != m_related_tags.end(); ) {
@@ -156,16 +162,14 @@ void TagInput::reloadAdditionalTags()
 	}
 
 	/* Restore state */
-	for(auto it = m_removed_tags.begin(); it != m_removed_tags.end(); ++it) {
-		if (it->second == true) {
-			it->second = false;
-		}
+	for(auto& pair : m_removed_tags) {
+		pair.second = false;
 	}
 }
 
-void TagInput::setText(const QString &t)
+void TagInput::updateText(const QString &t)
 {
-	m_text_list = t.split(QChar::fromLatin1(' '), QString::SkipEmptyParts);
+	m_text_list = t.split(QChar(' '), QString::SkipEmptyParts);
 	QLineEdit::setText(t);
 }
 
@@ -319,52 +323,70 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 QStringList TagInput::related_tags(const QString &tag)
 {
-	QStringList ret;
-	auto mapped_range = m_related_tags.equal_range(tag);
-	auto key_eq_val = std::find_if(mapped_range.first, mapped_range.second, [](const auto& p) { return p.first == p.second; });
-	/* Check if tag hasn't been added already */
-	if((mapped_range.first != m_related_tags.end()) && (key_eq_val == mapped_range.second)) {
-		/* Add all related tags for this tag */
-		std::for_each(mapped_range.first, mapped_range.second,
-			[&](const auto& p) {
-				ret.push_back(p.second);
+	QStringList relatives;
+	auto related_tags_range = m_related_tags.equal_range(tag);
+	auto key_eq_val = std::find_if(related_tags_range.first,
+				       related_tags_range.second,
+				       [](const auto& p) { return p.first == p.second; });
+	bool found_tag_entry = related_tags_range.first != m_related_tags.end();
+	bool tag_already_processed = key_eq_val != related_tags_range.second;
+
+	if(found_tag_entry && !tag_already_processed) {
+		std::for_each(related_tags_range.first, related_tags_range.second,
+			[&relatives](const auto& p)
+			{	/* Add all related tags for this tag */
+				relatives.push_back(p.second);
 			});
-		/* Mark this tag as processed by inserting additional element into hashmap,
-		 * whose key and value are both equal to this tag */
+
+		/* Mark this tag as processed by inserting marker element into hashmap,
+		   whose key and value are both equal to this tag. This also prevents
+		   infinite looping.
+		   If user decides to remove related tag(s), they will not be added again.
+		 */
 		m_related_tags.insert(std::pair<QString,QString>(tag,tag));
 	}
-	return ret;
+	return relatives;
 }
 
 QStringList TagInput::replacement_tags(QString &tag)
 {
-	QStringList ret;
-	auto replaced_range = m_replaced_tags.equal_range(tag);
-	auto key_eq_val = std::find_if(replaced_range.first, replaced_range.second, [](const auto& p) { return p.first == p.second; });
-	/* Check if tag hasn't been added already */
-	if((replaced_range.first != m_replaced_tags.end()) && (key_eq_val == replaced_range.second)) {
-		/* Add all replacement tags for this tag and remove it */
-		std::for_each(replaced_range.first, replaced_range.second,
-			[&](const auto& p) {
-				ret.push_back(p.second);
+	QStringList replacements;
+	auto replaced_tags_range = m_replaced_tags.equal_range(tag);
+	auto key_eq_val = std::find_if(replaced_tags_range.first,
+				       replaced_tags_range.second,
+				       [](const auto& p) { return p.first == p.second; });
+	bool found_tag_entry = replaced_tags_range.first != m_replaced_tags.end();
+	bool tag_already_processed = key_eq_val != replaced_tags_range.second;
+
+
+	if(found_tag_entry && !tag_already_processed) {
+		std::for_each(replaced_tags_range.first, replaced_tags_range.second,
+			[&replacements](const auto& p)
+			{	/* Add all replacement tags for this tag */
+				replacements.push_back(p.second);
 			});
-			/* Mark this tag as processed by inserting additional element into hashmap,
-			 * whose key and value are both equal to this tag */
-			m_replaced_tags.insert(std::pair<QString,QString>(tag,tag));
-			tag.clear();
+
+		/* Mark this tag as processed by inserting marker element into hashmap,
+		   whose key and value are both equal to this tag. This also prevents
+		   infinite looping.
+		   If user decides to remove replaced tag(s) and enters original one(s),
+		   they will not be replaced again.
+		 */
+		m_replaced_tags.insert(std::pair<QString,QString>(tag,tag));
+		tag.clear(); /* Clear original tag */
 	}
-	return ret;
+	return replacements;
 }
 
 void TagInput::remove_if_unwanted(QString &tag)
 {
-	auto removed_pos = m_removed_tags.find(tag);
-	/* Check if it hasn't been removed already */
-	if(removed_pos != m_removed_tags.end()) {
-		if(removed_pos->second == false) {
+	auto removed_tag = m_removed_tags.find(tag);
+	if(removed_tag != m_removed_tags.end()) {
+		/* Allow user to enter and keep tag which has been autoremoved */
+		if(removed_tag->second == false) {
 			tag.clear();
-			/* Mark this tag as processed */
-			removed_pos->second = true;
+			/* Next time this tag will not be removed */
+			removed_tag->second = true;
 		}
 	}
 }

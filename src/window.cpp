@@ -75,15 +75,13 @@ Window::Window(QWidget *_parent) :
 	parseCommandLineArguments();
 }
 
-Window::~Window() { }
-
 //------------------------------------------------------------------------------
 void Window::fileOpenDialog()
 {
 	QString fileName = QFileDialog::getOpenFileName(this,
 		tr("Open File"),
 		m_last_directory,
-		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png)"));
+		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png *.bmp)"));
 
 	m_tagger.openFile(fileName);
 }
@@ -107,13 +105,13 @@ void Window::updateWindowTitle()
 		return;
 	}
 	m_last_directory = m_tagger.currentDir();
-	setWindowTitle(tr(Window::MainWindowTitle)
-		.arg(m_tagger.currentFileName())
-		.arg(m_tagger.fileModified() ? QChar('*') : QStringLiteral(""))
-		.arg(m_tagger.pictureDimensions().width())
-		.arg(m_tagger.pictureDimensions().height())
-		.arg(util::size::printable(m_tagger.pictureSize()))
-		.arg(qApp->applicationVersion()));
+	setWindowTitle(tr(Window::MainWindowTitle).arg(
+		m_tagger.currentFileName(),
+		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+		QString::number(m_tagger.pictureDimensions().width()),
+		QString::number(m_tagger.pictureDimensions().height()),
+		util::size::printable(m_tagger.pictureSize()),
+		qApp->applicationVersion()));
 }
 
 void Window::updateWindowTitleProgress(int progress)
@@ -123,14 +121,14 @@ void Window::updateWindowTitleProgress(int progress)
 			.arg(qApp->applicationVersion()));
 		return;
 	}
-	setWindowTitle(tr(Window::MainWindowTitleProgress)
-		.arg(m_tagger.currentFileName())
-		.arg(m_tagger.fileModified() ? QChar('*') : QStringLiteral(""))
-		.arg(m_tagger.pictureDimensions().width())
-		.arg(m_tagger.pictureDimensions().height())
-		.arg(util::size::printable(m_tagger.pictureSize()))
-		.arg(qApp->applicationVersion())
-		.arg(progress));
+	setWindowTitle(tr(Window::MainWindowTitleProgress).arg(
+		m_tagger.currentFileName(),
+		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+		QString::number(m_tagger.pictureDimensions().width()),
+		QString::number(m_tagger.pictureDimensions().height()),
+		util::size::printable(m_tagger.pictureSize()),
+		qApp->applicationVersion(),
+		QString::number(progress)));
 }
 
 void Window::updateStatusBarText()
@@ -140,8 +138,9 @@ void Window::updateStatusBarText()
 		return;
 	}
 	auto current = m_tagger.queue().currentIndex() + 1u;
-	auto size    = m_tagger.queue().size();
-	m_statusbar_info_label.setText(tr("%1 / %2  ").arg(current).arg(size));
+	auto qsize    = m_tagger.queue().size();
+	m_statusbar_info_label.setText(tr("%1 / %2  ")
+		.arg(QString::number(current),QString::number(qsize)));
 }
 
 void Window::updateImageboardPostURL(QString url)
@@ -152,7 +151,6 @@ void Window::updateImageboardPostURL(QString url)
 	} else {
 		m_post_url = url;
 	}
-
 }
 
 void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
@@ -175,8 +173,8 @@ void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 	updateWindowTitleProgress(util::size::percent(bytesSent, bytesTotal));
 	statusBar()->showMessage(
 		tr("Uploading %1 to iqdb.org...  %2% complete")
-			.arg(m_tagger.currentFileName())
-			.arg(util::size::percent(bytesSent, bytesTotal)));
+			.arg(m_tagger.currentFileName(), QString::number(
+			     util::size::percent(bytesSent, bytesTotal))));
 }
 
 void Window::hideUploadProgress()
@@ -218,7 +216,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		return true;
 	}
 	if(e->type() == QEvent::Drop) {
-		auto drop_event = static_cast<QDropEvent*>(e);
+		const auto drop_event = static_cast<QDropEvent*>(e);
 		const auto fileurls = drop_event->mimeData()->urls();
 		QFileInfo dropfile;
 
@@ -253,7 +251,6 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		pdbg << "loaded" << m_tagger.queue().size() << "images from" << fileurls.size() << "dropped items";
 
-		//m_tagger.queue().sort();
 		m_tagger.queue().select(0u);
 		m_tagger.loadCurrentFile();
 		return true;
@@ -535,10 +532,11 @@ void Window::createMenus()
 	menu_options.addSeparator();
 	menu_options.addMenu(&menu_options_language);
 	menu_options.addSeparator();
+
 	auto lang_group = new QActionGroup(&menu_options_language);
 	lang_group->setExclusive(true);
 
-	connect(lang_group, &QActionGroup::triggered, [](QAction* a) {
+	connect(lang_group, &QActionGroup::triggered, [](const QAction* a) {
 		QSettings settings;
 		if(a) {
 			settings.setValue(QStringLiteral("window/locale"),
@@ -549,24 +547,28 @@ void Window::createMenus()
 		}
 	});
 
-	QDir locales_dir(QStringLiteral(":/i18n/"));
-	auto locales = locales_dir.entryList(QStringList({QStringLiteral("wisetagger_*.qm")}));
+	const QDir locales_dir(QStringLiteral(":/i18n/"));
+	const auto locales = locales_dir.entryList(QStringList({QStringLiteral("wisetagger_*.qm")}));
 
 	QSettings settings;
+	QString locale;
 	for(const auto& l : locales) {
-		QString locale(l);
+		locale = l;
 		locale.truncate(locale.lastIndexOf('.'));
 		locale.remove(0, locale.lastIndexOf('_') +1);
 
-		QString lang = QLocale::languageToString(QLocale(locale).language());
-
+		const auto lang = QLocale::languageToString(QLocale(locale).language());
 		auto action = new QAction(lang, this);
 		action->setCheckable(true);
 		action->setData(locale);
 		menu_options_language.addAction(action);
 		lang_group->addAction(action);
-		if(settings.value(QStringLiteral("window/locale"), QStringLiteral("en")).toString() == locale)
+
+		if(settings.value(QStringLiteral("window/locale"),
+				  QStringLiteral("en")).toString() == locale)
+		{
 			action->setChecked(true);
+		}
 	}
 
 	menu_options.addAction(&a_toggle_statusbar);
@@ -607,14 +609,14 @@ void Window::updateMenus()
 void Window::about()
 {
 	QMessageBox::about(nullptr,
-	tr("About WiseTagger"),
-	tr("<h3>WiseTagger v%1</h3><p>Built %2, %3.</p><p>Copyright &copy; 2016 catgirl &lt;"
+	tr("About %1").arg(QStringLiteral(TARGET_PRODUCT)),
+	tr("<h3>%1 v%2</h3><p>Built %3, %4.</p><p>Copyright &copy; 2016 catgirl &lt;"
 	   "<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>"
 	   "<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. "
 	   "You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, "
 	   "Version 2, as published by Sam Hocevar. See <a href=\"http://www.wtfpl.net\">http://www.wtfpl.net/</a> "
 	   "for more details.</p>"
-	).arg(qApp->applicationVersion(), QStringLiteral(__DATE__), QStringLiteral(__TIME__)));
+	).arg(QStringLiteral(TARGET_PRODUCT), qApp->applicationVersion(), QStringLiteral(__DATE__), QStringLiteral(__TIME__)));
 }
 
 void Window::help()
@@ -632,22 +634,23 @@ void Window::help()
 	   "<p><u>%1</u> &nbsp;&ndash;&nbsp; replaces certain imageboard tags with their shorter version.</p>"
 	   "<p><u>%2</u> &nbsp;&ndash;&nbsp; restores replaced imageboard tags back to their original version.</p>"
 	   "<h3>Proxy</h3>"
-	   "<p>This application accesses internet only when <em>Reverse Searching</em> a picture. It uses a site <a href=\"https://iqdb.org\">iqdb.org</a>.</p>"
+	   "<p>%6 accesses internet only when <em>Reverse Searching</em> a picture. It uses a site <a href=\"https://iqdb.org\">iqdb.org</a>.</p>"
 	   "In some cases a proxy is needed to access internet, or to protect your privacy (using Tor for example), or to circumvent state censorship.</p>"
 	   "<p>It is possible to specify a proxy URL in command line: <em><pre>--proxy=socks://localhost:9050</pre></em>"
 	   "This setting is not saved, so you have to specify it each time. Most convenient way to do this is to edit application shortcut.</p>"
-	   "<p>Proxy is currently <b>%3</b>%4</code>.</p>"
+	   "<p>Proxy is currently <strong><u>%3</u></strong>%4</code>.</p>"
 	   "<h3>Portable Mode</h3>"
-	   "<p>This application supports running in portable mode. To enable it, create file <code>portable.dat</code> inside application\'s directory.</p>"
+	   "<p>%6 supports running in portable mode. To enable it, create file <code>portable.dat</code> inside application\'s directory.</p>"
 	   "<p>When portable mode is enabled, all settings will be saved in an <code>.ini</code> file inside application\'s directory"
 	   " and system registry will not be used."
-	   "</p><p>Portable mode is currently <strong>%5</strong>.</p>"
+	   "</p><p>Portable mode is currently <strong><u>%5</u></strong>.</p>"
 	   "<hr><p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
-	).arg(a_ib_replace.text().remove('&'))
-	 .arg(a_ib_restore.text().remove('&'))
-	 .arg(m_reverse_search.proxyEnabled() ? tr("enabled", "proxy") : tr("disabled", "proxy"))
-	 .arg(m_reverse_search.proxyEnabled() ? tr(", proxy URL: <code>") + m_reverse_search.proxyURL() : tr("<code>"))
-	 .arg(portable ? tr("enabled", "portable") : tr("disabled", "portable")));
+	).arg(a_ib_replace.text().remove('&'),
+	      a_ib_restore.text().remove('&'),
+	      m_reverse_search.proxyEnabled() ? tr("enabled", "proxy") : tr("disabled", "proxy"),
+	      m_reverse_search.proxyEnabled() ? tr(", proxy URL: <code>") + m_reverse_search.proxyURL() : tr("<code>"),
+	      portable ? tr("enabled", "portable") : tr("disabled", "portable"),
+	      QStringLiteral(TARGET_PRODUCT)));
 }
 
 //------------------------------------------------------------------------
