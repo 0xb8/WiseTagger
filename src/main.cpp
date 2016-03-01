@@ -14,7 +14,10 @@
 
 int main(int argc, char *argv[])
 {
-	qSetMessagePattern(QStringLiteral("%{if-warning}[WARN] %{endif}[%{time h:mm:ss.zzz}] %{function}  \t%{message}"));
+	qSetMessagePattern(QStringLiteral("%{if-warning}[WARN] %{endif}"
+					  "%{if-debug}[DBG]  %{endif}"
+					  "(%{time h:mm:ss.zzz}) %{if-category}%{category}: %{endif}"
+					  "%{if-debug}%{function}  %{endif}\t%{message}"));
 	QApplication a(argc, argv);
 	a.setApplicationVersion(QStringLiteral(APP_VERSION));
 	a.setApplicationName(QStringLiteral(TARGET_PRODUCT));

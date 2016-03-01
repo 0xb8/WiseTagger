@@ -57,7 +57,7 @@ private:
 	enum class Type : std::int8_t {
 		None, Image, ImageWithAlpha, Movie, MovieWithAlpha
 	};
-	using movie = std::unique_ptr<QMovie>;
+	using Movie = std::unique_ptr<QMovie>;
 
 	void resizeAndSetPixmap();
 	void setBackgroundStyle();
@@ -67,7 +67,7 @@ private:
 
 	QPixmap m_pixmap;
 	QTimer  m_resize_timer;
-	movie   m_movie;
+	Movie   m_movie;
 	Type    m_type;
 
 	static const int m_resize_timeout = 100; //ms

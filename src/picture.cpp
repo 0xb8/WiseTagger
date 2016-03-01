@@ -11,7 +11,12 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QApplication>
-#include "util/debug.h"
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(pclc, "Picture")
+
+#define pdbg qCDebug(pclc)
+#define pwarn qCWarning(pclc)
 
 Picture::Picture(QWidget *parent) : QLabel(parent), m_movie(nullptr) {
 	setFocusPolicy(Qt::ClickFocus);
@@ -33,6 +38,7 @@ bool Picture::loadPicture(const QString &filename)
 		m_movie = std::make_unique<QMovie>(filename);
 		if(!m_movie->isValid()) {
 			m_movie.reset(nullptr);
+			m_type = Type::None;
 			return false;
 		}
 		m_movie->setCacheMode(QMovie::CacheAll);
@@ -41,11 +47,12 @@ bool Picture::loadPicture(const QString &filename)
 		const auto cpm = movie()->currentPixmap();
 		m_initial_size = cpm.size();
 		m_type = cpm.hasAlpha() ? Type::MovieWithAlpha : Type::Movie;
-
 	} else {
-		if(!m_pixmap.load(filename))
+		if(!m_pixmap.load(filename)) {
+			m_pixmap.loadFromData(nullptr);
+			m_type = Type::None;
 			return false;
-
+		}
 		m_initial_size = m_pixmap.size();
 		m_type = m_pixmap.hasAlpha() ? Type::ImageWithAlpha : Type::Image;
 	}

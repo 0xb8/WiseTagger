@@ -5,31 +5,33 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+#include <QApplication>
+#include <QCollator>
 #include <QCommandLineParser>
 #include <QDesktopServices>
 #include <QDirIterator>
-#include <QApplication>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QFile>
-#include <QUrl>
-#include <QMimeData>
-#include <QSettings>
-#include <QCollator>
-
-#include <QKeySequence>
-#include <QMessageBox>
-
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
-
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QKeySequence>
 #include <QMenuBar>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QSettings>
+#include <QUrl>
 
 #include "window.h"
 #include "util/open_graphical_shell.h"
-#include "util/debug.h"
 #include "util/size.h"
+
+Q_LOGGING_CATEGORY(wilc, "Window")
+#define pdbg qCDebug(wilc)
+#define pwarn qCWarning(wilc)
+
+//------------------------------------------------------------------------------
 
 Window::Window(QWidget *_parent) :
 	QMainWindow(_parent)

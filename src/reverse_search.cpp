@@ -6,6 +6,7 @@
  */
 
 #include "reverse_search.h"
+#include <QLoggingCategory>
 #include <QDesktopServices>
 #include <QNetworkRequest>
 #include <QStandardPaths>
@@ -18,7 +19,9 @@
 #include <QFileInfo>
 #include <memory>
 
-#include "util/debug.h"
+Q_LOGGING_CATEGORY(rvlc, "ReverseSearch")
+#define pdbg qCDebug(rvlc)
+#define pwarn qCWarning(rvlc)
 
 ReverseSearch::ReverseSearch(QWidget *_parent) : QObject(_parent), m_proxy(QNetworkProxy::NoProxy)
 {
@@ -188,7 +191,7 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 		QDesktopServices::openUrl(QUrl::fromLocalFile(response_filename));
 		emit finished();
 	} else {
-		pdbg << "incorrect reply:" << reply;
+		pwarn << "open_reply(): incorrect reply:" << reply;
 	}
 	reply->deleteLater();
 }

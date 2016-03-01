@@ -25,7 +25,7 @@ class Window : public QMainWindow {
 	Q_OBJECT
 public:
 	explicit Window(QWidget *_parent = nullptr);
-	~Window() override;
+	~Window() override = default;
 
 public slots:
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);

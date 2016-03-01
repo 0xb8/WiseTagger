@@ -8,14 +8,17 @@
 #include "input.h"
 #include "util/imageboard.h"
 #include <algorithm>
-#include <QMessageBox>
-#include <QTextStream>
-#include <QTextCodec>
-#include <QKeyEvent>
 #include <QFileInfo>
+#include <QKeyEvent>
+#include <QLoggingCategory>
+#include <QMessageBox>
 #include <QSettings>
-#include <QDebug>
-#include "util/debug.h"
+#include <QTextCodec>
+#include <QTextStream>
+
+Q_LOGGING_CATEGORY(inlc, "TagInput")
+#define pdbg qCDebug(inlc)
+#define pwarn qCWarning(inlc)
 
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {

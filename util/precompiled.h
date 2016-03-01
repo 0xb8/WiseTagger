@@ -28,6 +28,7 @@
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QLoggingCategory>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>

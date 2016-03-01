@@ -10,9 +10,13 @@
 
 #include <algorithm>
 #include <cctype>
-#include <QString>
 #include <stdexcept>
-#include <util/debug.h>
+#include <QString>
+#include <QLoggingCategory>
+
+Q_LOGGING_CATEGORY(iblc, "Imageboard")
+#define pdbg qCDebug(iblc)
+#define pwarn qCWarning(iblc)
 
 namespace std {
 	template<>
@@ -241,4 +245,6 @@ auto get_imageboard_post_url(const ContainerT &c)
 
 } // namespace imageboard
 
+#undef pdbg
+#undef pwarn
 #endif

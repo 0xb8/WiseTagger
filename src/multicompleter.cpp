@@ -15,20 +15,20 @@ QString MultiSelectCompleter::pathFromIndex(const QModelIndex& index) const
 {
 	auto path = QCompleter::pathFromIndex(index);
 	auto text = static_cast<QLineEdit*>(widget())->text();
-	int pos   = text.lastIndexOf(QChar::fromLatin1(' '));
+	int pos   = text.lastIndexOf(QChar(' '));
 
 	if (pos >= 0) {
-		path = text.left(pos) + QChar::fromLatin1(' ') + path;
+		path = text.left(pos) + QChar(' ') + path;
 	}
 	return path;
 }
 
 QStringList MultiSelectCompleter::splitPath(const QString& path) const
 {
-	int pos = path.lastIndexOf(QChar::fromLatin1(' ')) + 1;
+	int pos = path.lastIndexOf(QChar(' ')) + 1;
 	const int path_length = path.length();
 
-	while (pos < path_length && path[pos] == QChar::fromLatin1(' ')) {
+	while (pos < path_length && path[pos] == QChar(' ')) {
 		++pos;
 	}
 	return QStringList(path.mid(pos));

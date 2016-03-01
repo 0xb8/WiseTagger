@@ -6,10 +6,14 @@
  */
 
 #include "file_queue.h"
-#include <util/debug.h>
+#include "util/traits.h"
+#include <QLoggingCategory>
 #include <QDirIterator>
 #include <QCollator>
-#include "util/traits.h"
+
+Q_LOGGING_CATEGORY(fqlc, "FileQueue")
+#define pdbg qCDebug(fqlc)
+#define pwarn qCWarning(fqlc)
 
 const QString FileQueue::m_empty{nullptr,0};
 
@@ -43,7 +47,7 @@ void FileQueue::push(const QString &f)
 			m_files.push_back(it.fileInfo().absoluteFilePath());
 		}
 	} else {
-		pwarn << "invalid extension";
+		pwarn << "push() : extension" << fi.suffix() << "not allowed by filter";
 	}
 }
 
@@ -81,6 +85,7 @@ void FileQueue::sort() noexcept
 bool FileQueue::renameCurrentFile(const QString& new_path)
 {
 	if(m_current >= m_files.size()) {
+		pwarn << "renameCurrentFile(): queue empty or index is out of bounds";
 		return false;
 	}
 
@@ -94,6 +99,7 @@ bool FileQueue::renameCurrentFile(const QString& new_path)
 bool FileQueue::deleteCurrentFile()
 {
 	if(m_current >= m_files.size()) {
+		pwarn << "deleteCurrentFile(): queue empty or index is out of bounds";
 		return false;
 	}
 	auto filename = m_files[m_current];
@@ -110,6 +116,7 @@ bool FileQueue::deleteCurrentFile()
 void FileQueue::eraseCurrent()
 {
 	if(m_current >= m_files.size()) {
+		pwarn << "eraseCurrent(): queue empty or index is out of bounds";
 		return;
 	}
 
@@ -121,6 +128,7 @@ void FileQueue::eraseCurrent()
 const QString& FileQueue::forward()
 {
 	if(m_current >= m_files.size()) {
+		pwarn << "forward(): queue empty or index is out of bounds";
 		return m_empty;
 	}
 	if(++m_current >= m_files.size()) {
@@ -132,6 +140,7 @@ const QString& FileQueue::forward()
 const QString& FileQueue::backward()
 {
 	if(m_current >= m_files.size()) {
+		pwarn << "backward(): queue empty or index is out of bounds";
 		return m_empty;
 	}
 	if(m_current == 0) {
@@ -157,6 +166,7 @@ size_t FileQueue::find(const QString &file) noexcept
 const QString &FileQueue::current() const
 {
 	if(m_current >= m_files.size()) {
+		pwarn << "current(): queue empty or index is out of bounds";
 		return m_empty;
 	}
 	return m_files[m_current]; // no need for another bounds-check
@@ -166,6 +176,7 @@ size_t FileQueue::currentIndex() const noexcept
 {
 	static_assert(noexcept(m_files.size()), "");
 	if(m_current >= m_files.size()) {
+		pwarn << "currentIndex(): queue empty or index is out of bounds";
 		return FileQueue::npos;
 	}
 	return m_current;

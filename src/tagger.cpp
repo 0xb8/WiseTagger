@@ -14,9 +14,12 @@
 #include <QSettings>
 #include <QDebug>
 #include <algorithm>
-#include "util/debug.h"
 #include "util/size.h"
 #include "window.h"
+
+Q_LOGGING_CATEGORY(tglc, "Tagger")
+#define pdbg qCDebug(tglc)
+#define pwarn qCWarning(tglc)
 
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)
@@ -46,9 +49,9 @@ Tagger::Tagger(QWidget *_parent) :
 	m_input.setObjectName(QStringLiteral("Input"));
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
-	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
 	connect(&m_input, &TagInput::postURLChanged, this, &Tagger::postURLChanged);
 	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
+	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
 }
 
 
@@ -90,13 +93,13 @@ void Tagger::deleteCurrentFile()
 		   "<dl>File size: %3</dl>"
 		   "<dl>Dimensions: %4 x %5</dl>"
 		   "<dl>Modified: %6</dl></dd>"
-		   "<p><em>This action cannot be undone!</em></p>")
-			.arg(currentFileName())
-			.arg(currentFileType())
-			.arg(util::size::printable(pictureSize()))
-			.arg(pictureDimensions().width())
-			.arg(pictureDimensions().height())
-			.arg(QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss"))),
+		   "<p><em>This action cannot be undone!</em></p>").arg(
+			currentFileName(),
+			currentFileType(),
+			util::size::printable(pictureSize()),
+			QString::number(pictureDimensions().width()),
+			QString::number(pictureDimensions().height()),
+			QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss", "modified date"))),
 		QMessageBox::Save|QMessageBox::Discard);
 	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
 
@@ -145,9 +148,10 @@ void Tagger::loadCurrentFile()
 		m_file_queue.eraseCurrent();
 	}
 
-	if(m_file_queue.empty())
+	if(m_file_queue.empty()) {
 		clear();
-
+		return;
+	}
 	emit fileOpened(m_file_queue.current());
 }
 //------------------------------------------------------------------------------
@@ -202,7 +206,7 @@ QString Tagger::postURL() const
 void Tagger::reloadTags()
 {
 	m_input.loadTagFiles(m_current_tag_files);
-	m_input.reloadAdditionalTags();
+	m_input.clearTagState();
 }
 
 void Tagger::findTagsFiles()
@@ -225,10 +229,17 @@ void Tagger::findTagsFiles()
 	const auto override = settings.value(QStringLiteral("tags/override"),
 					     QStringLiteral("tags!.txt")).toString();
 
-	QString parent_dir,
-		tagpath,
-		overridepath,
-		errordirs = QStringLiteral("<li>");
+	QString parent_dir, tagpath, overridepath, errordirs;
+
+	const int path_capacity = 256;
+	const int errors_capacity = 4 * path_capacity;
+
+	parent_dir.reserve(path_capacity);
+	tagpath.reserve(path_capacity);
+	overridepath.reserve(path_capacity);
+	errordirs.reserve(errors_capacity);
+
+	errordirs += QStringLiteral("<li>");
 
 	int max_height = 10;
 	while(max_height --> 0) {
@@ -236,8 +247,12 @@ void Tagger::findTagsFiles()
 		errordirs += parent_dir;
 		errordirs += QStringLiteral("</li><li>");
 
-		tagpath = parent_dir + QChar('/') + tagsfile;
-		overridepath = parent_dir + QChar('/') + override;
+		tagpath = parent_dir;
+		tagpath += QChar('/');
+		tagpath += tagsfile;
+		overridepath = parent_dir;
+		overridepath += QChar('/');
+		overridepath += override;
 
 		if(QFile::exists(overridepath)) {
 			m_current_tag_files.push_back(overridepath);
@@ -259,8 +274,8 @@ void Tagger::findTagsFiles()
 	m_current_tag_files.removeDuplicates();
 
 	if(m_current_tag_files.isEmpty()) {
-		QString last_resort = qApp->applicationDirPath() +
-					    QStringLiteral("/tags.txt");
+		auto last_resort = qApp->applicationDirPath();
+		last_resort += QStringLiteral("/tags.txt");
 
 		errordirs += qApp->applicationDirPath();
 		errordirs += QStringLiteral("</li>");
@@ -282,10 +297,7 @@ void Tagger::findTagsFiles()
 				"<ol>%3</ol></p>"
 				"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/wiki/Tag%20Files\">"
 				"Appending and overriding tag files documentation"
-				"</a></p>")
-					.arg(tagsfile)
-					.arg(override)
-					.arg(errordirs));
+				"</a></p>").arg(tagsfile, override, errordirs));
 			mbox.setIcon(QMessageBox::Warning);
 			mbox.exec();
 		}
@@ -367,8 +379,7 @@ RenameStatus Tagger::rename(RenameFlags flags)
 			tr("<p>Cannot rename file <b>%1</b></p>"
 			   "<p>File with this name already exists in <b>%2</b></p>"
 			   "<p>Please change some of your tags.</p>")
-				.arg(file.fileName())
-				.arg(file.canonicalPath()));
+				.arg(file.fileName(), file.canonicalPath()));
 		return RenameStatus::Cancelled;
 	}
 
