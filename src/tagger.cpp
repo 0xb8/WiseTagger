@@ -85,6 +85,12 @@ void Tagger::openDir(const QString &dir)
 	loadCurrentFile();
 }
 
+void Tagger::openFirstFileInQueue()
+{
+	m_file_queue.select(0u);
+	loadCurrentFile();
+}
+
 void Tagger::deleteCurrentFile()
 {
 	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
@@ -202,6 +208,16 @@ QString Tagger::postURL() const
 }
 
 //------------------------------------------------------------------------------
+void Tagger::setInputVisible(bool visible)
+{
+	m_input.setVisible(visible);
+	m_separator.setVisible(visible);
+	if(visible) {
+		m_tag_input_layout.setMargin(10);
+	} else {
+		m_tag_input_layout.setMargin(0);
+	}
+}
 
 void Tagger::reloadTags()
 {
@@ -403,6 +419,7 @@ RenameStatus Tagger::rename(RenameFlags flags)
 				   "<p>File may have been renamed or removed by another application.</p>").arg(file.fileName()));
 			return RenameStatus::Failed;
 		}
+		emit fileRenamed(m_input.text());
 		return RenameStatus::Renamed;
 	}
 

@@ -47,5 +47,5 @@ RESOURCES +=                                         \
    resources/resources.qrc
 
 # lupdate cannot into wildcard expansion
-TRANSLATIONS = resources/i18n/wisetagger_ru.ts       \
-	       resources/i18n/wisetagger_en.ts
+TRANSLATIONS = resources/i18n/Russian.ru.ts       \
+	       resources/i18n/English.en.ts

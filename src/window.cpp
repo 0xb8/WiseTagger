@@ -26,10 +26,26 @@
 #include "window.h"
 #include "util/open_graphical_shell.h"
 #include "util/size.h"
+#include "util/misc.h"
 
 Q_LOGGING_CATEGORY(wilc, "Window")
 #define pdbg qCDebug(wilc)
 #define pwarn qCWarning(wilc)
+
+#define SETT_WINDOW_SIZE	QStringLiteral("window/size")
+#define SETT_WINDOW_POS		QStringLiteral("window/position")
+#define SETT_FULLSCREEN		QStringLiteral("window/show-fullscreen")
+#define SETT_MAXIMIZED		QStringLiteral("window/maximized")
+#define SETT_LAST_DIR		QStringLiteral("window/last-directory")
+
+#define SETT_SHOW_MENU		QStringLiteral("window/show-menu")
+#define SETT_SHOW_STATUS	QStringLiteral("window/show-statusbar")
+#define SETT_SHOW_INPUT		QStringLiteral("window/show-input")
+#define SETT_LOCALE		QStringLiteral("window/locale")
+#define SETT_STYLE		QStringLiteral("window/style")
+
+#define SETT_REPLACE_TAGS	QStringLiteral("imageboard/replace-tags")
+#define SETT_RESTORE_TAGS	QStringLiteral("imageboard/restore-tags")
 
 //------------------------------------------------------------------------------
 
@@ -52,14 +68,19 @@ Window::Window(QWidget *_parent) :
 	, a_reload_tags(tr("&Reload Tag File"), nullptr)
 	, a_ib_replace(	tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(	tr("Re&store Imageboard Tags"), nullptr)
-	, a_toggle_statusbar(tr("&Toggle Statusbar"), nullptr)
+	, a_view_statusbar( tr("&Statusbar"), nullptr)
+	, a_view_fullscreen(tr("&Fullscreen"), nullptr)
+	, a_view_menu(      tr("&Menu"), nullptr)
+	, a_view_input(     tr("Tag &Input"), nullptr)
 	, a_about(	tr("&About..."), nullptr)
 	, a_about_qt(	tr("About &Qt..."), nullptr)
 	, a_help(	tr("&Help..."), nullptr)
 	, menu_file(	tr("&File"))
 	, menu_navigation(tr("&Navigation"))
+	, menu_view(    tr("&View"), nullptr)
 	, menu_options(	tr("&Options"))
 	, menu_options_language(tr("&Language"))
+	, menu_options_style(tr("S&tyle"))
 	, menu_help(	tr("&Help"))
 	, m_statusbar(nullptr)
 	, m_statusbar_info_label(nullptr)
@@ -78,7 +99,7 @@ Window::Window(QWidget *_parent) :
 //------------------------------------------------------------------------------
 void Window::fileOpenDialog()
 {
-	QString fileName = QFileDialog::getOpenFileName(this,
+	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open File"),
 		m_last_directory,
 		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png *.bmp)"));
@@ -88,7 +109,7 @@ void Window::fileOpenDialog()
 
 void Window::directoryOpenDialog()
 {
-	QString dir = QFileDialog::getExistingDirectory(nullptr,
+	auto dir = QFileDialog::getExistingDirectory(nullptr,
 		tr("Open Directory"),
 		m_last_directory,
 		QFileDialog::ShowDirsOnly);
@@ -139,7 +160,7 @@ void Window::updateStatusBarText()
 	}
 	auto current = m_tagger.queue().currentIndex() + 1u;
 	auto qsize    = m_tagger.queue().size();
-	m_statusbar_info_label.setText(tr("%1 / %2  ")
+	m_statusbar_info_label.setText(QStringLiteral("%1 / %2  ")
 		.arg(QString::number(current),QString::number(qsize)));
 }
 
@@ -172,9 +193,9 @@ void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 
 	updateWindowTitleProgress(util::size::percent(bytesSent, bytesTotal));
 	statusBar()->showMessage(
-		tr("Uploading %1 to iqdb.org...  %2% complete")
-			.arg(m_tagger.currentFileName(), QString::number(
-			     util::size::percent(bytesSent, bytesTotal))));
+		tr("Uploading %1 to iqdb.org...  %2% complete").arg(
+			m_tagger.currentFileName(),
+			QString::number(util::size::percent(bytesSent, bytesTotal))));
 }
 
 void Window::hideUploadProgress()
@@ -237,22 +258,15 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		m_tagger.queue().clear();
 		for(auto&& fileurl : fileurls) {
 			dropfile.setFile(fileurl.toLocalFile());
-
-			if(dropfile.isFile() && m_tagger.queue().checkExtension(dropfile.suffix())) {
+			if(dropfile.isFile() || dropfile.isDir()) {
 				m_tagger.queue().push(dropfile.absoluteFilePath());
-				pdbg << "added file" << dropfile.absoluteFilePath();
-			}
-
-			if(dropfile.isDir()) {
-				m_tagger.queue().push(dropfile.absoluteFilePath());
-				pdbg << "added dir" << dropfile.absoluteFilePath();
+				pdbg << "added" << dropfile.absoluteFilePath();
 			}
 		}
 
 		pdbg << "loaded" << m_tagger.queue().size() << "images from" << fileurls.size() << "dropped items";
 
-		m_tagger.queue().select(0u);
-		m_tagger.loadCurrentFile();
+		m_tagger.openFirstFileInQueue();
 		return true;
 	}
 	return false;
@@ -323,40 +337,28 @@ void Window::parseCommandLineArguments()
 			continue;
 		}
 
-		if(f.isFile()) {
-			m_tagger.queue().push(f.absoluteFilePath());
-		}
-
-		if(f.isDir()) {
+		if(f.isFile() || f.isDir()) {
 			m_tagger.queue().push(f.absoluteFilePath());
 		}
 	}
-	if(m_tagger.queue().size() == 1) {
-		m_tagger.openFile(m_tagger.queue().select(0u));
-	}
-	else {
-		m_tagger.queue().sort();
-		m_tagger.queue().select(0u);
-		m_tagger.loadCurrentFile();
-	}
+	m_tagger.queue().sort();
+	m_tagger.openFirstFileInQueue();
 }
 
 //------------------------------------------------------------------------------
-
 void Window::saveWindowSettings()
 {
 	QSettings settings;
-	settings.beginGroup(QStringLiteral("window"));
-	settings.setValue(QStringLiteral("size"), this->size());
-	settings.setValue(QStringLiteral("position"), this->pos());
-	settings.setValue(QStringLiteral("maximized"), this->isMaximized());
-	settings.setValue(QStringLiteral("last-directory"), m_last_directory);
-	settings.endGroup();
+	settings.setValue(SETT_WINDOW_SIZE, this->size());
+	settings.setValue(SETT_WINDOW_POS, this->pos());
+	settings.setValue(SETT_MAXIMIZED, this->isMaximized());
+	settings.setValue(SETT_LAST_DIR, m_last_directory);
 }
 
 void Window::loadWindowStyles()
 {
-	QFile styles_file(QStringLiteral(":/css/default.css"));
+	QSettings sett;
+	QFile styles_file(sett.value(SETT_STYLE, QStringLiteral(":/css/default.css")).toString());
 	bool open = styles_file.open(QIODevice::ReadOnly);
 	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
@@ -364,32 +366,40 @@ void Window::loadWindowStyles()
 
 void Window::loadWindowSettings()
 {
-	QSettings settings;
-	settings.beginGroup(QStringLiteral("window"));
-	m_last_directory = settings.value(QStringLiteral("last-directory")).toString();
-	resize(settings.value(QStringLiteral("size"), QSize(1024,600)).toSize());
+	QSettings sett;
 
-	if(settings.contains(QStringLiteral("position")))
-		move(settings.value(QStringLiteral("position")).toPoint());
+	m_last_directory = sett.value(SETT_LAST_DIR).toString();
+	resize(sett.value(SETT_WINDOW_SIZE, QSize(1024,600)).toSize());
 
-	if(settings.value(QStringLiteral("maximized"), false).toBool())
+	if(sett.contains(SETT_WINDOW_POS)) {
+		move(sett.value(SETT_WINDOW_POS).toPoint());
+	}
+	bool maximized   = sett.value(SETT_MAXIMIZED,   false).toBool();
+	bool fullscreen  = sett.value(SETT_FULLSCREEN,  false).toBool();
+	bool show_status = sett.value(SETT_SHOW_STATUS, false).toBool();
+	bool show_menu   = sett.value(SETT_SHOW_MENU,   true).toBool();
+	bool show_input  = sett.value(SETT_SHOW_INPUT,  true).toBool();
+
+	if(fullscreen) {
+		showFullScreen();
+	} else if(maximized) {
 		showMaximized();
+	} else {
+		showNormal();
+	}
 
-	a_toggle_statusbar.setChecked(settings.value(
-		QStringLiteral("show-statusbar"), false).toBool());
+	menuBar()->setVisible(show_menu);
+	m_tagger.setInputVisible(show_input);
+	m_statusbar.setVisible(show_status);
 
-	m_statusbar.setVisible(settings.value(
-		QStringLiteral("show-statusbar"), false).toBool());
-
-	settings.endGroup();
-
-	a_ib_replace.setChecked(settings.value(
-		QStringLiteral("imageboard/replace-tags"), false).toBool());
-
-	a_ib_restore.setChecked(settings.value(
-		QStringLiteral("imageboard/restore-tags"), true).toBool());
+	a_view_fullscreen.setChecked(fullscreen);
+	a_view_statusbar.setChecked(show_status);
+	a_view_menu.setChecked(show_menu);
+	a_view_input.setChecked(show_input);
 
 
+	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
+	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 }
 
 //------------------------------------------------------------------------------
@@ -409,6 +419,9 @@ void Window::createActions()
 	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
 	a_help.setShortcut(         QKeySequence::HelpContents);
 	a_exit.setShortcut(         QKeySequence::Close);
+	a_view_fullscreen.setShortcut(QKeySequence::FullScreen);
+	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
+	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
 
 	a_next_file.setEnabled(false);
 	a_prev_file.setEnabled(false);
@@ -430,7 +443,10 @@ void Window::createActions()
 
 	a_ib_replace.setCheckable(true);
 	a_ib_restore.setCheckable(true);
-	a_toggle_statusbar.setCheckable(true);
+	a_view_statusbar.setCheckable(true);
+	a_view_fullscreen.setCheckable(true);
+	a_view_menu.setCheckable(true);
+	a_view_input.setCheckable(true);
 
 	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
@@ -487,99 +503,158 @@ void Window::createActions()
 	});
 	connect(&a_ib_replace,  &QAction::triggered, [](bool checked)
 	{
-		QSettings settings;
-		settings.setValue(QStringLiteral("imageboard/replace-tags"), checked);
+		QSettings s; s.setValue(SETT_REPLACE_TAGS, checked);
 	});
 	connect(&a_ib_restore,  &QAction::triggered, [](bool checked)
 	{
-		QSettings settings;
-		settings.setValue(QStringLiteral("imageboard/restore-tags"), checked);
+		QSettings s; s.setValue(SETT_RESTORE_TAGS, checked);
 	});
-	connect(&a_toggle_statusbar, &QAction::triggered, [this](bool checked)
+	connect(&a_view_statusbar, &QAction::triggered, [this](bool checked)
 	{
-		QSettings settings;
-		settings.setValue(QStringLiteral("window/show-statusbar"), checked);
+		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
 		m_statusbar.setVisible(checked);
+	});
+	connect(&a_view_fullscreen, &QAction::triggered, [this](bool checked)
+	{
+		QSettings s; s.setValue(SETT_FULLSCREEN, checked);
+		if(checked) {
+			this->showFullScreen();
+		} else if(s.value(SETT_MAXIMIZED, false).toBool()) {
+			this->showMaximized();
+		} else {
+			this->showNormal();
+			this->resize(QSize(1024,600));
+		}
+	});
+	connect(&a_view_menu, &QAction::triggered, [this](bool checked)
+	{
+		QSettings s; s.setValue(SETT_SHOW_MENU, checked);
+		this->menuBar()->setVisible(checked);
+	});
+	connect(&a_view_input, &QAction::triggered, [this](bool checked)
+	{
+		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
+		this->m_tagger.setInputVisible(checked);
 	});
 }
 
 void Window::createMenus()
 {
-	menu_file.addAction(&a_open_file);
-	menu_file.addAction(&a_open_dir);
-	menu_file.addSeparator();
-	menu_file.addAction(&a_save_file);
-	menu_file.addSeparator();
-	menu_file.addAction(&a_delete_file);
+	auto add_action = [this](auto& object,auto& action)
+	{
+		this->addAction(&action);
+		(&object)->addAction(&action);
+	};
+	auto add_separator = [](auto& object)
+	{
+		(&object)->addSeparator();
+	};
 
-	menu_file.addSeparator();
-	menu_file.addAction(&a_open_post);
-	menu_file.addAction(&a_iqdb_search);
-	menu_file.addSeparator();
-	menu_file.addAction(&a_exit);
+	add_action(menu_file, a_open_file);
+	add_action(menu_file, a_open_dir);
+	add_separator(menu_file);
+	add_action(menu_file, a_save_file);
+	add_separator(menu_file);
+	add_action(menu_file, a_delete_file);
+	add_separator(menu_file);
+	add_action(menu_file, a_open_post);
+	add_action(menu_file, a_iqdb_search);
+	add_separator(menu_file);
+	add_action(menu_file, a_exit);
 
-	menu_navigation.addAction(&a_next_file);
-	menu_navigation.addAction(&a_prev_file);
-	menu_navigation.addSeparator();
-	menu_navigation.addAction(&a_save_next);
-	menu_navigation.addAction(&a_save_prev);
-	menu_navigation.addSeparator();
-	menu_navigation.addAction(&a_open_loc);
-	menu_navigation.addAction(&a_reload_tags);
+	add_action(menu_navigation, a_next_file);
+	add_action(menu_navigation, a_prev_file);
+	add_separator(menu_navigation);
+	add_action(menu_navigation, a_save_next);
+	add_action(menu_navigation, a_save_prev);
+	add_separator(menu_navigation);
+	add_action(menu_navigation, a_open_loc);
+	add_action(menu_navigation, a_reload_tags);
 
-	menu_options.addAction(&a_ib_replace);
-	menu_options.addAction(&a_ib_restore);
-	menu_options.addSeparator();
+	add_action(menu_view, a_view_fullscreen);
+	add_separator(menu_view);
+	add_action(menu_view, a_view_menu);
+	add_action(menu_view, a_view_input);
+	add_action(menu_view, a_view_statusbar);
+
+	add_action(menu_options, a_ib_replace);
+	add_action(menu_options, a_ib_restore);
+	add_separator(menu_options);
 	menu_options.addMenu(&menu_options_language);
-	menu_options.addSeparator();
+	menu_options.addMenu(&menu_options_style);
+	add_separator(menu_options);
 
 	auto lang_group = new QActionGroup(&menu_options_language);
 	lang_group->setExclusive(true);
-
-	connect(lang_group, &QActionGroup::triggered, [](const QAction* a) {
-		QSettings settings;
-		if(a) {
-			settings.setValue(QStringLiteral("window/locale"),
-					  a->data().toString());
-			QMessageBox::information(nullptr,
-				tr("Language changed"),
-				tr("<p>Please restart the application to apply language change.</p>"));
-		}
-	});
-
-	const QDir locales_dir(QStringLiteral(":/i18n/"));
-	const auto locales = locales_dir.entryList(QStringList({QStringLiteral("wisetagger_*.qm")}));
+	auto style_group = new QActionGroup(&menu_options_style);
+	style_group->setExclusive(true);
 
 	QSettings settings;
-	QString locale;
-	for(const auto& l : locales) {
-		locale = l;
-		locale.truncate(locale.lastIndexOf('.'));
-		locale.remove(0, locale.lastIndexOf('_') +1);
 
-		const auto lang = QLocale::languageToString(QLocale(locale).language());
-		auto action = new QAction(lang, this);
+
+	QDirIterator it_locale(QStringLiteral(":/i18n/"));
+	while(it_locale.hasNext()) {
+		if(!it_locale.next().endsWith(QStringLiteral(".qm"))) {
+			continue;
+		}
+		auto name = it_locale.fileInfo().completeBaseName();
+		auto code = name.right(2);
+		name.truncate(name.size() - 3);
+
+		auto action = new QAction(name, this);
 		action->setCheckable(true);
-		action->setData(locale);
+		action->setData(code);
 		menu_options_language.addAction(action);
 		lang_group->addAction(action);
 
-		if(settings.value(QStringLiteral("window/locale"),
-				  QStringLiteral("en")).toString() == locale)
+		if(code == settings.value(SETT_LOCALE, QStringLiteral("en")).toString())
 		{
 			action->setChecked(true);
 		}
 	}
 
-	menu_options.addAction(&a_toggle_statusbar);
+	QDirIterator it_style(QStringLiteral(":/css"));
+	while (it_style.hasNext()) {
+		it_style.next();
 
-	menu_help.addAction(&a_help);
-	menu_help.addSeparator();
-	menu_help.addAction(&a_about);
-	menu_help.addAction(&a_about_qt);
+		auto title = it_style.fileInfo().baseName();
+		Q_ASSERT(!title.isEmpty());
+		title[0] = title[0].toUpper();
+
+		auto action = new QAction(title, this);
+		action->setCheckable(true);
+		if(settings.value(SETT_STYLE).toString() == it_style.filePath()) {
+			action->setChecked(true);
+		}
+		action->setData(it_style.filePath());
+		menu_options_style.addAction(action);
+		style_group->addAction(action);
+	}
+
+	connect(lang_group, &QActionGroup::triggered, [](const QAction* a) {
+		Q_ASSERT(a != nullptr);
+		QSettings settings;
+		settings.setValue(SETT_LOCALE, a->data().toString());
+		QMessageBox::information(nullptr,
+			tr("Language changed"),
+			tr("<p>Please restart the application to apply language change.</p>"));
+	});
+
+	connect(style_group, &QActionGroup::triggered, [this](const QAction* a)
+	{
+		QSettings s; s.setValue(SETT_STYLE, a->data().toString());
+		loadWindowStyles();
+	});
+
+	add_action(menu_help, a_help);
+	add_action(menu_help, a_stats);
+	add_separator(menu_help);
+	add_action(menu_help, a_about);
+	add_action(menu_help, a_about_qt);
 
 	menuBar()->addMenu(&menu_file);
 	menuBar()->addMenu(&menu_navigation);
+	menuBar()->addMenu(&menu_view);
 	menuBar()->addMenu(&menu_options);
 	menuBar()->addMenu(&menu_help);
 
@@ -610,47 +685,27 @@ void Window::about()
 {
 	QMessageBox::about(nullptr,
 	tr("About %1").arg(QStringLiteral(TARGET_PRODUCT)),
-	tr("<h3>%1 v%2</h3><p>Built %3, %4.</p><p>Copyright &copy; 2016 catgirl &lt;"
-	   "<a href=\"mailto:cat@wolfgirl.org\">cat@wolfgirl.org</a>&gt; (bugreports are very welcome!)</p>"
-	   "<p>This program is free software. It comes without any warranty, to the extent permitted by applicable law. "
-	   "You can redistribute it and/or modify it under the terms of the Do What The Fuck You Want To Public License, "
-	   "Version 2, as published by Sam Hocevar. See <a href=\"http://www.wtfpl.net\">http://www.wtfpl.net/</a> "
-	   "for more details.</p>"
-	).arg(QStringLiteral(TARGET_PRODUCT), qApp->applicationVersion(), QStringLiteral(__DATE__), QStringLiteral(__TIME__)));
+	tr(util::read_resource_html("about.html")).arg(
+		QStringLiteral(TARGET_PRODUCT),
+		qApp->applicationVersion(),
+		QStringLiteral(__DATE__),
+		QStringLiteral(__TIME__)));
 }
 
 void Window::help()
 {
 	QSettings settings;
 	bool portable = settings.value(QStringLiteral("settings-portable"), false).toBool();
+
 	QMessageBox::about(nullptr,
 	tr("Help"),
-	tr("<h2>User Interface</h2>"
-	   "<p><u>Tab</u> &nbsp;&ndash;&nbsp; list autocomplete suggestions.</p>"
-	   "<p><u>Enter</u>&nbsp; &ndash;&nbsp; apply changes and clear focus.</p>"
-	   "<p><u>Left</u> and <u>Right</u> arrows &nbsp;&ndash;&nbsp; show previous/next picture.</p>"
-	   "<hr/>"
-	   "<h2>Settings</h2>"
-	   "<p><u>%1</u> &nbsp;&ndash;&nbsp; replaces certain imageboard tags with their shorter version.</p>"
-	   "<p><u>%2</u> &nbsp;&ndash;&nbsp; restores replaced imageboard tags back to their original version.</p>"
-	   "<h3>Proxy</h3>"
-	   "<p>%6 accesses internet only when <em>Reverse Searching</em> a picture. It uses a site <a href=\"https://iqdb.org\">iqdb.org</a>.</p>"
-	   "In some cases a proxy is needed to access internet, or to protect your privacy (using Tor for example), or to circumvent state censorship.</p>"
-	   "<p>It is possible to specify a proxy URL in command line: <em><pre>--proxy=socks://localhost:9050</pre></em>"
-	   "This setting is not saved, so you have to specify it each time. Most convenient way to do this is to edit application shortcut.</p>"
-	   "<p>Proxy is currently <strong><u>%3</u></strong>%4</code>.</p>"
-	   "<h3>Portable Mode</h3>"
-	   "<p>%6 supports running in portable mode. To enable it, create file <code>portable.dat</code> inside application\'s directory.</p>"
-	   "<p>When portable mode is enabled, all settings will be saved in an <code>.ini</code> file inside application\'s directory"
-	   " and system registry will not be used."
-	   "</p><p>Portable mode is currently <strong><u>%5</u></strong>.</p>"
-	   "<hr><p>More documentation at <a href=\"https://bitbucket.org/catgirl/wisetagger\">project repository page</a>.</p>"
-	).arg(a_ib_replace.text().remove('&'),
-	      a_ib_restore.text().remove('&'),
-	      m_reverse_search.proxyEnabled() ? tr("enabled", "proxy") : tr("disabled", "proxy"),
-	      m_reverse_search.proxyEnabled() ? tr(", proxy URL: <code>") + m_reverse_search.proxyURL() : tr("<code>"),
-	      portable ? tr("enabled", "portable") : tr("disabled", "portable"),
-	      QStringLiteral(TARGET_PRODUCT)));
+	tr(util::read_resource_html("help.html")).arg(
+		a_ib_replace.text().remove('&'),
+		a_ib_restore.text().remove('&'),
+		m_reverse_search.proxyEnabled() ? tr("enabled", "proxy") : tr("disabled", "proxy"),
+		m_reverse_search.proxyEnabled() ? tr(", proxy URL: <code>") + m_reverse_search.proxyURL() : tr("<code>"),
+		portable ? tr("enabled", "portable") : tr("disabled", "portable"),
+		QStringLiteral(TARGET_PRODUCT)));
 }
 
 //------------------------------------------------------------------------

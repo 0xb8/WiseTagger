@@ -1,9 +1,17 @@
 <RCC>
     <qresource prefix="/">
 	<file>transparency.png</file>
-	<file>i18n/wisetagger_ru.qm</file>
-	<file>i18n/wisetagger_en.qm</file>
 	<file>css/default.css</file>
 	<file>css/dark.css</file>
+	<file>html/en/about.html</file>
+	<file>html/en/help.html</file>
+	<file>html/en/welcome.html</file>
+	<file>i18n/English.en.qm</file>
+	<file>i18n/Russian.ru.qm</file>
+	<file>html/ru/about.html</file>
+	<file>html/ru/help.html</file>
+	<file>html/ru/welcome.html</file>
+	<file>html/en/statistics.html</file>
+	<file>html/ru/statistics.html</file>
     </qresource>
 </RCC>

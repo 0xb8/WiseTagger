@@ -37,12 +37,12 @@ int main(int argc, char *argv[])
 
 	QSettings settings;
 	settings.setValue(QStringLiteral("settings-portable"), portable);
-	auto l = settings.value(QStringLiteral("window/locale"), QStringLiteral("en")).toString();
-	QLocale locale(l);
+	auto code = settings.value(QStringLiteral("window/locale"), QStringLiteral("en")).toString();
+	QLocale locale(code);
 	QLocale::setDefault(locale);
 
 	QTranslator translator;
-	if(translator.load(QString(":/i18n/wisetagger_%1.qm").arg(l)))
+	if(translator.load(QString(":/i18n/%1.%2.qm").arg(QLocale::languageToString(locale.language()), code)))
 		qApp->installTranslator(&translator);
 
 	Window w;

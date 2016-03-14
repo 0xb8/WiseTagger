@@ -82,15 +82,20 @@ private:
 	QAction a_reload_tags;
 	QAction a_ib_replace;
 	QAction a_ib_restore;
-	QAction a_toggle_statusbar;
+	QAction a_view_statusbar;
+	QAction a_view_fullscreen;
+	QAction a_view_menu;
+	QAction a_view_input;
 	QAction a_about;
 	QAction a_about_qt;
 	QAction a_help;
 
 	QMenu menu_file;
 	QMenu menu_navigation;
+	QMenu menu_view;
 	QMenu menu_options;
 	QMenu menu_options_language;
+	QMenu menu_options_style;
 	QMenu menu_help;
 
 	QStatusBar m_statusbar;

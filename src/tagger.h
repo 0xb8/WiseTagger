@@ -31,16 +31,14 @@ public:
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override;
 
-	/*!
-	 * \brief Opens file and enqueues its directory.
-	 */
+	/// Opens file and enqueues its directory.
 	void openFile(const QString&);
 
+	/// brief Enqueues directory contents and opens first file.
+	void openDir(const QString&);
 
-	/*!
-	 * \brief Enqueues directory contents and opens first file.
-	 */
-	void openDir (const QString&);
+	/// Opens first file in queue.
+	void openFirstFileInQueue();
 
 	/*!
 	 * \brief Renames current file
@@ -49,7 +47,7 @@ public:
 	 * \retval RenameStatus::Cancelled Rename cancelled by user.
 	 * \retval RenameStatus::Failed Failed to rename.
 	 */
-	RenameStatus rename(RenameFlags flags  = RenameFlags::Default);
+	RenameStatus rename(RenameFlags flags = RenameFlags::Default);
 
 
 	/*!
@@ -64,13 +62,6 @@ public:
 	 * \param flags UI behavior modifiers. See ::RenameFlags description.
 	 */
 	void prevFile(RenameFlags flags = RenameFlags::Default);
-
-
-	/// Loads currently selected file.
-	void loadCurrentFile();
-
-	/// Asks to delete currently selected file.
-	void deleteCurrentFile();
 
 	/// Returns whether current file name is modified by user.
 	bool    fileModified()    const;
@@ -100,23 +91,46 @@ public:
 	FileQueue& queue();
 
 public slots:
+	/// Sets Tag Input Visibility.
+	void setInputVisible(bool visible);
 
+	/// Asks to delete currently selected file.
+	void deleteCurrentFile();
 
 	/// Reloads tag files used for autocomplete.
 	void reloadTags();
 
 signals:
 
-	/// File successfully opened.
+	/*!
+	 * \brief File successfully opened.
+	 * \retval File path.
+	 */
 	void fileOpened(const QString&);
 
-	/// File name modified by user.
+
+	/*!
+	 * \brief File name modified by user.
+	 * \retval New file name.
+	 */
 	void tagsEdited(const QString&);
 
-	/// Imageboad post url changed.
+
+	/*!
+	 * \brief File renamed by user.
+	 * \retval New file name.
+	 */
+	void fileRenamed(const QString&);
+
+
+	/*!
+	 * \brief Imageboard post URL changed
+	 * \retval New post URL.
+	 */
 	void postURLChanged(const QString&);
 
 private:
+	void loadCurrentFile();
 	bool loadFile(size_t index);
 	void findTagsFiles();
 	void clear();

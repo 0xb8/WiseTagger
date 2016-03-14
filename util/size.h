@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <QString>
+#include <QApplication>
 
 namespace util {
 namespace size {
@@ -30,8 +31,8 @@ namespace size {
 	inline QString printable(std::size_t bytes)
 	{
 		return bytes < 1024*1024 // if less than 1 Mb show exact KB size
-			? QString("%1 KiB").arg(to_kib(bytes))
-			: QString("%1 MiB").arg(to_mib(bytes), 0,'f', 3);
+			? qApp->translate("PrintableFileSize", "%1 KiB").arg(to_kib(bytes))
+			: qApp->translate("PrintableFileSize", "%1 MiB").arg(to_mib(bytes), 0,'f', 3);
 	}
 
 	inline std::int8_t percent(std::int64_t value, std::int64_t max, std::int64_t min = 0ll)

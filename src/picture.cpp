@@ -6,6 +6,7 @@
  */
 
 #include "picture.h"
+#include "util/misc.h"
 #include <QResizeEvent>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
@@ -116,19 +117,7 @@ void Picture::clear()
 	m_movie.reset(nullptr);
 	m_current_size = m_initial_size = QSize(0,0);
 	m_type = Type::None;
-
-	setText(Picture::tr(
-		"<html><body>"
-		"<div align='center'>"
-		"<div style=\"font-size:20px\">Open image</div>"
-		"<table><tr><td>"
-		"<hr/>"
-		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open File</div>"
-		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;File > Open Directory</div>"
-		"<div style=\"margin-top: 5px\">&bull;&nbsp;&nbsp;Drag and drop files or directories here</div>"
-		"</td></tr></table>"
-		"</div>"
-		"</body></html>"));
+	setText(util::read_resource_html("welcome.html"));
 }
 
 /* Restart timer on resize */
