@@ -135,6 +135,7 @@ void TagInput::loadTagFiles(const QStringList &files)
 		tags += parse_tags_file(&in);
 	}
 
+	tags.removeDuplicates();
 	m_completer = std::make_unique<MultiSelectCompleter>(tags, nullptr);
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
