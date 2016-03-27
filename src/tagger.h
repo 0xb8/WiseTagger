@@ -19,6 +19,7 @@
 #include "input.h"
 #include "tagger_enums.h"
 #include "file_queue.h"
+#include "statistics.h"
 
 /*!
  * Main widget of application. Contains Picture viewer and TagInput.
@@ -90,6 +91,9 @@ public:
 	/// Returns reference to FileQueue.
 	FileQueue& queue();
 
+	/// Returns reference to TaggerStatistics
+	TaggerStatistics& statistics();
+
 public slots:
 	/// Sets Tag Input Visibility.
 	void setInputVisible(bool visible);
@@ -145,6 +149,7 @@ private:
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
+	TaggerStatistics m_statistics;
 };
 
 #endif // WISETAGGER_H

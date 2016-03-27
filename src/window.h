@@ -89,6 +89,7 @@ private:
 	QAction a_about;
 	QAction a_about_qt;
 	QAction a_help;
+	QAction a_stats;
 
 	QMenu menu_file;
 	QMenu menu_navigation;

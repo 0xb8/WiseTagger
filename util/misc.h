@@ -11,4 +11,6 @@ namespace util {
 
 QByteArray read_resource_html(const char* filename);
 
+QString duration(std::uint64_t ms);
+
 }

@@ -52,6 +52,11 @@ Tagger::Tagger(QWidget *_parent) :
 	connect(&m_input, &TagInput::postURLChanged, this, &Tagger::postURLChanged);
 	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
 	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
+	connect(this,     &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);
+	connect(this,     &Tagger::fileOpened, [this](const auto& f)
+	{
+		m_statistics.fileOpened(f, m_picture.imageSize());
+	});
 }
 
 
@@ -127,6 +132,11 @@ void Tagger::deleteCurrentFile()
 FileQueue& Tagger::queue()
 {
 	return m_file_queue;
+}
+
+TaggerStatistics &Tagger::statistics()
+{
+	return m_statistics;
 }
 
 void Tagger::nextFile(RenameFlags flags)

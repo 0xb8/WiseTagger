@@ -2,6 +2,57 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
+    <name>Duration</name>
+    <message numerus="yes">
+        <location filename="../../util/misc.cpp" line="34"/>
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n second</numerusform>
+            <numerusform>%n seconds</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../util/misc.cpp" line="35"/>
+        <source>%n minutes</source>
+        <translation>
+            <numerusform>%n minute</numerusform>
+            <numerusform>%n minutes</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../util/misc.cpp" line="36"/>
+        <source>%n hours</source>
+        <translation>
+            <numerusform>%n hour</numerusform>
+            <numerusform>%n hours</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../util/misc.cpp" line="37"/>
+        <source>%n days</source>
+        <translation>
+            <numerusform>%n day</numerusform>
+            <numerusform>%n days</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../util/misc.cpp" line="38"/>
+        <source>%n months</source>
+        <translation>
+            <numerusform>%n month</numerusform>
+            <numerusform>%n months</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../util/misc.cpp" line="39"/>
+        <source>%n years</source>
+        <translation>
+            <numerusform>%n year</numerusform>
+            <numerusform>%n years</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>OpenInGuiShell</name>
     <message>
         <location filename="../../util/open_graphical_shell.cpp" line="37"/>
@@ -107,73 +158,73 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="314"/>
+        <location filename="../../src/tagger.cpp" line="328"/>
         <source>&lt;h3&gt;Could not locate suitable tag file&lt;/h3&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="315"/>
+        <location filename="../../src/tagger.cpp" line="329"/>
         <source>&lt;p&gt;You can still browse and rename images, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened image and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://bitbucket.org/catgirl/wisetagger/wiki/Tag%20Files&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="355"/>
-        <location filename="../../src/tagger.cpp" line="364"/>
+        <location filename="../../src/tagger.cpp" line="369"/>
+        <location filename="../../src/tagger.cpp" line="378"/>
         <source>Error opening file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="356"/>
+        <location filename="../../src/tagger.cpp" line="370"/>
         <source>&lt;p&gt;Directory &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="365"/>
+        <location filename="../../src/tagger.cpp" line="379"/>
         <source>&lt;p&gt;File &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="373"/>
+        <location filename="../../src/tagger.cpp" line="387"/>
         <source>Error opening image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="374"/>
+        <location filename="../../src/tagger.cpp" line="388"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File format is not supported or file corrupted.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="405"/>
+        <location filename="../../src/tagger.cpp" line="419"/>
         <source>Cannot rename file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="406"/>
+        <location filename="../../src/tagger.cpp" line="420"/>
         <source>&lt;p&gt;Cannot rename file &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File with this name already exists in &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="415"/>
+        <location filename="../../src/tagger.cpp" line="429"/>
         <source>Rename file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="416"/>
+        <location filename="../../src/tagger.cpp" line="430"/>
         <source>Rename &lt;b&gt;%1&lt;/b&gt;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="419"/>
+        <location filename="../../src/tagger.cpp" line="433"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="428"/>
+        <location filename="../../src/tagger.cpp" line="442"/>
         <source>Could not rename file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="429"/>
+        <location filename="../../src/tagger.cpp" line="443"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -181,13 +232,12 @@
 <context>
     <name>TaggerStatistics</name>
     <message>
-        <location filename="../../src/statistics.cpp" line="98"/>
-        <location filename="../../src/statistics.cpp" line="100"/>
-        <source>%1 x %2</source>
+        <location filename="../../src/statistics.cpp" line="177"/>
+        <source>&lt;br/&gt;&lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; statistics collection is currently disabled. The stats displayed here are from previous launches.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/statistics.cpp" line="111"/>
+        <location filename="../../src/statistics.cpp" line="180"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
@@ -285,11 +335,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="78"/>
-        <source>Statistics...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../src/window.cpp" line="79"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
@@ -335,11 +380,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="164"/>
-        <source>%1 / %2  </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../src/window.cpp" line="197"/>
         <source>Uploading %1 to iqdb.org...  %2% complete</source>
         <translation type="unfinished"></translation>
@@ -350,106 +390,106 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="413"/>
+        <location filename="../../src/window.cpp" line="417"/>
         <source>Ctrl+D</source>
         <comment>File|Open Directory</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="420"/>
+        <location filename="../../src/window.cpp" line="424"/>
         <source>Ctrl+R</source>
         <comment>Reload Tags</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="421"/>
+        <location filename="../../src/window.cpp" line="425"/>
         <source>Ctrl+P</source>
         <comment>Open post</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="422"/>
+        <location filename="../../src/window.cpp" line="426"/>
         <source>Ctrl+F</source>
         <comment>Reverse search</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="423"/>
+        <location filename="../../src/window.cpp" line="427"/>
         <source>Ctrl+L</source>
         <comment>Open file location</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="441"/>
+        <location filename="../../src/window.cpp" line="445"/>
         <source>Open imageboard post of this image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="442"/>
+        <location filename="../../src/window.cpp" line="446"/>
         <source>Upload this image to iqdb.org and open search results page in default browser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="443"/>
+        <location filename="../../src/window.cpp" line="447"/>
         <source>Open folder where this image is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="444"/>
+        <location filename="../../src/window.cpp" line="448"/>
         <source>Reload changes in tag files.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="445"/>
+        <location filename="../../src/window.cpp" line="449"/>
         <source>Toggle replacing certain imageboard tags with their shorter version.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="446"/>
+        <location filename="../../src/window.cpp" line="450"/>
         <source>Toggle restoring imageboard tags back to their original version.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="600"/>
+        <location filename="../../src/window.cpp" line="649"/>
         <source>Language changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="601"/>
+        <location filename="../../src/window.cpp" line="650"/>
         <source>&lt;p&gt;Please restart the application to apply language change.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="704"/>
+        <location filename="../../src/window.cpp" line="711"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="708"/>
+        <location filename="../../src/window.cpp" line="715"/>
         <source>enabled</source>
         <comment>proxy</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="708"/>
+        <location filename="../../src/window.cpp" line="715"/>
         <source>disabled</source>
         <comment>proxy</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="710"/>
+        <location filename="../../src/window.cpp" line="717"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="710"/>
+        <location filename="../../src/window.cpp" line="717"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="709"/>
+        <location filename="../../src/window.cpp" line="716"/>
         <source>, proxy URL: &lt;code&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -474,17 +514,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../src/window.cpp" line="78"/>
+        <source>&amp;Statistics...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../src/window.cpp" line="106"/>
         <source>Image files (*.gif *.jpg *.jpeg *.jpg *.png *.bmp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="690"/>
+        <location filename="../../src/window.cpp" line="697"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="709"/>
+        <location filename="../../src/window.cpp" line="716"/>
         <source>&lt;code&gt;</source>
         <translation type="unfinished"></translation>
     </message>

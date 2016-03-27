@@ -35,7 +35,7 @@ namespace size {
 			: qApp->translate("PrintableFileSize", "%1 MiB").arg(to_mib(bytes), 0,'f', 3);
 	}
 
-	inline std::int8_t percent(std::int64_t value, std::int64_t max, std::int64_t min = 0ll)
+	inline std::int64_t percent(std::int64_t value, std::int64_t max, std::int64_t min = 0ll)
 	{
 		if(value == 0 || max == 0 || max == min) return 0;
 		return static_cast<double>(value-min) * 100.0 / max - min;

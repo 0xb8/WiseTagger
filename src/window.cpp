@@ -75,6 +75,7 @@ Window::Window(QWidget *_parent) :
 	, a_about(	tr("&About..."), nullptr)
 	, a_about_qt(	tr("About &Qt..."), nullptr)
 	, a_help(	tr("&Help..."), nullptr)
+	, a_stats(	tr("&Statistics..."), nullptr)
 	, menu_file(	tr("&File"))
 	, menu_navigation(tr("&Navigation"))
 	, menu_view(    tr("&View"), nullptr)
@@ -312,8 +313,11 @@ void Window::parseCommandLineArguments()
 					QStringLiteral("proxy"));
 	QCommandLineOption no_proxy_option(QStringLiteral("no-proxy"),
 					   QStringLiteral("Disable proxy"));
+	QCommandLineOption no_stats_option(QStringLiteral("no-stats"),
+					   QStringLiteral("Disable statistics collection"));
 	parser.addOption(proxy_option);
 	parser.addOption(no_proxy_option);
+	parser.addOption(no_stats_option);
 	parser.process(args);
 
 	if(parser.isSet(proxy_option)) {
@@ -325,6 +329,10 @@ void Window::parseCommandLineArguments()
 	if(parser.isSet(no_proxy_option)) {
 		pdbg << "--no-proxy";
 		m_reverse_search.setProxyEnabled(false);
+	}
+
+	if(parser.isSet(no_stats_option)) {
+		m_tagger.statistics().setEnabled(false);
 	}
 
 	for(const auto& arg : parser.positionalArguments()) {
@@ -460,6 +468,7 @@ void Window::createActions()
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
 	connect(&a_delete_file, &QAction::triggered, &m_tagger, &Tagger::deleteCurrentFile);
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
+	connect(&a_stats,       &QAction::triggered, &m_tagger.statistics(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
@@ -496,6 +505,7 @@ void Window::createActions()
 	connect(&a_iqdb_search, &QAction::triggered, [this]()
 	{
 		m_reverse_search.search(m_tagger.currentFile());
+		m_tagger.statistics().reverseSearched();
 	});
 	connect(&a_open_loc,    &QAction::triggered, [this]()
 	{

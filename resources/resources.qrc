@@ -1,17 +1,19 @@
 <RCC>
     <qresource prefix="/">
-	<file>transparency.png</file>
-	<file>css/default.css</file>
-	<file>css/dark.css</file>
-	<file>html/en/about.html</file>
-	<file>html/en/help.html</file>
-	<file>html/en/welcome.html</file>
-	<file>i18n/English.en.qm</file>
-	<file>i18n/Russian.ru.qm</file>
-	<file>html/ru/about.html</file>
-	<file>html/ru/help.html</file>
-	<file>html/ru/welcome.html</file>
-	<file>html/en/statistics.html</file>
-	<file>html/ru/statistics.html</file>
+        <file>transparency.png</file>
+        <file>css/default.css</file>
+        <file>css/dark.css</file>
+        <file>html/en/about.html</file>
+        <file>html/en/help.html</file>
+        <file>html/en/welcome.html</file>
+        <file>i18n/English.en.qm</file>
+        <file>i18n/Russian.ru.qm</file>
+        <file>html/ru/about.html</file>
+        <file>html/ru/help.html</file>
+        <file>html/ru/welcome.html</file>
+        <file>html/en/statistics.html</file>
+        <file>html/ru/statistics.html</file>
+        <file>html/en/statistics_extensions.html</file>
+        <file>html/ru/statistics_extensions.html</file>
     </qresource>
 </RCC>
