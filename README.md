@@ -48,8 +48,9 @@ Similarly, if `Restore imageboard tags` option is enabled, «konachan_67890» wi
 
 ### Tag File Selection ###
 There are two kinds of tag files: 
-- *Normal Tag File* -- Files with suffix `.tags.txt`, e.g. `my.tags.txt`
-- *Override Tag File* -- Files with suffix `.tags!.txt`, e.g. `my.tags!.txt`
+
+* Normal Tag File - Files with suffix `.tags.txt`, e.g. `my.tags.txt`
+* Override Tag File - Files with suffix `.tags!.txt`, e.g. `my.tags!.txt`
 
 In both cases prefix can be omitted, leaving only corresponding suffix as file name. Such files starting with `.` are treated as hidden in UNIX-like systems.
 
