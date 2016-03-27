@@ -358,9 +358,9 @@ void Window::saveWindowSettings()
 {
 	QSettings settings;
 	settings.setValue(SETT_WINDOW_SIZE, this->size());
-	settings.setValue(SETT_WINDOW_POS, this->pos());
-	settings.setValue(SETT_MAXIMIZED, this->isMaximized());
-	settings.setValue(SETT_LAST_DIR, m_last_directory);
+	settings.setValue(SETT_WINDOW_POS,  this->pos());
+	settings.setValue(SETT_MAXIMIZED,   this->isMaximized());
+	settings.setValue(SETT_LAST_DIR,    m_last_directory);
 }
 
 void Window::loadWindowStyles()
@@ -370,6 +370,7 @@ void Window::loadWindowStyles()
 	bool open = styles_file.open(QIODevice::ReadOnly);
 	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
+	qApp->setWindowIcon(QIcon(QStringLiteral(":/icon.png")));
 }
 
 void Window::loadWindowSettings()
@@ -707,7 +708,7 @@ void Window::help()
 	QSettings settings;
 	bool portable = settings.value(QStringLiteral("settings-portable"), false).toBool();
 
-	QMessageBox::about(nullptr,
+	QMessageBox::information(nullptr,
 	tr("Help"),
 	tr(util::read_resource_html("help.html")).arg(
 		a_ib_replace.text().remove('&'),

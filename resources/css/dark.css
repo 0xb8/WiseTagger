@@ -8,8 +8,7 @@
 QLabel#Picture {
     color: #999;
     font-size: 13px;
-    background-color: #333;
-    border-top: 1px solid #444;
+    background-color: black;
 }
 
 QLabel#StatusbarInfo {
@@ -26,7 +25,7 @@ QLineEdit#Input {
     border: 1px outset black;
     border-radius: 2px;
     padding: 0 8px;
-    background: #555;
+    background: #111;
     selection-background-color: darkgray;
     color: #eee;
 }

@@ -14,6 +14,7 @@ QT += core gui network widgets
 
 win32 {
     QT += winextras
+    RC_ICONS += resources/icon.ico
 }
 
 TARGET = WiseTagger
@@ -23,7 +24,7 @@ QMAKE_TARGET_PRODUCT = WiseTagger
 QMAKE_TARGET_DESCRIPTION = Simple picture tagger
 QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 
-VERSION = "0.4.7"
+VERSION = "0.5.1"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
 DEFINES +=                                           \
@@ -31,7 +32,7 @@ DEFINES +=                                           \
     TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"    \
     TARGET_COMPANY=\\\"$$QMAKE_TARGET_COMPANY\\\"
 
-QMAKE_CXXFLAGS += -std=c++14
+CONFIG += c++14
 
 PRECOMPILED_HEADER += util/precompiled.h
 

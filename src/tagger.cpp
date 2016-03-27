@@ -250,19 +250,17 @@ void Tagger::findTagsFiles()
 	QSettings settings;
 
 	const auto tagsfile = settings.value(QStringLiteral("tags/normal"),
-					     QStringLiteral("tags.txt")).toString();
+					     QStringLiteral("*.tags.txt")).toString();
 
 	const auto override = settings.value(QStringLiteral("tags/override"),
-					     QStringLiteral("tags!.txt")).toString();
+					     QStringLiteral("*.tags!.txt")).toString();
 
-	QString parent_dir, tagpath, overridepath, errordirs;
+	QString parent_dir, errordirs;
 
 	const int path_capacity = 256;
 	const int errors_capacity = 4 * path_capacity;
 
 	parent_dir.reserve(path_capacity);
-	tagpath.reserve(path_capacity);
-	overridepath.reserve(path_capacity);
 	errordirs.reserve(errors_capacity);
 
 	errordirs += QStringLiteral("<li>");
@@ -273,22 +271,39 @@ void Tagger::findTagsFiles()
 		errordirs += parent_dir;
 		errordirs += QStringLiteral("</li><li>");
 
-		tagpath = parent_dir;
-		tagpath += QChar('/');
-		tagpath += tagsfile;
-		overridepath = parent_dir;
-		overridepath += QChar('/');
-		overridepath += override;
-
-		if(QFile::exists(overridepath)) {
-			m_current_tag_files.push_back(overridepath);
-			pdbg << "found override" << overridepath;
+		auto cd = fi.dir();
+		auto list_override = cd.entryInfoList({override});
+		if(!list_override.isEmpty()) {
+			for(const auto& f : list_override) {
+				m_current_tag_files.push_back(f.absoluteFilePath());
+				pdbg << "found override:" << f.fileName();
+			}
 			break;
 		}
 
-		if(QFile::exists(tagpath)) {
-			m_current_tag_files.push_back(tagpath);
-			pdbg << "found tag file" << tagpath;
+		auto list_tags = cd.entryInfoList({tagsfile});
+		for(const auto& f : list_tags) {
+			m_current_tag_files.push_back(f.absoluteFilePath());
+			pdbg << "found tag file:" << f.fileName();
+		}
+
+		// support old files
+		if(list_override.isEmpty() && list_tags.isEmpty()) {
+			auto legacy_override = parent_dir, legacy_tags = parent_dir;
+			legacy_override += QChar('/');
+			legacy_tags += QChar('/');
+			std::copy(override.begin() + 2, override.end(), std::back_inserter(legacy_override));
+			std::copy(tagsfile.begin() + 2, tagsfile.end(), std::back_inserter(legacy_tags));
+
+			if(QFile::exists(legacy_override)) {
+				m_current_tag_files.push_back(legacy_override);
+				pdbg << "found legacy override:" << legacy_override;
+				break;
+			}
+			if(QFile::exists(legacy_tags)) {
+				m_current_tag_files.push_back(legacy_tags);
+				pdbg << "found legacy tags:" << legacy_tags;
+			}
 		}
 
 		if(fi.absoluteDir().isRoot())

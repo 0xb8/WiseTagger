@@ -15,5 +15,6 @@
         <file>html/ru/statistics.html</file>
         <file>html/en/statistics_extensions.html</file>
         <file>html/ru/statistics_extensions.html</file>
+        <file>icon.png</file>
     </qresource>
 </RCC>
