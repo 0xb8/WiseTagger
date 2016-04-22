@@ -78,6 +78,7 @@ private:
 	QAction a_save_file;
 	QAction a_save_next;
 	QAction a_save_prev;
+	QAction a_go_to_number;
 	QAction a_save_session;
 	QAction a_load_session;
 	QAction a_open_loc;

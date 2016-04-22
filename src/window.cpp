@@ -12,6 +12,7 @@
 #include <QDirIterator>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
+#include <QInputDialog>
 #include <QDropEvent>
 #include <QFile>
 #include <QFileDialog>
@@ -67,6 +68,7 @@ Window::Window(QWidget *_parent) :
 	, a_save_file(	tr("&Save"), nullptr)
 	, a_save_next(	tr("Save and Open Next Image"), nullptr)
 	, a_save_prev(	tr("Save and Open Previous Image"), nullptr)
+	, a_go_to_number(tr("Go To File Number"), nullptr)
 	, a_save_session(tr("Save Session"), nullptr)
 	, a_load_session(tr("Open Session"),nullptr)
 	, a_open_loc(	tr("Open &Containing Folder"), nullptr)
@@ -449,6 +451,7 @@ void Window::createActions()
 	a_view_fullscreen.setShortcut(QKeySequence::FullScreen);
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
+	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
 
 	a_next_file.setEnabled(false);
 	a_prev_file.setEnabled(false);
@@ -461,6 +464,7 @@ void Window::createActions()
 	a_open_loc.setEnabled(false);
 	a_reload_tags.setEnabled(false);
 	a_save_session.setEnabled(false);
+	a_go_to_number.setEnabled(false);
 
 	a_open_post.setStatusTip(  tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(tr("Upload this image to iqdb.org and open search results page in default browser."));
@@ -598,6 +602,13 @@ void Window::createActions()
 			QStringLiteral("Session Files (%1)").arg(SESSION_FILE_PATTERN));
 		m_tagger.openSession(filename);
 	});
+	connect(&a_go_to_number, &QAction::triggered, [this](){
+		auto number = QInputDialog::getInt(this,
+			tr("Enter Number"),
+			tr("Enter file number to open:"),
+			m_tagger.queue().currentIndex()+1, 1);
+		m_tagger.openFileInQueue(number-1);
+	});
 }
 
 void Window::createMenus()
@@ -628,6 +639,7 @@ void Window::createMenus()
 
 	add_action(menu_navigation, a_next_file);
 	add_action(menu_navigation, a_prev_file);
+	add_action(menu_navigation, a_go_to_number);
 	add_separator(menu_navigation);
 	add_action(menu_navigation, a_save_next);
 	add_action(menu_navigation, a_save_prev);
@@ -654,7 +666,6 @@ void Window::createMenus()
 	style_group->setExclusive(true);
 
 	QSettings settings;
-
 
 	QDirIterator it_locale(QStringLiteral(":/i18n/"));
 	while(it_locale.hasNext()) {
@@ -743,6 +754,7 @@ void Window::updateMenus()
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);
 	a_save_session.setDisabled(val);
+	a_go_to_number.setDisabled(val);
 }
 
 //------------------------------------------------------------------------------
