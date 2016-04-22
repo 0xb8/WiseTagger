@@ -78,6 +78,8 @@ private:
 	QAction a_save_file;
 	QAction a_save_next;
 	QAction a_save_prev;
+	QAction a_save_session;
+	QAction a_load_session;
 	QAction a_open_loc;
 	QAction a_reload_tags;
 	QAction a_ib_replace;

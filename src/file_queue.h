@@ -166,6 +166,21 @@ public:
 	 */
 	void eraseCurrent();
 
+
+	/*!
+	 * \brief Serializes file names in queue to file.
+	 * \return Number of bytes written.
+	 */
+	size_t saveToFile(const QString& path) const;
+
+
+	/*!
+	 * \brief Loads file names into queue from specified file.
+	 *        Previous contents of queue is lost.
+	 * \return Number of entries added to queue.
+	 */
+	size_t loadFromFile(const QString& path);
+
 private:
 	static const QString m_empty;
 	std::deque<QString>  m_files;

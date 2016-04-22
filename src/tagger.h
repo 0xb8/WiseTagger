@@ -38,8 +38,11 @@ public:
 	/// brief Enqueues directory contents and opens first file.
 	void openDir(const QString&);
 
-	/// Opens first file in queue.
-	void openFirstFileInQueue();
+	/// Opens file with specified index in queue.
+	void openFileInQueue(size_t index = 0);
+
+	/// Opens tagging session from file.
+	void openSession(const QString& sfile);
 
 	/*!
 	 * \brief Renames current file

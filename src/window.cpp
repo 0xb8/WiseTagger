@@ -47,6 +47,9 @@ Q_LOGGING_CATEGORY(wilc, "Window")
 #define SETT_REPLACE_TAGS	QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS	QStringLiteral("imageboard/restore-tags")
 
+#define SESSION_FILE_SUFFIX	QStringLiteral("wt-session")
+#define SESSION_FILE_PATTERN	QStringLiteral("*.wt-session")
+
 //------------------------------------------------------------------------------
 
 Window::Window(QWidget *_parent) :
@@ -64,6 +67,8 @@ Window::Window(QWidget *_parent) :
 	, a_save_file(	tr("&Save"), nullptr)
 	, a_save_next(	tr("Save and Open Next Image"), nullptr)
 	, a_save_prev(	tr("Save and Open Previous Image"), nullptr)
+	, a_save_session(tr("Save Session"), nullptr)
+	, a_load_session(tr("Open Session"),nullptr)
 	, a_open_loc(	tr("Open &Containing Folder"), nullptr)
 	, a_reload_tags(tr("&Reload Tag File"), nullptr)
 	, a_ib_replace(	tr("Re&place Imageboard Tags"), nullptr)
@@ -229,7 +234,10 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		if(urls.size() == 1) {
 			QFileInfo dropfile(urls.first().toLocalFile());
-			if(!(dropfile.isDir() || m_tagger.queue().checkExtension(dropfile.suffix()))) {
+			if(!(dropfile.isDir()
+				|| m_tagger.queue().checkExtension(dropfile.suffix())
+				|| dropfile.suffix() == SESSION_FILE_SUFFIX))
+			{
 				return true;
 			}
 		}
@@ -247,8 +255,13 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		if(fileurls.size() == 1) {
 			dropfile.setFile(fileurls.first().toLocalFile());
 
-			if(dropfile.isFile())
-				m_tagger.openFile(dropfile.absoluteFilePath());
+			if(dropfile.isFile()) {
+				if(dropfile.suffix() == SESSION_FILE_SUFFIX) {
+					m_tagger.openSession(dropfile.absoluteFilePath());
+				} else {
+					m_tagger.openFile(dropfile.absoluteFilePath());
+				}
+			}
 
 			if(dropfile.isDir())
 				m_tagger.openDir(dropfile.absoluteFilePath());
@@ -267,7 +280,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		pdbg << "loaded" << m_tagger.queue().size() << "images from" << fileurls.size() << "dropped items";
 
-		m_tagger.openFirstFileInQueue();
+		m_tagger.openFileInQueue();
 		return true;
 	}
 	return false;
@@ -345,12 +358,17 @@ void Window::parseCommandLineArguments()
 			continue;
 		}
 
+		if(f.suffix() == SESSION_FILE_SUFFIX) {
+			m_tagger.openSession(f.absoluteFilePath());
+			return;
+		}
+
 		if(f.isFile() || f.isDir()) {
 			m_tagger.queue().push(f.absoluteFilePath());
 		}
 	}
 	m_tagger.queue().sort();
-	m_tagger.openFirstFileInQueue();
+	m_tagger.openFileInQueue();
 }
 
 //------------------------------------------------------------------------------
@@ -442,6 +460,7 @@ void Window::createActions()
 	a_iqdb_search.setEnabled(false);
 	a_open_loc.setEnabled(false);
 	a_reload_tags.setEnabled(false);
+	a_save_session.setEnabled(false);
 
 	a_open_post.setStatusTip(  tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(tr("Upload this image to iqdb.org and open search results page in default browser."));
@@ -547,6 +566,38 @@ void Window::createActions()
 		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
 		this->m_tagger.setInputVisible(checked);
 	});
+	connect(&a_save_session, &QAction::triggered, [this](){
+		auto filename = QFileDialog::getSaveFileName(this,
+			tr("Save Session"),
+			m_last_directory,
+			QStringLiteral("Session Files (%1)").arg(SESSION_FILE_PATTERN));
+		if(filename.isEmpty())
+			return;
+
+		QFileInfo fi(filename);
+		QString newname = fi.absolutePath();
+		newname.append(tr("/%1.%2.%3").arg(
+			fi.baseName(),
+			QString::number(m_tagger.queue().currentIndex()+1),
+			SESSION_FILE_SUFFIX));
+
+		if(fi.exists() && fi.isFile()) {
+			QFile::rename(filename,newname);
+		}
+
+		if(!m_tagger.queue().saveToFile(newname)) {
+			QMessageBox::critical(this,
+				tr("Save Session Error"),
+				tr("<p>Could not save session to <b>%1</b>.</p><p>Check file permissions.</p>").arg(filename));
+		}
+	});
+	connect(&a_load_session, &QAction::triggered, [this](){
+		auto filename = QFileDialog::getOpenFileName(this,
+			tr("Load Session"),
+			m_last_directory,
+			QStringLiteral("Session Files (%1)").arg(SESSION_FILE_PATTERN));
+		m_tagger.openSession(filename);
+	});
 }
 
 void Window::createMenus()
@@ -563,8 +614,10 @@ void Window::createMenus()
 
 	add_action(menu_file, a_open_file);
 	add_action(menu_file, a_open_dir);
+	add_action(menu_file, a_load_session);
 	add_separator(menu_file);
 	add_action(menu_file, a_save_file);
+	add_action(menu_file, a_save_session);
 	add_separator(menu_file);
 	add_action(menu_file, a_delete_file);
 	add_separator(menu_file);
@@ -689,6 +742,7 @@ void Window::updateMenus()
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);
+	a_save_session.setDisabled(val);
 }
 
 //------------------------------------------------------------------------------

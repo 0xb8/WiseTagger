@@ -9,7 +9,9 @@
 #include "util/traits.h"
 #include <QLoggingCategory>
 #include <QDirIterator>
+#include <QTextStream>
 #include <QCollator>
+#include <QFile>
 
 Q_LOGGING_CATEGORY(fqlc, "FileQueue")
 #define pdbg qCDebug(fqlc)
@@ -25,7 +27,7 @@ void FileQueue::setNameFilter(const QStringList &f)
 bool FileQueue::checkExtension(const QString &ext) noexcept
 {
 	for(const auto & f : m_name_filters) {
-		if(f.endsWith(ext)) return true;
+		if(f.endsWith(ext, Qt::CaseInsensitive)) return true;
 	}
 	return false;
 }
@@ -47,7 +49,7 @@ void FileQueue::push(const QString &f)
 			m_files.push_back(it.fileInfo().absoluteFilePath());
 		}
 	} else {
-		pwarn << "push() : extension" << fi.suffix() << "not allowed by filter";
+		pwarn << "push() : extension not allowed by filter:" << fi.fileName();
 	}
 }
 
@@ -123,6 +125,53 @@ void FileQueue::eraseCurrent()
 	m_files.erase(std::next(std::begin(m_files), m_current));
 	if(m_current >= m_files.size())
 		m_current = 0u;
+}
+
+size_t FileQueue::saveToFile(const QString &path) const
+{
+	if(empty())
+		return 0;
+
+	QFile f(path);
+	bool opened = f.open(QIODevice::WriteOnly);
+	if(!opened) {
+		pwarn << "saveToFile(): could not open" << path << "for writing";
+		return 0;
+	}
+
+	QByteArray raw_data;
+	QTextStream stream(&raw_data);
+	stream.setCodec("UTF-8");
+
+	for(const auto& e : m_files) {
+		stream << e << '\n';
+	}
+
+	f.write(qCompress(raw_data, 8));
+	return f.size();
+}
+
+size_t FileQueue::loadFromFile(const QString &path)
+{
+	QFile f(path);
+	bool opened = f.open(QIODevice::ReadOnly);
+	if(!opened) {
+		pwarn << "loadFromFile(): could not open" << path << "for reading";
+		return 0;
+	}
+
+	QTextStream stream(qUncompress(f.readAll()));
+	stream.setCodec("UTF-8");
+
+	QString line;
+	line.reserve(256);
+	clear();
+
+	while (stream.readLineInto(&line)) {
+		m_files.push_back(line);
+	}
+
+	return m_files.size();
 }
 
 const QString& FileQueue::forward()

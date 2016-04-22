@@ -21,6 +21,8 @@ Q_LOGGING_CATEGORY(tglc, "Tagger")
 #define pdbg qCDebug(tglc)
 #define pwarn qCWarning(tglc)
 
+#define SESSION_FILE_REGEX	QStringLiteral("(\\d+)\\.wt-session$")
+
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)
 {
@@ -90,9 +92,29 @@ void Tagger::openDir(const QString &dir)
 	loadCurrentFile();
 }
 
-void Tagger::openFirstFileInQueue()
+void Tagger::openFileInQueue(size_t index)
 {
-	m_file_queue.select(0u);
+	m_file_queue.select(index);
+	loadCurrentFile();
+}
+
+void Tagger::openSession(const QString& sfile)
+{
+	if(sfile.isEmpty())
+		return;
+	const QRegularExpression re(SESSION_FILE_REGEX);
+	const auto match = re.match(sfile);
+	size_t index = 1;
+	if(match.hasMatch()) {
+		index = match.captured(1).toULongLong();
+	}
+	if(!m_file_queue.loadFromFile(sfile)) {
+		QMessageBox::critical(this,
+			tr("Load Session Failed"),
+			tr("<p>Could not load session from <b>%1</b></p>").arg(sfile));
+		return;
+	}
+	m_file_queue.select(index-1);
 	loadCurrentFile();
 }
 
