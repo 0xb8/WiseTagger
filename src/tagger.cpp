@@ -66,7 +66,7 @@ Tagger::~Tagger() { }
 
 void Tagger::openFile(const QString &filename)
 {
-	QFileInfo fi(filename);
+	const QFileInfo fi(filename);
 	if(!fi.isReadable() || !fi.isFile() || !fi.isAbsolute()) {
 		pwarn << "invalid file path";
 		return;
@@ -80,7 +80,7 @@ void Tagger::openFile(const QString &filename)
 
 void Tagger::openDir(const QString &dir)
 {
-	QFileInfo fi(dir);
+	const QFileInfo fi(dir);
 	if(!fi.isReadable() || !fi.isDir() || !fi.isAbsolute()) {
 		pwarn << "invalid directory path";
 		return;
@@ -136,7 +136,7 @@ void Tagger::deleteCurrentFile()
 		QMessageBox::Save|QMessageBox::Discard);
 	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
 
-	auto reply = delete_msgbox.exec();
+	const auto reply = delete_msgbox.exec();
 
 	if(reply == QMessageBox::Save) {
 		if(!m_file_queue.deleteCurrentFile()) {
@@ -262,15 +262,14 @@ void Tagger::findTagsFiles()
 	if(m_file_queue.empty())
 		return;
 
-	auto c = currentDir();
+	const auto c = currentDir();
 	if(c == m_previous_dir)
 		return;
 
 	m_previous_dir = c;
-
 	QFileInfo fi(m_file_queue.current());
-	QSettings settings;
 
+	const QSettings settings;
 	const auto tagsfile = settings.value(QStringLiteral("tags/normal"),
 					     QStringLiteral("*.tags.txt")).toString();
 
@@ -358,7 +357,7 @@ void Tagger::findTagsFiles()
 				"<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
 				"<p>Directories where we looked for them, in search order:"
 				"<ol>%3</ol></p>"
-				"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/wiki/Tag%20Files\">"
+				"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/overview\">"
 				"Appending and overriding tag files documentation"
 				"</a></p>").arg(tagsfile, override, errordirs));
 			mbox.setIcon(QMessageBox::Warning);
@@ -379,18 +378,18 @@ void Tagger::clear()
 
 bool Tagger::loadFile(size_t index)
 {
-	auto filename = m_file_queue.select(index);
+	const auto filename = m_file_queue.select(index);
 	if(filename.size() == 0)
 		return false;
 
-	QFileInfo f(filename);
-	QFileInfo fd(f.absolutePath());
+	const QFileInfo f(filename);
+	const QDir fd(f.absolutePath());
 
 	if(!fd.exists()) {
 		QMessageBox::critical(this,
 			tr("Error opening file"),
 			tr("<p>Directory <b>%1</b> does not exist anymore.</p>")
-				.arg(fd.absoluteFilePath()));
+				.arg(fd.absolutePath()));
 		clear();
 		return false;
 	}
@@ -422,7 +421,7 @@ bool Tagger::loadFile(size_t index)
 
 RenameStatus Tagger::rename(RenameFlags flags)
 {
-	QFileInfo file(m_file_queue.current());
+	const QFileInfo file(m_file_queue.current());
 	QString new_file_path;
 
 	m_input.fixTags();

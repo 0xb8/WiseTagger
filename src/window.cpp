@@ -580,7 +580,7 @@ void Window::createActions()
 
 		QFileInfo fi(filename);
 		QString newname = fi.absolutePath();
-		newname.append(tr("/%1.%2.%3").arg(
+		newname.append(QStringLiteral("/%1.%2.%3").arg(
 			fi.baseName(),
 			QString::number(m_tagger.queue().currentIndex()+1),
 			SESSION_FILE_SUFFIX));
@@ -597,7 +597,7 @@ void Window::createActions()
 	});
 	connect(&a_load_session, &QAction::triggered, [this](){
 		auto filename = QFileDialog::getOpenFileName(this,
-			tr("Load Session"),
+			tr("Open Session"),
 			m_last_directory,
 			QStringLiteral("Session Files (%1)").arg(SESSION_FILE_PATTERN));
 		m_tagger.openSession(filename);
