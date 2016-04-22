@@ -186,20 +186,22 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, mapped_tags_list;
 
-	auto allowed_in_file = [](QChar c){
+	auto allowed_in_tag = [](QChar c)
+	{
+		return c.isLetterOrNumber() || c == '_' || c == ';' || c == '@';
+	};
+
+	auto allowed_in_file = [&allowed_in_tag](QChar c)
+	{
 		return	c.isLetterOrNumber() ||
-			c == '_' ||
+			allowed_in_tag(c)    ||
 			c == '-' ||
 			c == ':' ||
-			c == ';' ||
 			c == ',' ||
 			c == '=' ||
 			c == ' ' ||
+			c == '@' ||
 			c == '\t';
-	};
-
-	auto allowed_in_tag = [](QChar c){
-		return c.isLetterOrNumber() || c == '_' || c == ';';
 	};
 
 	while(!input->atEnd()) {
