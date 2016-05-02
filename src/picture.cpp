@@ -36,10 +36,19 @@ void Picture::dropEvent(QDropEvent*)           {}
 bool Picture::loadPicture(const QString &filename)
 {
 	if(filename.endsWith(QStringLiteral(".gif"))) {
-		m_movie = std::make_unique<QMovie>(filename);
+		m_movie_buf.close();
+		QFile file(filename);
+		bool open = file.open(QIODevice::ReadOnly);
+		if(!open) {
+			clear();
+			return false;
+		}
+
+		m_movie_buf.setData(file.readAll());
+		file.close();
+		m_movie = std::make_unique<QMovie>(&m_movie_buf);
 		if(!m_movie->isValid()) {
-			m_movie.reset(nullptr);
-			m_type = Type::None;
+			clear();
 			return false;
 		}
 		m_movie->setCacheMode(QMovie::CacheAll);
@@ -50,8 +59,7 @@ bool Picture::loadPicture(const QString &filename)
 		m_type = cpm.hasAlpha() ? Type::MovieWithAlpha : Type::Movie;
 	} else {
 		if(!m_pixmap.load(filename)) {
-			m_pixmap.loadFromData(nullptr);
-			m_type = Type::None;
+			clear();
 			return false;
 		}
 		m_initial_size = m_pixmap.size();
@@ -115,6 +123,7 @@ void Picture::clear()
 {
 	m_pixmap.loadFromData(nullptr);
 	m_movie.reset(nullptr);
+	m_movie_buf.close();
 	m_current_size = m_initial_size = QSize(0,0);
 	m_type = Type::None;
 	setText(util::read_resource_html("welcome.html"));

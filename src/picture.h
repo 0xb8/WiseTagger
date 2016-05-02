@@ -9,6 +9,7 @@
 #define PICTURE_H
 
 #include <QTimer>
+#include <QBuffer>
 #include <QPixmap>
 #include <QString>
 #include <QLabel>
@@ -66,6 +67,7 @@ private:
 	QSize   m_initial_size;
 
 	QPixmap m_pixmap;
+	QBuffer m_movie_buf;
 	QTimer  m_resize_timer;
 	Movie   m_movie;
 	Type    m_type;
