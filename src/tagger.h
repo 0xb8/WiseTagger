@@ -136,10 +136,18 @@ signals:
 	 */
 	void postURLChanged(const QString&);
 
+
+	/*!
+	 * \brief New Tags were added by user.
+	 * \retval List of tags not in tag file added for current file.
+	 */
+	void newTagsAdded(const QStringList&);
+
 private:
 	void loadCurrentFile();
 	bool loadFile(size_t index);
 	void findTagsFiles();
+	void updateNewTagsCounts();
 	void clear();
 
 	QVBoxLayout m_main_layout;
@@ -152,6 +160,7 @@ private:
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
+	std::unordered_map<QString, unsigned>   m_new_tag_counts;
 	TaggerStatistics m_statistics;
 };
 

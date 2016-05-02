@@ -418,6 +418,44 @@ bool Tagger::loadFile(size_t index)
 	return true;
 }
 
+void Tagger::updateNewTagsCounts() {
+	const auto new_tags = m_input.getAddedTags(true);
+	static int overall_count = 0;
+	bool emitting = false;
+
+	for(const auto& t : new_tags) {
+		auto it = m_new_tag_counts.find(t);
+		if(it != m_new_tag_counts.end()) {
+			++it->second;
+			if(it->second == 5)
+				emitting = true;
+
+		} else {
+			m_new_tag_counts.insert(std::make_pair(t, 1u));
+		}
+		++overall_count;
+	}
+
+	if(overall_count >= std::min(8.0, 2*std::log2(m_file_queue.size()))) {
+		emitting = true;
+	}
+
+	if(emitting) {
+		QStringList tags;
+		for(const auto& t : m_new_tag_counts) {
+			tags.push_back(t.first);
+		}
+		std::sort(tags.begin(), tags.end(), [this](const QString&a, const QString&b) {
+			const unsigned numa = m_new_tag_counts[a];
+			const unsigned numb = m_new_tag_counts[b];
+			if(numa == numb)
+				return a < b;
+			return numa > numb;
+		});
+		emit newTagsAdded(tags);
+		overall_count = 0;
+	}
+}
 
 RenameStatus Tagger::rename(RenameFlags flags)
 {
@@ -425,6 +463,7 @@ RenameStatus Tagger::rename(RenameFlags flags)
 	QString new_file_path;
 
 	m_input.fixTags();
+
 	/* Make new file path from input text */
 	new_file_path += m_input.text();
 	new_file_path += QChar('.');
@@ -465,6 +504,7 @@ RenameStatus Tagger::rename(RenameFlags flags)
 				   "<p>File may have been renamed or removed by another application.</p>").arg(file.fileName()));
 			return RenameStatus::Failed;
 		}
+		updateNewTagsCounts();
 		emit fileRenamed(m_input.text());
 		return RenameStatus::Renamed;
 	}

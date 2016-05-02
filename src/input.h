@@ -54,6 +54,13 @@ public:
 	 */
 	QString postURL() const;
 
+	/**
+	 * @brief Returns tags added by user.
+	 * @param exclude_tags_from_file If set to true, only tags not present
+	 *        in tag file will be returned.
+	 */
+	QStringList getAddedTags(bool exclude_tags_from_file = false) const;
+
 signals:
 	void postURLChanged(const QString&);
 
@@ -98,6 +105,8 @@ private:
 
 	int         m_index;
 	QStringList m_text_list;
+	QStringList m_tags_from_file;
+	QString     m_initial_text;
 	QString     m_post_url;
 
 	/**

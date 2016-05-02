@@ -34,7 +34,6 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 void TagInput::fixTags(bool sort)
 {
 	m_text_list = text().split(QChar(' '), QString::SkipEmptyParts);
-
 	QSettings settings;
 	if(settings.value(QStringLiteral("imageboard/replace-tags"), false).toBool())
 		ib::replace_imageboard_tags(m_text_list);
@@ -136,6 +135,7 @@ void TagInput::loadTagFiles(const QStringList &files)
 	}
 
 	tags.removeDuplicates();
+	m_tags_from_file = tags;
 	m_completer = std::make_unique<MultiSelectCompleter>(tags, nullptr);
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
@@ -145,6 +145,7 @@ void TagInput::setText(const QString &s)
 {
 	clearTagState();
 	updateText(s);
+	m_initial_text = s;
 }
 
 void TagInput::clearTagState()
@@ -179,6 +180,24 @@ QString TagInput::postURL() const
 	return ib::get_imageboard_post_url(m_text_list);
 }
 
+QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
+{
+	auto initial_tags = m_initial_text.split(QChar(' '), QString::SkipEmptyParts);
+	auto new_tags = text().split(QChar(' '), QString::SkipEmptyParts);
+	initial_tags.sort();
+	new_tags.sort();
+	QStringList ret;
+	std::set_difference(new_tags.begin(), new_tags.end(), initial_tags.begin(), initial_tags.end(), std::back_inserter(ret));
+
+	if(exclude_tags_from_file) {
+		auto tags_file = m_tags_from_file;
+		tags_file.sort();
+		QStringList ret2;
+		std::set_difference(ret.begin(), ret.end(), tags_file.begin(), tags_file.end(), std::back_inserter(ret2));
+		return ret2;
+	}
+	return ret;
+}
 //------------------------------------------------------------------------------
 
 QStringList TagInput::parse_tags_file(QTextStream *input)
