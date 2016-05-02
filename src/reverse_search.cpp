@@ -90,6 +90,11 @@ QString ReverseSearch::proxyURL() const
 	return m_proxy_url.toString();
 }
 
+QNetworkProxy ReverseSearch::proxy() const
+{
+	return m_nam.proxy();
+}
+
 void ReverseSearch::load_proxy_settings()
 {
 	QSettings settings;

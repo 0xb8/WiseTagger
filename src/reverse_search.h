@@ -62,9 +62,11 @@ public:
 	 */
 	bool	proxyEnabled() const;
 
-
 	/// Returns current proxy URL.
 	QString	proxyURL() const;
+
+	/// Returns current proxy.
+	QNetworkProxy proxy() const;
 
 signals:
 
