@@ -16,7 +16,7 @@ QLabel#StatusbarInfo {
     border: none;
 }
 
-QStatusBar#StatusBar {
+QStatusBar {
     background-color: rgba(0,0,0,0.1);
     border-top: 1px outset grey;
 }

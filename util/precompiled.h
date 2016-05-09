@@ -38,17 +38,20 @@
 #include <QNetworkProxy>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QProxyStyle>
 #include <QResizeEvent>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QString>
 #include <QStringList>
+#include <QSystemTrayIcon>
 #include <QTextCodec>
 #include <QTextStream>
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QVector>
+#include <QVersionNumber>
 #include <QWidget>
 
 

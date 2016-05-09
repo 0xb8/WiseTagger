@@ -23,6 +23,11 @@
 #include <QMimeData>
 #include <QSettings>
 #include <QUrl>
+#include <QStyle>
+#include <QProxyStyle>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QVersionNumber>
 
 #include "window.h"
 #include "util/open_graphical_shell.h"
@@ -90,18 +95,25 @@ Window::Window(QWidget *_parent) :
 	, menu_options_language(tr("&Language"))
 	, menu_options_style(tr("S&tyle"))
 	, menu_help(	tr("&Help"))
+	, menu_notifications(nullptr)
 	, m_statusbar(nullptr)
 	, m_statusbar_info_label(nullptr)
+	, m_tray_icon(this)
 {
 	setCentralWidget(&m_tagger);
+	m_tagger.setObjectName("Tagger");
 	setAcceptDrops(true);
-
-	createActions();
-	createMenus();
 
 	loadWindowSettings();
 	loadWindowStyles();
+
+	createActions();
+	createMenus();
 	parseCommandLineArguments();
+
+#ifdef Q_OS_WIN32
+	QTimer::singleShot(1500, this, &Window::checkNewVersion);
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -179,6 +191,44 @@ void Window::updateImageboardPostURL(QString url)
 		m_post_url.clear();
 	} else {
 		m_post_url = url;
+	}
+}
+
+void Window::addNotification(const QString &title, const QString& description, const QString &body)
+{
+	removeNotification(title);
+	// we want only last notification's action to be triggered
+	QObject::disconnect(&m_tray_icon, &QSystemTrayIcon::messageClicked, nullptr, nullptr);
+
+	if(!body.isEmpty()) {
+		auto action = new QAction(title, this);
+
+		connect(action, &QAction::triggered, [title,body,this,action](){
+			QMessageBox mb(QMessageBox::Information, title,body,QMessageBox::Ok, this);
+			mb.setTextInteractionFlags(Qt::TextBrowserInteraction);
+			mb.exec();
+			removeNotification(title);
+		});
+		connect(&m_tray_icon, &QSystemTrayIcon::messageClicked, action, &QAction::trigger);
+
+		menu_notifications.addAction(action);
+		++m_notification_count;
+	}
+	showNotificationsMenu();
+	m_tray_icon.showMessage(title, description);
+}
+
+void Window::removeNotification(const QString& title) {
+	const auto actions = menu_notifications.actions();
+	for(const auto a : actions) {
+		if(a && a->text() == title) {
+			menu_notifications.removeAction(a);
+			a->deleteLater();
+			if(m_notification_count > 0) --m_notification_count;
+		}
+	}
+	if(m_notification_count <= 0) {
+		hideNotificationsMenu();
 	}
 }
 
@@ -391,6 +441,7 @@ void Window::loadWindowStyles()
 	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
 	qApp->setWindowIcon(QIcon(QStringLiteral(":/icon.png")));
+	m_tray_icon.setIcon(this->windowIcon());
 }
 
 void Window::loadWindowSettings()
@@ -430,6 +481,81 @@ void Window::loadWindowSettings()
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 }
+
+void Window::showNotificationsMenu()
+{
+	m_tray_icon.setVisible(true);
+	m_notification_display_timer.start(1000);
+}
+
+void Window::hideNotificationsMenu()
+{
+	m_notification_display_timer.stop();
+	menu_notifications.setTitle("");
+	m_tray_icon.setVisible(false);
+}
+
+#ifdef Q_OS_WIN
+#define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
+#define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
+#define VER_CHECK_URL           QStringLiteral("https://wolfgirl.org/s/wt/last-version.txt")
+
+void Window::checkNewVersion()
+{
+	QSettings sett;
+	auto last_checked = sett.value(SETT_LAST_VER_CHECK,QDate(2016,1,1)).toDate();
+	auto checking_disabled = !sett.value(SETT_VER_CHECK_ENABLED, true).toBool();
+
+	if(checking_disabled || last_checked == QDate::currentDate()) {
+		pdbg << (checking_disabled ? "vercheck disabled" : "vercheck enabled") << last_checked.toString();
+		return;
+	}
+	m_vernam.setProxy(m_reverse_search.proxy());
+	connect(&m_vernam, &QNetworkAccessManager::finished, this, &Window::processNewVersion);
+
+	m_vernam.get(QNetworkRequest{QUrl{VER_CHECK_URL}});
+}
+
+void Window::processNewVersion(QNetworkReply *r)
+{
+	if(r->error() == QNetworkReply::NoError) {
+		auto status_code = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+		if(status_code == 200) {
+			QSettings sett;
+			sett.setValue(SETT_LAST_VER_CHECK, QDate::currentDate());
+			QString response = r->readAll();
+			auto parts = response.split(' ',QString::SkipEmptyParts);
+			if(parts.size() < 2) {
+				pwarn << "processNewVersion(): invalid response";
+				return;
+			}
+
+			auto newver = QVersionNumber::fromString(parts[0]);
+			if(newver.isNull()) {
+				pwarn << "processNewVersion(): got invalid version";
+				return;
+			}
+			auto url = parts[1].remove('\n');
+			if(url.isEmpty()) {
+				pwarn << "processNewVersion(): got invalid url";
+				return;
+			}
+			const auto current = QVersionNumber::fromString(qApp->applicationVersion());
+			int res = QVersionNumber::compare(current, newver);
+			if(res < 0) {
+				const auto version_str = newver.toString();;
+				addNotification(tr("New Version Available"),
+					tr("Version %1 is available.").arg(version_str),
+					tr("<h3>Updated version available: v%1</h3>"
+					   "<p><a href=\"%2\">Click here to download new version</a>.</p>")
+						.arg(version_str, url));
+			}
+		}
+	} else {
+		pwarn << "could not access" << r->url();
+	}
+}
+#endif
 
 //------------------------------------------------------------------------------
 void Window::createActions()
@@ -483,6 +609,9 @@ void Window::createActions()
 	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
+	connect(&m_reverse_search, &ReverseSearch::finished, [this](){
+		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
+	});
 
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
 	connect(&a_open_dir,    &QAction::triggered, this, &Window::directoryOpenDialog);
@@ -609,7 +738,38 @@ void Window::createActions()
 			m_tagger.queue().currentIndex()+1, 1);
 		m_tagger.openFileInQueue(number-1);
 	});
+
+	connect(&m_notification_display_timer, &QTimer::timeout, [this](){
+		static bool which = false;
+		auto title = which ? tr("Notifications  ") : tr("Notifications: %1").arg(m_notification_count);
+		this->menu_notifications.setTitle(title);
+		which = !which;
+	});
+
+	connect(&m_tagger, &Tagger::newTagsAdded, [this](const QStringList& l) {
+		QString msg = QStringLiteral("<p>New tags were found, ordered by number of times used:</p><ul><li>");
+		for(const auto& e : l) {
+			msg.append(e);
+			msg.append(QStringLiteral("</li><li>"));
+		}
+		msg.append(QStringLiteral("</li></ul>"));
+		addNotification(tr("New Tags Added"), tr("Check Notifications menu for list of added tags."), msg);
+	});
 }
+
+class ProxyStyle : public QProxyStyle
+{
+public:
+	virtual int styleHint(StyleHint hint,
+			      const QStyleOption *option = nullptr,
+			      const QWidget *widget = nullptr,
+			      QStyleHintReturn *returnData = nullptr) const override
+	{
+		if (hint == SH_DrawMenuBarSeparator)
+			return hint;
+		return QProxyStyle::styleHint(hint, option, widget, returnData);
+	}
+};
 
 void Window::createMenus()
 {
@@ -727,12 +887,16 @@ void Window::createMenus()
 	add_action(menu_help, a_about);
 	add_action(menu_help, a_about_qt);
 
+	auto proxy_style = new ProxyStyle();
+	proxy_style->setParent(this);
+	menuBar()->setStyle(proxy_style);
 	menuBar()->addMenu(&menu_file);
 	menuBar()->addMenu(&menu_navigation);
 	menuBar()->addMenu(&menu_view);
 	menuBar()->addMenu(&menu_options);
 	menuBar()->addMenu(&menu_help);
-
+	menuBar()->addSeparator();
+	menuBar()->addMenu(&menu_notifications);
 	setStatusBar(&m_statusbar);
 	m_statusbar.setObjectName(QStringLiteral("StatusBar"));
 	m_statusbar_info_label.setObjectName(QStringLiteral("StatusbarInfo"));

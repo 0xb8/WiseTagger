@@ -5,6 +5,11 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+QMainWindow, #Tagger > QFrame {
+    background-color: #232323;
+    color: #eee;
+}
+
 QLabel#Picture {
     color: #999;
     font-size: 13px;
@@ -17,8 +22,8 @@ QLabel#StatusbarInfo {
     color: #999;
 }
 
-QStatusBar#StatusBar {
-    background-color: rgba(0,0,0,0.3);
+QStatusBar {
+    background-color: rgba(0,0,0,0.3) !important;
     border-top: 1px outset #111;
 }
 QLineEdit#Input {
@@ -27,11 +32,6 @@ QLineEdit#Input {
     padding: 0 8px;
     background: #111;
     selection-background-color: darkgray;
-    color: #eee;
-}
-
-QMainWindow, QMainWindow QFrame {
-    background-color: #232323;
     color: #eee;
 }
 

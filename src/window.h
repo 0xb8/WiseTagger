@@ -16,6 +16,7 @@
 #include <QString>
 #include <QMenu>
 #include <QStatusBar>
+#include <QSystemTrayIcon>
 
 #ifdef Q_OS_WIN32
 #include <QtWinExtras>
@@ -35,6 +36,8 @@ public slots:
 	void updateWindowTitleProgress(int progress);
 	void updateStatusBarText();
 	void updateImageboardPostURL(QString url);
+	void addNotification(const QString& title, const QString &description, const QString& body);
+	void removeNotification(const QString &title);
 
 protected:
 	bool eventFilter(QObject*, QEvent *e) override;
@@ -56,6 +59,9 @@ private:
 	void loadWindowSettings();
 	void saveWindowSettings();
 	void loadWindowStyles();
+
+	void showNotificationsMenu();
+	void hideNotificationsMenu();
 
 	static constexpr const char* MainWindowTitle = "%1%2 [%3x%4] (%5)  –  " TARGET_PRODUCT " v%6";
 	static constexpr const char* MainWindowTitleEmpty = TARGET_PRODUCT " v%1";
@@ -101,12 +107,19 @@ private:
 	QMenu menu_options_language;
 	QMenu menu_options_style;
 	QMenu menu_help;
+	QMenu menu_notifications;
 
 	QStatusBar m_statusbar;
 	QLabel     m_statusbar_info_label;
+	QTimer     m_notification_display_timer;
+	int        m_notification_count = 0;
+	QSystemTrayIcon m_tray_icon;
 
 #ifdef Q_OS_WIN32
 	QWinTaskbarButton m_win_taskbar_button;
+	QNetworkAccessManager m_vernam;
+	void checkNewVersion();
+	void processNewVersion(QNetworkReply*);
 #endif
 };
 #endif // WINDOW_H
