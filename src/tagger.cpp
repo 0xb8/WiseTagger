@@ -491,9 +491,13 @@ RenameStatus Tagger::rename(RenameFlags flags)
 		QMessageBox::Save|QMessageBox::Discard);
 
 	renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
+
 	if(!(flags & RenameFlags::Uncancelable)) { // FIXME: is this even needed?
 		renameMessageBox.addButton(QMessageBox::Cancel);
 	}
+	// workaround for translation issue.
+	renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
+	renameMessageBox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
 
 	int reply;
 	if(flags & RenameFlags::Force || (reply = renameMessageBox.exec()) == QMessageBox::Save ) {

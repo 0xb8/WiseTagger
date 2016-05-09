@@ -747,7 +747,8 @@ void Window::createActions()
 	});
 
 	connect(&m_tagger, &Tagger::newTagsAdded, [this](const QStringList& l) {
-		QString msg = QStringLiteral("<p>New tags were found, ordered by number of times used:</p><ul><li>");
+		QString msg = tr("<p>New tags were found, ordered by number of times used:</p>");
+		msg.append(QStringLiteral("<ul><li>"));
 		for(const auto& e : l) {
 			msg.append(e);
 			msg.append(QStringLiteral("</li><li>"));
