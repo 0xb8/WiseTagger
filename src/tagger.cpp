@@ -133,8 +133,9 @@ void Tagger::deleteCurrentFile()
 			QString::number(pictureDimensions().width()),
 			QString::number(pictureDimensions().height()),
 			QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss", "modified date"))),
-		QMessageBox::Save|QMessageBox::Discard);
+		QMessageBox::Save|QMessageBox::Cancel);
 	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
+	delete_msgbox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
 
 	const auto reply = delete_msgbox.exec();
 
