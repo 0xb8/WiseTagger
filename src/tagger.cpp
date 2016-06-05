@@ -49,7 +49,6 @@ Tagger::Tagger(QWidget *_parent) :
 	m_input.setObjectName(QStringLiteral("Input"));
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
-	connect(&m_input, &TagInput::postURLChanged, this, &Tagger::postURLChanged);
 	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
 	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
 	connect(this,     &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);

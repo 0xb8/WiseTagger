@@ -61,9 +61,6 @@ public:
 	 */
 	QStringList getAddedTags(bool exclude_tags_from_file = false) const;
 
-signals:
-	void postURLChanged(const QString&);
-
 protected:
 	void keyPressEvent(QKeyEvent* event) override;
 

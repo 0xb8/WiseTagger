@@ -606,7 +606,6 @@ void Window::createActions()
 	a_view_menu.setCheckable(true);
 	a_view_input.setCheckable(true);
 
-	connect(&m_tagger,         &Tagger::postURLChanged,        this, &Window::updateImageboardPostURL);
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished, [this](){

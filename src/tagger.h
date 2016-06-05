@@ -131,13 +131,6 @@ signals:
 
 
 	/*!
-	 * \brief Imageboard post URL changed
-	 * \retval New post URL.
-	 */
-	void postURLChanged(const QString&);
-
-
-	/*!
 	 * \brief New Tags were added by user.
 	 * \retval List of tags not in tag file added for current file.
 	 */
