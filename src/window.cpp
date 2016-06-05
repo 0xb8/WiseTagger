@@ -103,13 +103,11 @@ Window::Window(QWidget *_parent) :
 	setCentralWidget(&m_tagger);
 	m_tagger.setObjectName("Tagger");
 	setAcceptDrops(true);
-
-	loadWindowSettings();
-	loadWindowStyles();
-
 	createActions();
 	createMenus();
 	parseCommandLineArguments();
+	loadWindowSettings();
+	loadWindowStyles();
 
 #ifdef Q_OS_WIN32
 	QTimer::singleShot(1500, this, &Window::checkNewVersion);
