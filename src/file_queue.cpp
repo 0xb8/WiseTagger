@@ -140,13 +140,21 @@ size_t FileQueue::saveToFile(const QString &path) const
 	}
 
 	QByteArray raw_data;
-	QTextStream stream(&raw_data);
+	raw_data.reserve(m_files.size() * 128);
+	QTextStream stream(&raw_data, QIODevice::WriteOnly);
 	stream.setCodec("UTF-8");
+
+	stream << m_files.size() << '\n' << m_current << '\n';
+
 
 	for(const auto& e : m_files) {
 		stream << e << '\n';
+		if(stream.status() != QTextStream::Ok) {
+			pwarn << "TextStream bad status:" << stream.status() << " for: " << e;
+			return 0;
+		}
 	}
-
+	stream.flush();
 	f.write(qCompress(raw_data, 8));
 	return f.size();
 }
@@ -160,15 +168,29 @@ size_t FileQueue::loadFromFile(const QString &path)
 		return 0;
 	}
 
-	QTextStream stream(qUncompress(f.readAll()));
+	QTextStream stream(qUncompress(f.readAll()), QIODevice::ReadOnly);
 	stream.setCodec("UTF-8");
 
 	QString line;
 	line.reserve(256);
 	clear();
 
+	int curr = -1, size = -1;
+	stream >> size >> curr;
+
+	if(size <= 0 || curr < 0 || curr >= size) {
+		pwarn << "Invalid size / current index:" << curr << size;
+		return 0;
+	}
+
 	while (stream.readLineInto(&line)) {
-		m_files.push_back(line);
+		if(!line.isEmpty()) {
+			m_files.push_back(line);
+		}
+	}
+
+	if(!m_files.empty()) {
+		m_current = curr;
 	}
 
 	return m_files.size();

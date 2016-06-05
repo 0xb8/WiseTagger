@@ -707,18 +707,7 @@ void Window::createActions()
 		if(filename.isEmpty())
 			return;
 
-		QFileInfo fi(filename);
-		QString newname = fi.absolutePath();
-		newname.append(QStringLiteral("/%1.%2.%3").arg(
-			fi.baseName(),
-			QString::number(m_tagger.queue().currentIndex()+1),
-			SESSION_FILE_SUFFIX));
-
-		if(fi.exists() && fi.isFile()) {
-			QFile::rename(filename,newname);
-		}
-
-		if(!m_tagger.queue().saveToFile(newname)) {
+		if(!m_tagger.queue().saveToFile(filename)) {
 			QMessageBox::critical(this,
 				tr("Save Session Error"),
 				tr("<p>Could not save session to <b>%1</b>.</p><p>Check file permissions.</p>").arg(filename));
