@@ -498,7 +498,8 @@ void Window::hideNotificationsMenu()
 #ifdef Q_OS_WIN
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
 #define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
-#define VER_CHECK_URL           QStringLiteral("https://wolfgirl.org/s/wt/last-version.txt")
+#define VER_CHECK_URL           QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt")
+#define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0")
 
 void Window::checkNewVersion()
 {
@@ -513,6 +514,8 @@ void Window::checkNewVersion()
 	m_vernam.setProxy(m_reverse_search.proxy());
 	connect(&m_vernam, &QNetworkAccessManager::finished, this, &Window::processNewVersion);
 
+	QNetworkRequest req{QUrl{VER_CHECK_URL}};
+	req.setHeader(QNetworkRequest::UserAgentHeader, VER_CHECK_USERAGENT);
 	m_vernam.get(QNetworkRequest{QUrl{VER_CHECK_URL}});
 }
 
@@ -536,14 +539,16 @@ void Window::processNewVersion(QNetworkReply *r)
 				return;
 			}
 			auto url = parts[1].remove('\n');
-			if(url.isEmpty()) {
+			bool url_valid = QUrl(url).isValid();
+			if(url.isEmpty() || !url_valid) {
 				pwarn << "processNewVersion(): got invalid url";
 				return;
 			}
 			const auto current = QVersionNumber::fromString(qApp->applicationVersion());
 			int res = QVersionNumber::compare(current, newver);
+
 			if(res < 0) {
-				const auto version_str = newver.toString();;
+				const auto version_str = newver.toString();
 				addNotification(tr("New Version Available"),
 					tr("Version %1 is available.").arg(version_str),
 					tr("<h3>Updated version available: v%1</h3>"
