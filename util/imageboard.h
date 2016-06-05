@@ -37,6 +37,7 @@ namespace detail {
 		string_t	short_name;
 		string_t	long_name;
 		string_t	post_url;
+		string_t	post_meta_url;
 	};
 
 	const std::array<imageboard_tag,2> imageboard_tags = {
@@ -44,13 +45,15 @@ namespace detail {
 			IB_STRING_LITERAL("yande.re"),
 			IB_STRING_LITERAL("yandere_"),
 			IB_STRING_LITERAL("yande.re"),
-			IB_STRING_LITERAL("https://yande.re/post/show/")
+			IB_STRING_LITERAL("https://yande.re/post/show/%1"),
+			IB_STRING_LITERAL("https://yande.re/post.json?tags=id:%1")
 		},
 		imageboard_tag {
 			IB_STRING_LITERAL("Konachan.com"),
 			IB_STRING_LITERAL("konachan_"),
 			IB_STRING_LITERAL("Konachan.com -"),
-			IB_STRING_LITERAL("https://konachan.net/post/show/")
+			IB_STRING_LITERAL("https://konachan.net/post/show/%1"),
+			IB_STRING_LITERAL("https://konachan.net/post.json?tags=id:%1")
 		}
 	};
 
@@ -107,6 +110,7 @@ template<typename IteratorT>
 bool find_imageboard_tags(IteratorT start, IteratorT end, IteratorT& board_tag, IteratorT& board_id)
 {
 	if(std::distance(start,end) < 2) {
+		board_id = board_tag = end;
 		return false;
 	}
 
@@ -119,6 +123,7 @@ bool find_imageboard_tags(IteratorT start, IteratorT end, IteratorT& board_tag, 
 	});
 
 	if(tag_it == end) {
+		board_id = board_tag = end;
 		return false;
 
 	}
@@ -130,11 +135,13 @@ bool find_imageboard_tags(IteratorT start, IteratorT end, IteratorT& board_tag, 
 	});
 
 	if(id_it == end) {
+		board_id = board_tag = end;
 		return false;
 	}
 
 	if(std::distance(id_it, tag_it) > 2) {
 		pdbg << "distance(id,tag) too big";
+		board_id = board_tag = end;
 		return false;
 	}
 
@@ -208,39 +215,57 @@ bool restore_imageboard_tags(ContainerT& c)
 	return true;
 }
 
-/* Returns URL of imageboard post */
-template<typename ContainerT>
-auto get_imageboard_post_url(const ContainerT &c)
+template<typename StringT>
+struct imageboard_meta {
+	StringT imageboard_name;
+	StringT post_id;
+	StringT post_url;
+	StringT post_api_url;
+};
+
+namespace detail {
+	template<typename StringT>
+	inline
+	imageboard_meta<StringT> make_meta(StringT&& name, StringT&& id, StringT&& url, StringT&& api)
+	{
+		static_assert(std::is_rvalue_reference<decltype(name)>::value, "rvalue reqired");
+		return imageboard_meta<StringT>{name,id,url,api};
+	}
+}
+
+template<typename IteratorT>
+auto get_imageboard_meta(IteratorT ibegin, IteratorT iend)
 {
-	const auto begin = std::begin(c);
-	const auto end   = std::end(c);
+	using val_t = typename IteratorT::value_type;
 
-	auto board = std::end(c);
-	auto id    = board;
-	int which  = -1;
-
+	auto board = iend, id = iend;
+	int which = -1;
 	bool found_long, found_short;
-	typename ContainerT::value_type ret;
 
-	if((found_long = find_imageboard_tags(begin, end, board, id))
-		|| (found_short = find_short_imageboard_tag(begin, end, board)))
+
+	if((found_long = find_imageboard_tags(ibegin, iend, board, id))
+		|| (found_short = find_short_imageboard_tag(ibegin, iend, board)))
 	{
 		which = detail::which_board(*board);
-		Q_ASSERT(which >= 0);
 	}
 
-	if(found_long) {
-		ret.append(detail::imageboard_tags[which].post_url);
-		return ret.append(*id);
+	val_t ibname, ibid, iburl, ibmetaurl;
+	if(which >= 0) {
+		ibname = detail::imageboard_tags[which].original_name;
+
+		if(found_long) {
+			ibid = *id;
+		} else if (found_short) {
+			ibid = detail::get_id_from_short_tag(*board);
+		}
+
+		if(ibid.size() != 0) {
+			iburl = detail::imageboard_tags[which].post_url.arg(ibid);
+			ibmetaurl = detail::imageboard_tags[which].post_meta_url.arg(ibid);
+		}
 	}
 
-	if(found_short) {
-		ret.append(detail::imageboard_tags[which].post_url);
-		return ret.append(detail::get_id_from_short_tag(*board));
-
-	}
-
-	return ret;
+	return detail::make_meta(std::move(ibname),std::move(ibid),std::move(iburl),std::move(ibmetaurl));
 }
 
 } // namespace imageboard

@@ -174,7 +174,7 @@ void TagInput::updateText(const QString &t)
 
 QString TagInput::postURL() const
 {
-	return ib::get_imageboard_post_url(m_text_list);
+	return ib::get_imageboard_meta(m_text_list.begin(), m_text_list.end()).post_url;
 }
 
 QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
