@@ -1,1 +1,1 @@
-0.5.1 https://bitbucket.org/catgirl/wisetagger/downloads
+0.5.2 https://bitbucket.org/catgirl/wisetagger/downloads
