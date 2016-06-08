@@ -208,7 +208,7 @@ QString Tagger::currentFileType() const
 
 bool Tagger::fileModified() const
 {
-	if(m_file_queue.empty()) // NOTE: important
+	if(m_file_queue.empty()) // NOTE: to avoid FileQueue::current() returning invalid reference.
 		return false;
 
 	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
@@ -486,7 +486,7 @@ RenameStatus Tagger::rename(RenameFlags flags)
 	if(!(flags & RenameFlags::Uncancelable)) { // FIXME: is this even needed?
 		renameMessageBox.addButton(QMessageBox::Cancel);
 	}
-	// workaround for translation issue.
+	// NOTE: workaround for translation issue.
 	renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
 	renameMessageBox.setButtonText(QMessageBox::Cancel, tr("Cancel"));
 

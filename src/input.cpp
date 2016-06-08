@@ -94,7 +94,7 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 		clearFocus();
 		return;
 	}
-	// NOTE: Shift+Space - workaround for space not working as expected when typing in the middle of the word
+	// NOTE: Shift+Space - workaround for space not working as expected when typing in the middle of the word.
 	if(m_event->key() == Qt::Key_Space && !(m_event->modifiers() & Qt::ShiftModifier)) {
 		/* Don't sort tags, haven't finished editing yet */
 		fixTags(false);
