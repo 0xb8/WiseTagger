@@ -104,13 +104,14 @@ private:
 	QMenu menu_navigation;
 	QMenu menu_view;
 	QMenu menu_options;
-	QMenu menu_options_language;
+	QMenu menu_options_lang;
 	QMenu menu_options_style;
 	QMenu menu_help;
 	QMenu menu_notifications;
+	QMenu menu_tray;
 
 	QStatusBar m_statusbar;
-	QLabel     m_statusbar_info_label;
+	QLabel     m_statusbar_label;
 	QTimer     m_notification_display_timer;
 	int        m_notification_count = 0;
 	QSystemTrayIcon m_tray_icon;

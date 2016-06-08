@@ -12,21 +12,21 @@
 #include <QDirIterator>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
-#include <QInputDialog>
 #include <QDropEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QInputDialog>
 #include <QKeySequence>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QSettings>
-#include <QUrl>
-#include <QStyle>
-#include <QProxyStyle>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QProxyStyle>
+#include <QSettings>
+#include <QStyle>
+#include <QUrl>
 #include <QVersionNumber>
 
 #include "window.h"
@@ -56,49 +56,56 @@ Q_LOGGING_CATEGORY(wilc, "Window")
 #define SESSION_FILE_SUFFIX	QStringLiteral("wt-session")
 #define SESSION_FILE_PATTERN	QStringLiteral("*.wt-session")
 
+#ifdef Q_OS_WIN
+#define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
+#define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
+#define VER_CHECK_URL           QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt")
+#define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0")
+#endif
+
 //------------------------------------------------------------------------------
 
-Window::Window(QWidget *_parent) :
-	QMainWindow(_parent)
-	, m_tagger(this)
-	, m_reverse_search(this)
-	, a_open_file(	tr("&Open File..."), nullptr)
-	, a_open_dir(	tr("Open &Folder..."), nullptr)
-	, a_delete_file(tr("&Delete Current Image"), nullptr)
-	, a_open_post(	tr("Open Imageboard &Post..."), nullptr)
-	, a_iqdb_search(tr("&Reverse Search Image..."), nullptr)
-	, a_exit(	tr("&Exit"), nullptr)
-	, a_next_file(	tr("&Next Image"), nullptr)
-	, a_prev_file(	tr("&Previous Image"), nullptr)
-	, a_save_file(	tr("&Save"), nullptr)
-	, a_save_next(	tr("Save and Open Next Image"), nullptr)
-	, a_save_prev(	tr("Save and Open Previous Image"), nullptr)
-	, a_go_to_number(tr("Go To File Number"), nullptr)
-	, a_save_session(tr("Save Session"), nullptr)
-	, a_load_session(tr("Open Session"),nullptr)
-	, a_open_loc(	tr("Open &Containing Folder"), nullptr)
-	, a_reload_tags(tr("&Reload Tag File"), nullptr)
-	, a_ib_replace(	tr("Re&place Imageboard Tags"), nullptr)
-	, a_ib_restore(	tr("Re&store Imageboard Tags"), nullptr)
-	, a_view_statusbar( tr("&Statusbar"), nullptr)
-	, a_view_fullscreen(tr("&Fullscreen"), nullptr)
-	, a_view_menu(      tr("&Menu"), nullptr)
-	, a_view_input(     tr("Tag &Input"), nullptr)
-	, a_about(	tr("&About..."), nullptr)
-	, a_about_qt(	tr("About &Qt..."), nullptr)
-	, a_help(	tr("&Help..."), nullptr)
-	, a_stats(	tr("&Statistics..."), nullptr)
-	, menu_file(	tr("&File"))
-	, menu_navigation(tr("&Navigation"))
-	, menu_view(    tr("&View"), nullptr)
-	, menu_options(	tr("&Options"))
-	, menu_options_language(tr("&Language"))
+Window::Window(QWidget *_parent) : QMainWindow(_parent)
+	, m_tagger(          this)
+	, m_reverse_search(  this)
+	, a_open_file(       tr("&Open File..."), nullptr)
+	, a_open_dir(        tr("Open &Folder..."), nullptr)
+	, a_delete_file(     tr("&Delete Current Image"), nullptr)
+	, a_open_post(       tr("Open Imageboard &Post..."), nullptr)
+	, a_iqdb_search(     tr("&Reverse Search Image..."), nullptr)
+	, a_exit(            tr("&Exit"), nullptr)
+	, a_next_file(       tr("&Next Image"), nullptr)
+	, a_prev_file(       tr("&Previous Image"), nullptr)
+	, a_save_file(       tr("&Save"), nullptr)
+	, a_save_next(       tr("Save and Open Next Image"), nullptr)
+	, a_save_prev(       tr("Save and Open Previous Image"), nullptr)
+	, a_go_to_number(    tr("Go To File Number"), nullptr)
+	, a_save_session(    tr("Save Session"), nullptr)
+	, a_load_session(    tr("Open Session"),nullptr)
+	, a_open_loc(        tr("Open &Containing Folder"), nullptr)
+	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
+	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
+	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
+	, a_view_statusbar(  tr("&Statusbar"), nullptr)
+	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
+	, a_view_menu(       tr("&Menu"), nullptr)
+	, a_view_input(      tr("Tag &Input"), nullptr)
+	, a_about(           tr("&About..."), nullptr)
+	, a_about_qt(        tr("About &Qt..."), nullptr)
+	, a_help(            tr("&Help..."), nullptr)
+	, a_stats(           tr("&Statistics..."), nullptr)
+	, menu_file(         tr("&File"))
+	, menu_navigation(   tr("&Navigation"))
+	, menu_view(         tr("&View"))
+	, menu_options(      tr("&Options"))
+	, menu_options_lang( tr("&Language"))
 	, menu_options_style(tr("S&tyle"))
-	, menu_help(	tr("&Help"))
-	, menu_notifications(nullptr)
-	, m_statusbar(nullptr)
-	, m_statusbar_info_label(nullptr)
-	, m_tray_icon(this)
+	, menu_help(	     tr("&Help"))
+	, menu_notifications()
+	, menu_tray()
+	, m_statusbar()
+	, m_statusbar_label()
+	, m_tray_icon()
 {
 	setCentralWidget(&m_tagger);
 	m_tagger.setObjectName("Tagger");
@@ -173,13 +180,13 @@ void Window::updateWindowTitleProgress(int progress)
 void Window::updateStatusBarText()
 {
 	if(m_tagger.queue().empty()) {
-		m_statusbar_info_label.clear();
+		m_statusbar_label.clear();
 		return;
 	}
 	auto current = m_tagger.queue().currentIndex() + 1u;
-	auto qsize    = m_tagger.queue().size();
-	m_statusbar_info_label.setText(QStringLiteral("%1 / %2  ")
-		.arg(QString::number(current),QString::number(qsize)));
+	auto qsize   = m_tagger.queue().size();
+	m_statusbar_label.setText(QStringLiteral("%1 / %2  ")
+		.arg(QString::number(current), QString::number(qsize)));
 }
 
 void Window::updateImageboardPostURL(QString url)
@@ -194,6 +201,7 @@ void Window::updateImageboardPostURL(QString url)
 
 void Window::addNotification(const QString &title, const QString& description, const QString &body)
 {
+	// remove other notifications of the same type
 	removeNotification(title);
 	// we want only last notification's action to be triggered
 	QObject::disconnect(&m_tray_icon, &QSystemTrayIcon::messageClicked, nullptr, nullptr);
@@ -202,7 +210,7 @@ void Window::addNotification(const QString &title, const QString& description, c
 		auto action = new QAction(title, this);
 
 		connect(action, &QAction::triggered, [title,body,this,action](){
-			QMessageBox mb(QMessageBox::Information, title,body,QMessageBox::Ok, this);
+			QMessageBox mb(QMessageBox::Information, title, body, QMessageBox::Ok, this);
 			mb.setTextInteractionFlags(Qt::TextBrowserInteraction);
 			mb.exec();
 			removeNotification(title);
@@ -213,6 +221,7 @@ void Window::addNotification(const QString &title, const QString& description, c
 		++m_notification_count;
 	}
 	showNotificationsMenu();
+	m_tray_icon.setVisible(true);
 	m_tray_icon.showMessage(title, description);
 }
 
@@ -227,7 +236,22 @@ void Window::removeNotification(const QString& title) {
 	}
 	if(m_notification_count <= 0) {
 		hideNotificationsMenu();
+
 	}
+	m_tray_icon.setVisible(false);
+}
+
+void Window::showNotificationsMenu()
+{
+	if(m_notification_count > 0) {
+		m_notification_display_timer.start(1000);
+	}
+}
+
+void Window::hideNotificationsMenu()
+{
+	m_notification_display_timer.stop();
+	menu_notifications.setTitle("");
 }
 
 void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
@@ -355,14 +379,13 @@ void Window::closeEvent(QCloseEvent *e)
 void Window::showEvent(QShowEvent *e)
 {
 #ifdef Q_OS_WIN32
-	// NOTE: workaround for taskbar button not working
+	// NOTE: workaround for taskbar button not working.
 	m_win_taskbar_button.setWindow(this->windowHandle());
 #endif
 	e->accept();
 }
 
 //------------------------------------------------------------------------------
-
 void Window::parseCommandLineArguments()
 {
 	QFileInfo f;
@@ -371,16 +394,28 @@ void Window::parseCommandLineArguments()
 	QCommandLineParser parser;
 	parser.addVersionOption();
 	parser.addHelpOption();
-	QCommandLineOption proxy_option(QStringLiteral("proxy"),
-					QStringLiteral("Set proxy for IQDB search"),
-					QStringLiteral("proxy"));
-	QCommandLineOption no_proxy_option(QStringLiteral("no-proxy"),
-					   QStringLiteral("Disable proxy"));
-	QCommandLineOption no_stats_option(QStringLiteral("no-stats"),
-					   QStringLiteral("Disable statistics collection"));
+	QCommandLineOption proxy_option(
+		QStringLiteral("proxy"),
+		QStringLiteral("Set proxy for IQDB search"),
+		QStringLiteral("proxy"));
+	QCommandLineOption no_proxy_option(
+		QStringLiteral("no-proxy"),
+		QStringLiteral("Disable proxy"));
+	QCommandLineOption no_stats_option(
+		QStringLiteral("no-stats"),
+		QStringLiteral("Disable statistics collection"));
 	parser.addOption(proxy_option);
 	parser.addOption(no_proxy_option);
 	parser.addOption(no_stats_option);
+
+#ifdef Q_OS_WIN32
+	QCommandLineOption vercheck(
+		QStringLiteral("vercheck"),
+		QStringLiteral("Toggle version checking"),
+		QStringLiteral("true|false"));
+	parser.addOption(vercheck);
+#endif
+
 	parser.process(args);
 
 	if(parser.isSet(proxy_option)) {
@@ -398,10 +433,24 @@ void Window::parseCommandLineArguments()
 		m_tagger.statistics().setEnabled(false);
 	}
 
+#ifdef Q_OS_WIN32
+	if(parser.isSet(vercheck)) {
+		auto vcheck = parser.value(QStringLiteral("vercheck"));
+		QSettings settings;
+		if(vcheck == QStringLiteral("true")) {
+			settings.setValue(SETT_VER_CHECK_ENABLED,true);
+		} else if (vcheck == QStringLiteral("false")) {
+			settings.setValue(SETT_VER_CHECK_ENABLED,false);
+		} else {
+			pwarn << "Got invalid value when parsing vercheck option:" << vcheck;
+		}
+	}
+#endif
 	for(const auto& arg : parser.positionalArguments()) {
 		if(arg.startsWith(QChar('-'))) {
 			continue;
 		}
+
 		f.setFile(arg);
 
 		if(!f.exists()) {
@@ -480,25 +529,7 @@ void Window::loadWindowSettings()
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 }
 
-void Window::showNotificationsMenu()
-{
-	m_tray_icon.setVisible(true);
-	m_notification_display_timer.start(1000);
-}
-
-void Window::hideNotificationsMenu()
-{
-	m_notification_display_timer.stop();
-	menu_notifications.setTitle("");
-	m_tray_icon.setVisible(false);
-}
-
 #ifdef Q_OS_WIN
-#define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
-#define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
-#define VER_CHECK_URL           QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt")
-#define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0")
-
 void Window::checkNewVersion()
 {
 	QSettings sett;
@@ -749,6 +780,7 @@ void Window::createActions()
 	});
 }
 
+// For enabling addSeparator() in QMenuBar.
 class ProxyStyle : public QProxyStyle
 {
 public:
@@ -758,7 +790,8 @@ public:
 			      QStyleHintReturn *returnData = nullptr) const override
 	{
 		if (hint == SH_DrawMenuBarSeparator)
-			return hint;
+			return hint; // NOTE: seems like returning any non-zero value works.
+
 		return QProxyStyle::styleHint(hint, option, widget, returnData);
 	}
 };
@@ -775,6 +808,7 @@ void Window::createMenus()
 		(&object)->addSeparator();
 	};
 
+	// File menu actions
 	add_action(menu_file, a_open_file);
 	add_action(menu_file, a_open_dir);
 	add_action(menu_file, a_load_session);
@@ -789,6 +823,18 @@ void Window::createMenus()
 	add_separator(menu_file);
 	add_action(menu_file, a_exit);
 
+	// Tray context menu actions
+	add_action(menu_tray, a_view_fullscreen);
+	add_action(menu_tray, a_view_menu);
+	add_action(menu_tray, a_view_input);
+	add_action(menu_tray, a_view_statusbar);
+	add_separator(menu_tray);
+	add_action(menu_tray, a_ib_replace);
+	add_action(menu_tray, a_ib_restore);
+	add_separator(menu_tray);
+	add_action(menu_tray, a_exit);
+
+	// Navigation menu actions
 	add_action(menu_navigation, a_next_file);
 	add_action(menu_navigation, a_prev_file);
 	add_action(menu_navigation, a_go_to_number);
@@ -799,20 +845,23 @@ void Window::createMenus()
 	add_action(menu_navigation, a_open_loc);
 	add_action(menu_navigation, a_reload_tags);
 
+	// View menu actions
 	add_action(menu_view, a_view_fullscreen);
 	add_separator(menu_view);
 	add_action(menu_view, a_view_menu);
 	add_action(menu_view, a_view_input);
 	add_action(menu_view, a_view_statusbar);
 
+	// Options menu actions
 	add_action(menu_options, a_ib_replace);
 	add_action(menu_options, a_ib_restore);
 	add_separator(menu_options);
-	menu_options.addMenu(&menu_options_language);
+	menu_options.addMenu(&menu_options_lang);
 	menu_options.addMenu(&menu_options_style);
 	add_separator(menu_options);
 
-	auto lang_group = new QActionGroup(&menu_options_language);
+	// Language sub-menu entries
+	auto lang_group = new QActionGroup(&menu_options_lang);
 	lang_group->setExclusive(true);
 	auto style_group = new QActionGroup(&menu_options_style);
 	style_group->setExclusive(true);
@@ -831,7 +880,7 @@ void Window::createMenus()
 		auto action = new QAction(name, this);
 		action->setCheckable(true);
 		action->setData(code);
-		menu_options_language.addAction(action);
+		menu_options_lang.addAction(action);
 		lang_group->addAction(action);
 
 		if(code == settings.value(SETT_LOCALE, QStringLiteral("en")).toString())
@@ -864,7 +913,7 @@ void Window::createMenus()
 		settings.setValue(SETT_LOCALE, a->data().toString());
 		QMessageBox::information(nullptr,
 			tr("Language changed"),
-			tr("<p>Please restart the application to apply language change.</p>"));
+			tr("<p>Please restart %1 to apply language change.</p>").arg(QStringLiteral(TARGET_PRODUCT)));
 	});
 
 	connect(style_group, &QActionGroup::triggered, [this](const QAction* a)
@@ -873,12 +922,14 @@ void Window::createMenus()
 		loadWindowStyles();
 	});
 
+	// Help menu actions
 	add_action(menu_help, a_help);
 	add_action(menu_help, a_stats);
 	add_separator(menu_help);
 	add_action(menu_help, a_about);
 	add_action(menu_help, a_about_qt);
 
+	// Menu bar menus
 	auto proxy_style = new ProxyStyle();
 	proxy_style->setParent(this);
 	menuBar()->setStyle(proxy_style);
@@ -889,11 +940,16 @@ void Window::createMenus()
 	menuBar()->addMenu(&menu_help);
 	menuBar()->addSeparator();
 	menuBar()->addMenu(&menu_notifications);
+
+	// Tray context menu
+	m_tray_icon.setContextMenu(&menu_tray);
+
+	// Status bar items
 	setStatusBar(&m_statusbar);
 	m_statusbar.setObjectName(QStringLiteral("StatusBar"));
-	m_statusbar_info_label.setObjectName(QStringLiteral("StatusbarInfo"));
+	m_statusbar_label.setObjectName(QStringLiteral("StatusbarInfo"));
 	m_statusbar.setSizeGripEnabled(false);
-	m_statusbar.addPermanentWidget(&m_statusbar_info_label);
+	m_statusbar.addPermanentWidget(&m_statusbar_label);
 }
 
 void Window::updateMenus()
