@@ -21,10 +21,10 @@ TARGET = WiseTagger
 
 QMAKE_TARGET_COMPANY = catgirl
 QMAKE_TARGET_PRODUCT = WiseTagger
-QMAKE_TARGET_DESCRIPTION = Simple picture tagger
+QMAKE_TARGET_DESCRIPTION = WiseTagger: Simple picture tagging tool
 QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 
-VERSION = "0.5.1"
+VERSION = "0.5.2"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT
 
 DEFINES +=                                           \
