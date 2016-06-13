@@ -110,11 +110,11 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	setCentralWidget(&m_tagger);
 	m_tagger.setObjectName("Tagger");
 	setAcceptDrops(true);
+	loadWindowStyles(); // NOTE: should be called before menus are created.
 	createActions();
 	createMenus();
 	parseCommandLineArguments();
 	loadWindowSettings();
-	loadWindowStyles();
 
 #ifdef Q_OS_WIN32
 	QTimer::singleShot(1500, this, &Window::checkNewVersion);
