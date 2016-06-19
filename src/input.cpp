@@ -204,7 +204,7 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 	auto allowed_in_tag = [](QChar c)
 	{
-		return c.isLetterOrNumber() || c == '_' || c == ';' || c == '@';
+		return c.isLetterOrNumber() || c == '_' || c == ';' || c == '@' || c == '(' || c == ')';
 	};
 
 	auto allowed_in_file = [&allowed_in_tag](QChar c)
@@ -216,7 +216,6 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 			c == ',' ||
 			c == '=' ||
 			c == ' ' ||
-			c == '@' ||
 			c == '\t';
 	};
 
