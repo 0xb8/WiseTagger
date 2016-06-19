@@ -59,6 +59,7 @@ private:
 	void loadWindowSettings();
 	void saveWindowSettings();
 	void loadWindowStyles();
+	void createCommands();
 
 	void showNotificationsMenu();
 	void hideNotificationsMenu();
@@ -106,6 +107,7 @@ private:
 	QMenu menu_options;
 	QMenu menu_options_lang;
 	QMenu menu_options_style;
+	QMenu menu_commands;
 	QMenu menu_help;
 	QMenu menu_notifications;
 	QMenu menu_tray;

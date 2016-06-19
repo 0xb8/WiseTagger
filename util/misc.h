@@ -6,11 +6,17 @@
  */
 
 #include <QByteArray>
+#include <QStringList>
+#include <QIcon>
 
 namespace util {
 
-QByteArray read_resource_html(const char* filename);
+auto read_resource_html(const char* filename) -> QByteArray;
 
-QString duration(std::uint64_t ms);
+auto duration(std::uint64_t ms) -> QString;
+
+auto parse_arguments(const QString& args) -> QStringList;
+
+auto get_icon_from_executable(const QString& path) -> QIcon;
 
 }

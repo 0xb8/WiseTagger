@@ -7,8 +7,14 @@
 
 #include <QSettings>
 #include <QFile>
+#include <QDir>
 #include <QApplication>
 #include "misc.h"
+
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#include <QtWin>
+#endif
 
 #define SETT_LOCALE	QStringLiteral("window/locale")
 #define HTML_LOCATION	QStringLiteral(":/html/%1/%2")
@@ -45,4 +51,48 @@ QString util::duration(uint64_t secs)
 	auto yrs  = yr  != 0 ? qApp->translate("Duration", "%n years", "", yr)    : QStringLiteral("");
 
 	return QStringLiteral("%1 %2 %3 %4 %5 %6").arg(yrs, mons, days, hrs, mins, sec);
+}
+
+QStringList util::parse_arguments(const QString & args)
+{
+	QStringList ret;
+	QString curr_arg;
+
+	bool open_quote = false;
+	for(auto c : args) {
+		if(c == '"') {
+			open_quote = !open_quote;
+			continue;
+		}
+		if(c.isSpace() && !open_quote) {
+			if(!curr_arg.isEmpty()) {
+				ret.push_back(curr_arg);
+				curr_arg.clear();
+			}
+			continue;
+		}
+		curr_arg.push_back(c);
+	}
+	if(!curr_arg.isEmpty()) {
+		ret.push_back(curr_arg);
+	}
+	return ret;
+}
+
+
+QIcon util::get_icon_from_executable(const QString &path)
+{
+#ifdef Q_OS_WIN
+	auto widepath = QDir::toNativeSeparators(path).toStdWString();
+	auto hinstance = ::GetModuleHandle(NULL);
+	auto hicon = ::ExtractIcon(hinstance, widepath.c_str(), 0);
+	auto ricon = QIcon();
+	if(reinterpret_cast<uintptr_t>(hicon) > 1) { // NOTE: winapi derp
+		ricon.addPixmap(QtWin::fromHICON(hicon));
+	}
+	::DestroyIcon(hicon);
+	return ricon;
+#else
+	return QIcon(); // TODO: load icon from .desktop file on linux
+#endif
 }

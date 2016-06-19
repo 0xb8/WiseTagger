@@ -28,6 +28,7 @@
 #include <QStyle>
 #include <QUrl>
 #include <QVersionNumber>
+#include <memory>
 
 #include "window.h"
 #include "util/open_graphical_shell.h"
@@ -100,6 +101,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, menu_options(      tr("&Options"))
 	, menu_options_lang( tr("&Language"))
 	, menu_options_style(tr("S&tyle"))
+	, menu_commands(     tr("&Commands"))
 	, menu_help(	     tr("&Help"))
 	, menu_notifications()
 	, menu_tray()
@@ -113,6 +115,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	loadWindowStyles(); // NOTE: should be called before menus are created.
 	createActions();
 	createMenus();
+	createCommands();
 	parseCommandLineArguments();
 	loadWindowSettings();
 
@@ -591,6 +594,72 @@ void Window::processNewVersion(QNetworkReply *r)
 }
 #endif
 
+#define SETT_COMMANDS_DIR	QStringLiteral("window/commands")
+#define SETT_COMMAND_NAME	QStringLiteral("display_name")
+#define SETT_COMMAND_CMD	QStringLiteral("command")
+#define SETT_COMMAND_HKEY	QStringLiteral("hotkey")
+
+void Window::createCommands()
+{
+	menu_commands.setDisabled(true);
+	QSettings settings;
+	auto size = settings.beginReadArray(SETT_COMMANDS_DIR);
+	for(auto i{0}; i < size; ++i) {
+		settings.setArrayIndex(i);
+		auto name = settings.value(SETT_COMMAND_NAME).toString();
+		auto cmd  = settings.value(SETT_COMMAND_CMD).toString();
+		auto hkey = settings.value(SETT_COMMAND_HKEY).toString();
+
+		if(name.isEmpty() || cmd.isEmpty()) {
+			continue;
+		}
+
+		auto action = std::make_unique<QAction>(name, nullptr);
+
+		if(!hkey.isEmpty()) {
+			action->setShortcut(hkey);
+		}
+
+		auto args = util::parse_arguments(cmd);
+		if(args.isEmpty() || !QFile::exists(args.first())) {
+			pwarn << "Invalid command: key empty or executable does not exist";
+			continue;
+		}
+		auto binary = args.first();
+		args.removeFirst();
+
+		action->setIcon(util::get_icon_from_executable(binary));
+		action->setEnabled(false);
+
+		connect(action.get(), &QAction::triggered,
+			[this,name{std::move(name)},binary{std::move(binary)},args{std::move(args)}] () mutable
+		{
+			for(auto& arg : args) {
+				if(arg == "%s") {
+					arg = QDir::toNativeSeparators(this->m_tagger.currentFile());
+				}
+				else if(arg == "%d") {
+					arg = QDir::toNativeSeparators(this->m_tagger.currentDir());
+				}
+				else if(arg == "%f") {
+					arg = QDir::toNativeSeparators(this->m_tagger.currentFileName());
+				}
+			}
+			auto success = QProcess::startDetached(binary,args);
+			if(!success) {
+				QMessageBox::critical(this,
+					tr("Failed to start command"),
+					tr("<p>Failed to launch command <b>%1</b>:</p><p>Could not start <code>%2</code>.</p>")
+						.arg(name, binary));
+			}
+		});
+		action->setParent(this);
+		menu_commands.addAction(action.release());
+		menu_commands.setEnabled(true);
+	}
+	settings.endArray();
+}
+
 //------------------------------------------------------------------------------
 void Window::createActions()
 {
@@ -936,6 +1005,7 @@ void Window::createMenus()
 	menuBar()->addMenu(&menu_file);
 	menuBar()->addMenu(&menu_navigation);
 	menuBar()->addMenu(&menu_view);
+	menuBar()->addMenu(&menu_commands);
 	menuBar()->addMenu(&menu_options);
 	menuBar()->addMenu(&menu_help);
 	menuBar()->addSeparator();
@@ -967,6 +1037,9 @@ void Window::updateMenus()
 	a_open_loc.setDisabled(val);
 	a_save_session.setDisabled(val);
 	a_go_to_number.setDisabled(val);
+	for(auto action : menu_commands.actions()) {
+		action->setDisabled(val);
+	}
 }
 
 //------------------------------------------------------------------------------

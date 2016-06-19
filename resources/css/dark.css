@@ -14,7 +14,6 @@ QLabel#Picture {
     color: #999;
     font-size: 13px;
     background-color: black;
-    border-top: 1px outset black;
 }
 
 QLabel#StatusbarInfo {
@@ -57,8 +56,12 @@ QMenu {
 }
 
 QMenu::item {
-    padding: 3px 10px 3px 25px;
+    padding: 3px 10px 3px 30px;
     border: 1px solid transparent;
+}
+
+QMenu::icon {
+    padding-left: 10px;
 }
 
 QMenu::item::disabled {
