@@ -7,7 +7,6 @@
 
 #include <QApplication>
 #include <QCollator>
-#include <QCommandLineParser>
 #include <QDesktopServices>
 #include <QDirIterator>
 #include <QDragEnterEvent>
@@ -48,7 +47,6 @@ Q_LOGGING_CATEGORY(wilc, "Window")
 #define SETT_SHOW_MENU		QStringLiteral("window/show-menu")
 #define SETT_SHOW_STATUS	QStringLiteral("window/show-statusbar")
 #define SETT_SHOW_INPUT		QStringLiteral("window/show-input")
-#define SETT_LOCALE		QStringLiteral("window/locale")
 #define SETT_STYLE		QStringLiteral("window/style")
 
 #define SETT_REPLACE_TAGS	QStringLiteral("imageboard/replace-tags")
@@ -69,6 +67,7 @@ Q_LOGGING_CATEGORY(wilc, "Window")
 Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, m_tagger(          this)
 	, m_reverse_search(  this)
+	, m_settings_dialog( this)
 	, a_open_file(       tr("&Open File..."), nullptr)
 	, a_open_dir(        tr("Open &Folder..."), nullptr)
 	, a_delete_file(     tr("&Delete Current Image"), nullptr)
@@ -87,6 +86,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
+	, a_show_settings(   tr("P&references..."), nullptr)
 	, a_view_statusbar(  tr("&Statusbar"), nullptr)
 	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
 	, a_view_menu(       tr("&Menu"), nullptr)
@@ -99,8 +99,6 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, menu_navigation(   tr("&Navigation"))
 	, menu_view(         tr("&View"))
 	, menu_options(      tr("&Options"))
-	, menu_options_lang( tr("&Language"))
-	, menu_options_style(tr("S&tyle"))
 	, menu_commands(     tr("&Commands"))
 	, menu_help(	     tr("&Help"))
 	, menu_notifications()
@@ -112,12 +110,12 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	setCentralWidget(&m_tagger);
 	m_tagger.setObjectName("Tagger");
 	setAcceptDrops(true);
-	loadWindowStyles(); // NOTE: should be called before menus are created.
+	updateWindowStyles(); // NOTE: should be called before menus are created.
 	createActions();
 	createMenus();
 	createCommands();
 	parseCommandLineArguments();
-	loadWindowSettings();
+	initWindowSettings();
 
 #ifdef Q_OS_WIN32
 	QTimer::singleShot(1500, this, &Window::checkNewVersion);
@@ -392,64 +390,18 @@ void Window::showEvent(QShowEvent *e)
 void Window::parseCommandLineArguments()
 {
 	QFileInfo f;
-	QStringList args = qApp->arguments();
+	auto args = qApp->arguments();
+	args.pop_front();
 
-	QCommandLineParser parser;
-	parser.addVersionOption();
-	parser.addHelpOption();
-	QCommandLineOption proxy_option(
-		QStringLiteral("proxy"),
-		QStringLiteral("Set proxy for IQDB search"),
-		QStringLiteral("proxy"));
-	QCommandLineOption no_proxy_option(
-		QStringLiteral("no-proxy"),
-		QStringLiteral("Disable proxy"));
-	QCommandLineOption no_stats_option(
-		QStringLiteral("no-stats"),
-		QStringLiteral("Disable statistics collection"));
-	parser.addOption(proxy_option);
-	parser.addOption(no_proxy_option);
-	parser.addOption(no_stats_option);
-
-#ifdef Q_OS_WIN32
-	QCommandLineOption vercheck(
-		QStringLiteral("vercheck"),
-		QStringLiteral("Toggle version checking"),
-		QStringLiteral("true|false"));
-	parser.addOption(vercheck);
-#endif
-
-	parser.process(args);
-
-	if(parser.isSet(proxy_option)) {
-		QString proxy_arg = parser.value(QStringLiteral("proxy"));
-		pdbg << "proxy arg" << proxy_arg;
-		m_reverse_search.setProxy({proxy_arg, QUrl::StrictMode});
-	}
-
-	if(parser.isSet(no_proxy_option)) {
-		pdbg << "--no-proxy";
-		m_reverse_search.setProxyEnabled(false);
-	}
-
-	if(parser.isSet(no_stats_option)) {
-		m_tagger.statistics().setEnabled(false);
-	}
-
-#ifdef Q_OS_WIN32
-	if(parser.isSet(vercheck)) {
-		auto vcheck = parser.value(QStringLiteral("vercheck"));
-		QSettings settings;
-		if(vcheck == QStringLiteral("true")) {
-			settings.setValue(SETT_VER_CHECK_ENABLED,true);
-		} else if (vcheck == QStringLiteral("false")) {
-			settings.setValue(SETT_VER_CHECK_ENABLED,false);
-		} else {
-			pwarn << "Got invalid value when parsing vercheck option:" << vcheck;
+	if(args.size() == 1) {
+		f.setFile(args.first());
+		if(f.exists()) {
+			m_tagger.openFile(args.first());
+			return;
 		}
 	}
-#endif
-	for(const auto& arg : parser.positionalArguments()) {
+
+	for(const auto& arg : args) {
 		if(arg.startsWith(QChar('-'))) {
 			continue;
 		}
@@ -483,10 +435,18 @@ void Window::saveWindowSettings()
 	settings.setValue(SETT_LAST_DIR,    m_last_directory);
 }
 
-void Window::loadWindowStyles()
+void Window::updateSettings()
+{
+	updateWindowStyles();
+	menu_commands.clear();
+	createCommands();
+}
+
+void Window::updateWindowStyles()
 {
 	QSettings sett;
-	QFile styles_file(sett.value(SETT_STYLE, QStringLiteral(":/css/default.css")).toString());
+	auto style_path = QStringLiteral(":/css/%1.css").arg(sett.value(SETT_STYLE, QStringLiteral("Default")).toString());
+	QFile styles_file(style_path);
 	bool open = styles_file.open(QIODevice::ReadOnly);
 	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
@@ -494,7 +454,7 @@ void Window::loadWindowStyles()
 	m_tray_icon.setIcon(this->windowIcon());
 }
 
-void Window::loadWindowSettings()
+void Window::initWindowSettings()
 {
 	QSettings sett;
 
@@ -613,6 +573,10 @@ void Window::createCommands()
 		if(name.isEmpty() || cmd.isEmpty()) {
 			continue;
 		}
+		if(name == QStringLiteral("__separator__")) {
+			menu_commands.addSeparator();
+			continue;
+		}
 
 		auto action = std::make_unique<QAction>(name, nullptr);
 
@@ -634,15 +598,19 @@ void Window::createCommands()
 		connect(action.get(), &QAction::triggered,
 			[this,name{std::move(name)},binary{std::move(binary)},args{std::move(args)}] () mutable
 		{
-			for(auto& arg : args) {
-				if(arg == "%s") {
-					arg = QDir::toNativeSeparators(this->m_tagger.currentFile());
+			for(QString& arg : args) {
+				if(arg.indexOf("%s") != -1) {
+					arg.replace("%s",QDir::toNativeSeparators(this->m_tagger.currentFile()));
 				}
-				else if(arg == "%d") {
-					arg = QDir::toNativeSeparators(this->m_tagger.currentDir());
+				if(arg.indexOf("%d") != -1) {
+					arg.replace("%d",QDir::toNativeSeparators(this->m_tagger.currentDir()));
 				}
-				else if(arg == "%f") {
-					arg = QDir::toNativeSeparators(this->m_tagger.currentFileName());
+				if(arg.indexOf("%f") != -1) {
+					arg.replace("%f", QDir::toNativeSeparators(this->m_tagger.currentFileName()));
+				}
+				if(arg.indexOf("%b") != -1) {
+					auto filename = this->m_tagger.currentFileName();
+					arg.replace("%b", QDir::toNativeSeparators(filename.remove(filename.indexOf('.'), 10)));
 				}
 			}
 			auto success = QProcess::startDetached(binary,args);
@@ -728,6 +696,8 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
+
+
 
 	connect(&m_tagger,      &Tagger::fileOpened, [this]()
 	{
@@ -847,6 +817,11 @@ void Window::createActions()
 		msg.append(QStringLiteral("</li></ul>"));
 		addNotification(tr("New Tags Added"), tr("Check Notifications menu for list of added tags."), msg);
 	});
+	connect(&a_show_settings, &QAction::triggered, &m_settings_dialog, &SettingsDialog::exec);
+	connect(&m_settings_dialog, &SettingsDialog::updated, this, &Window::updateSettings);
+	connect(&m_settings_dialog, &SettingsDialog::updated, &m_reverse_search, &ReverseSearch::updateSettings);
+	connect(&m_settings_dialog, &SettingsDialog::updated, &m_tagger, &Tagger::updateSettings);
+
 }
 
 // For enabling addSeparator() in QMenuBar.
@@ -925,71 +900,7 @@ void Window::createMenus()
 	add_action(menu_options, a_ib_replace);
 	add_action(menu_options, a_ib_restore);
 	add_separator(menu_options);
-	menu_options.addMenu(&menu_options_lang);
-	menu_options.addMenu(&menu_options_style);
-	add_separator(menu_options);
-
-	// Language sub-menu entries
-	auto lang_group = new QActionGroup(&menu_options_lang);
-	lang_group->setExclusive(true);
-	auto style_group = new QActionGroup(&menu_options_style);
-	style_group->setExclusive(true);
-
-	QSettings settings;
-
-	QDirIterator it_locale(QStringLiteral(":/i18n/"));
-	while(it_locale.hasNext()) {
-		if(!it_locale.next().endsWith(QStringLiteral(".qm"))) {
-			continue;
-		}
-		auto name = it_locale.fileInfo().completeBaseName();
-		auto code = name.right(2);
-		name.truncate(name.size() - 3);
-
-		auto action = new QAction(name, this);
-		action->setCheckable(true);
-		action->setData(code);
-		menu_options_lang.addAction(action);
-		lang_group->addAction(action);
-
-		if(code == settings.value(SETT_LOCALE, QStringLiteral("en")).toString())
-		{
-			action->setChecked(true);
-		}
-	}
-
-	QDirIterator it_style(QStringLiteral(":/css"));
-	while (it_style.hasNext()) {
-		it_style.next();
-
-		auto title = it_style.fileInfo().baseName();
-		Q_ASSERT(!title.isEmpty());
-		title[0] = title[0].toUpper();
-
-		auto action = new QAction(title, this);
-		action->setCheckable(true);
-		if(settings.value(SETT_STYLE).toString() == it_style.filePath()) {
-			action->setChecked(true);
-		}
-		action->setData(it_style.filePath());
-		menu_options_style.addAction(action);
-		style_group->addAction(action);
-	}
-
-	connect(lang_group, &QActionGroup::triggered, [](const QAction* a) {
-		Q_ASSERT(a != nullptr);
-		QSettings settings;
-		settings.setValue(SETT_LOCALE, a->data().toString());
-		QMessageBox::information(nullptr,
-			tr("Language changed"),
-			tr("<p>Please restart %1 to apply language change.</p>").arg(QStringLiteral(TARGET_PRODUCT)));
-	});
-
-	connect(style_group, &QActionGroup::triggered, [this](const QAction* a)
-	{
-		QSettings s; s.setValue(SETT_STYLE, a->data().toString());
-		loadWindowStyles();
-	});
+	add_action(menu_options, a_show_settings);
 
 	// Help menu actions
 	add_action(menu_help, a_help);
@@ -1047,7 +958,7 @@ void Window::about()
 {
 	QMessageBox::about(nullptr,
 	tr("About %1").arg(QStringLiteral(TARGET_PRODUCT)),
-	tr(util::read_resource_html("about.html")).arg(
+	util::read_resource_html("about.html").arg(
 		QStringLiteral(TARGET_PRODUCT),
 		qApp->applicationVersion(),
 		QStringLiteral(__DATE__),
@@ -1061,11 +972,9 @@ void Window::help()
 
 	QMessageBox::information(nullptr,
 	tr("Help"),
-	tr(util::read_resource_html("help.html")).arg(
+	util::read_resource_html("help.html").arg(
 		a_ib_replace.text().remove('&'),
 		a_ib_restore.text().remove('&'),
-		m_reverse_search.proxyEnabled() ? tr("enabled", "proxy") : tr("disabled", "proxy"),
-		m_reverse_search.proxyEnabled() ? tr(", proxy URL: <code>") + m_reverse_search.proxyURL() : tr("<code>"),
 		portable ? tr("enabled", "portable") : tr("disabled", "portable"),
 		QStringLiteral(TARGET_PRODUCT)));
 }

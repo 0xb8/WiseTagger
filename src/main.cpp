@@ -6,6 +6,7 @@
  */
 
 #include "window.h"
+#include "util/misc.h"
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
@@ -24,7 +25,6 @@ int main(int argc, char *argv[])
 	a.setOrganizationName(QStringLiteral(TARGET_COMPANY));
 	a.setOrganizationDomain(QStringLiteral("wolfgirl.org"));
 
-	bool portable = false;
 	// check if running in portable mode
 	if(QFile(qApp->applicationDirPath() +
 		 QStringLiteral("/portable.dat")).exists())
@@ -32,18 +32,23 @@ int main(int argc, char *argv[])
 		QSettings::setDefaultFormat(QSettings::IniFormat);
 		QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
 			qApp->applicationDirPath()+QStringLiteral("/settings"));
-		portable = true;
+		QSettings settings;
+		settings.setValue(QStringLiteral("settings-portable"), true);
 	}
 
-	QSettings settings;
-	settings.setValue(QStringLiteral("settings-portable"), portable);
-	auto code = settings.value(QStringLiteral("window/locale"), QStringLiteral("en")).toString();
-	QLocale locale(code);
-	QLocale::setDefault(locale);
+	auto language_code = util::language_from_settings();
+	auto language_name = util::language_name(language_code);
+	QLocale::setDefault(language_code);
 
-	QTranslator translator;
-	if(translator.load(QString(":/i18n/%1.%2.qm").arg(QLocale::languageToString(locale.language()), code)))
-		qApp->installTranslator(&translator);
+	QTranslator wt, qt;
+	if(qt.load(QStringLiteral("qt_%1").arg(QLocale(language_code).name()),
+			      QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+		qApp->installTranslator(&qt);
+	}
+
+	if(wt.load(QStringLiteral(":/i18n/%1.qm").arg(language_name))) {
+		qApp->installTranslator(&wt);
+	}
 
 	Window w;
 	w.show();

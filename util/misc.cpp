@@ -16,22 +16,22 @@
 #include <QtWin>
 #endif
 
-#define SETT_LOCALE	QStringLiteral("window/locale")
-#define HTML_LOCATION	QStringLiteral(":/html/%1/%2")
+#define SETT_LOCALE     QStringLiteral("window/language")
+#define SETT_LOCALE_OLD QStringLiteral("window/locale")
+#define HTML_LOCATION   QStringLiteral(":/html/%1/%2")
 
-QByteArray util::read_resource_html(const char *filename)
+QString util::read_resource_html(const char *filename)
 {
-	QSettings settings;
-	auto locale = settings.value(SETT_LOCALE, QStringLiteral("en")).toString();
+	auto language = QLocale::languageToString(language_from_settings());
 
-	QFile file(HTML_LOCATION.arg(locale, filename));
+	QFile file(HTML_LOCATION.arg(language, filename));
 	bool open = file.open(QIODevice::ReadOnly);
 	if(!open) {
 		file.setFileName(HTML_LOCATION.arg(QStringLiteral("en")).arg(filename));
 		open = file.open(QIODevice::ReadOnly);
 	}
 	Q_ASSERT(open && "resource file not opened");
-	return file.readAll();
+	return QString(file.readAll());
 }
 
 QString util::duration(uint64_t secs)
@@ -96,3 +96,33 @@ QIcon util::get_icon_from_executable(const QString &path)
 	return QIcon(); // TODO: load icon from .desktop file on linux
 #endif
 }
+
+QString util::language_name(QLocale::Language lang)
+{
+	return QLocale::languageToString(lang);
+}
+
+QLocale::Language util::language_code(const QString& name)
+{
+	auto lang_meta = QMetaEnum::fromType<QLocale::Language>();
+	bool ok = false;
+	auto ret = lang_meta.keyToValue(qPrintable(name), &ok);
+	if(ok) {
+		return static_cast<QLocale::Language>(ret);
+	}
+	return QLocale::English;
+}
+
+QLocale::Language util::language_from_settings()
+{
+	QSettings settings;
+	auto code = settings.value(SETT_LOCALE);
+	if(!code.isValid()) {
+		code = QLocale::English;
+		settings.remove(SETT_LOCALE_OLD);
+		settings.setValue(SETT_LOCALE, code);
+	}
+	return static_cast<QLocale::Language>(code.toInt());
+}
+
+

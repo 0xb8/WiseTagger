@@ -45,8 +45,11 @@ HEADERS  +=                                          \
     $$PWD/util/*.h
 
 RESOURCES +=                                         \
-   resources/resources.qrc
+    resources/resources.qrc
+
+FORMS +=                                             \
+    ui/settings.ui
 
 # lupdate cannot into wildcard expansion
-TRANSLATIONS = resources/i18n/Russian.ru.ts       \
-	       resources/i18n/English.en.ts
+TRANSLATIONS = resources/i18n/Russian.ts             \
+	       resources/i18n/English.ts

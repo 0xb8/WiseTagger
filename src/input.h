@@ -45,7 +45,7 @@ public:
 	void clearTagState();
 
 	/**
-	 * \brief Sets initial text.
+	 * @brief Sets initial text.
 	 */
 	void setText(const QString&);
 
@@ -61,6 +61,11 @@ public:
 	 */
 	QStringList getAddedTags(bool exclude_tags_from_file = false) const;
 
+	/**
+	 * @brief Updates configuration from QSettings
+	 */
+	void updateSettings();
+
 protected:
 	void keyPressEvent(QKeyEvent* event) override;
 
@@ -68,9 +73,9 @@ private:
 	bool        next_completer();
 
 	/**
-	 * \brief Parses tags and sets up necessary internal state.
-	 * \param input Text stream with tags.
-	 * \return List of top-level tags
+	 * @brief Parses tags and sets up necessary internal state.
+	 * @param input Text stream with tags.
+	 * @return List of top-level tags
 	 */
 	QStringList parse_tags_file(QTextStream* input);
 

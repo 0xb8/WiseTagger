@@ -54,6 +54,11 @@ public slots:
 	 * \param enable Enable proxy.
 	 */
 	void	setProxyEnabled(bool enable);
+
+	/*!
+	 * \brief Updates proxy configuration from QSettings.
+	 */
+	void updateSettings();
 public:
 
 	/*!
@@ -96,7 +101,6 @@ private:
 	static constexpr size_t iqdb_max_file_size = 8 * 1024 * 1024;
 
 	void upload_file();
-	void load_proxy_settings();
 
 	QString m_current_file_name;
 	QFile m_image_file;

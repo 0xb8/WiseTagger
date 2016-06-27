@@ -25,9 +25,6 @@ public slots:
 	/// Collects information about added tags.
 	void fileRenamed(const QString& new_name);
 
-	/// Enables or disables statistics collection.
-	void setEnabled(bool enabled);
-
 	/// Counts how many times reverse search was used.
 	void reverseSearched();
 
@@ -37,7 +34,6 @@ public slots:
 private:
 	QSettings m_settings;
 	QElapsedTimer m_elapsed_timer;
-	bool m_enabled = true;
 };
 
 #endif

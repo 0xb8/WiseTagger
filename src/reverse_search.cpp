@@ -25,7 +25,7 @@ Q_LOGGING_CATEGORY(rvlc, "ReverseSearch")
 
 ReverseSearch::ReverseSearch(QWidget *_parent) : QObject(_parent), m_proxy(QNetworkProxy::NoProxy)
 {
-	load_proxy_settings();
+	updateSettings();
 
 	connect(&m_nam, &QNetworkAccessManager::finished, this, &ReverseSearch::open_reply);
 }
@@ -46,21 +46,18 @@ void ReverseSearch::search(const QString &file)
 void ReverseSearch::setProxy(const QUrl &proxy_url)
 {
 	bool scheme_valid = (proxy_url.scheme() == QStringLiteral("http")
-			  || proxy_url.scheme() == QStringLiteral("socks"));
+			  || proxy_url.scheme() == QStringLiteral("socks5"));
 
 	if(!proxy_url.isValid() || proxy_url.port() == -1 || !scheme_valid)
 	{
 		QMessageBox::warning(nullptr,
 			tr("Invalid proxy"),
-			tr("<p>Proxy URL <em><code>%1</code></em> is invalid. Proxy <b>will not</b> be used!</p>"
-			   "<p>Example valid proxy URL: "
-			   "<ul><li><pre>http://proxy.example.com:81</pre></li>"
-			   "<li><pre>socks://127.0.0.1:9050</pre></li></ul></p>").arg(proxy_url.toString()));
+			tr("<p>Proxy URL <em><code>%1</code></em> is invalid. Proxy <b>will not</b> be used!</p>").arg(proxy_url.toString()));
 		return;
 	}
 
 	QNetworkProxy::ProxyType type = QNetworkProxy::NoProxy;
-	if(proxy_url.scheme() == QStringLiteral("socks"))
+	if(proxy_url.scheme() == QStringLiteral("socks5"))
 		type = QNetworkProxy::Socks5Proxy;
 	else if(proxy_url.scheme() == QStringLiteral("http"))
 		type = QNetworkProxy::HttpProxy;
@@ -95,7 +92,7 @@ QNetworkProxy ReverseSearch::proxy() const
 	return m_nam.proxy();
 }
 
-void ReverseSearch::load_proxy_settings()
+void ReverseSearch::updateSettings()
 {
 	QSettings settings;
 	settings.beginGroup(QStringLiteral("proxy"));
@@ -178,15 +175,19 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 
 	if(reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0) {
 		QByteArray response = reply->readAll();
+		QFileInfo curr_file(m_current_file_name);
+		auto base_name = curr_file.completeBaseName();
 
 		// FIXME: DIRTY HACK - thx iqdb...
 		response.replace("<img src=\'/", "<img src=\'https://iqdb.org/");
 		response.replace("<a href=\"//", "<a href=\"https://");
+		response.replace("<title>Multi-service image search - Search results</title>",
+				 "<title>WiseTagger Reverse Search Results</title>");
 
-		QFileInfo curr_file(m_current_file_name);
 		QString response_filename = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-		response_filename.append(QStringLiteral("/iqdb_"));
-		response_filename.append(curr_file.completeBaseName());
+		response_filename.append(QStringLiteral("/WT_Search_Results_For_"));
+		response_filename.append(base_name.replace(' ', '_'));
+		response_filename.truncate(240);
 		response_filename.append(QStringLiteral(".html"));
 		m_response_files.push_back(response_filename);
 

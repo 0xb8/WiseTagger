@@ -8,10 +8,17 @@
 #include <QByteArray>
 #include <QStringList>
 #include <QIcon>
+#include <QLocale>
 
 namespace util {
 
-auto read_resource_html(const char* filename) -> QByteArray;
+auto read_resource_html(const char* filename) -> QString;
+
+auto language_from_settings() -> QLocale::Language;
+
+auto language_code(const QString& name) -> QLocale::Language;
+
+auto language_name(QLocale::Language) -> QString;
 
 auto duration(std::uint64_t ms) -> QString;
 

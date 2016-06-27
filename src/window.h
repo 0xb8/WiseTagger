@@ -10,6 +10,7 @@
 
 #include "reverse_search.h"
 #include "tagger.h"
+#include "settings_dialog.h"
 #include <vector>
 #include <QMainWindow>
 #include <QAction>
@@ -38,6 +39,7 @@ public slots:
 	void updateImageboardPostURL(QString url);
 	void addNotification(const QString& title, const QString &description, const QString& body);
 	void removeNotification(const QString &title);
+	void updateSettings();
 
 protected:
 	bool eventFilter(QObject*, QEvent *e) override;
@@ -53,13 +55,13 @@ private slots:
 private:
 	void createActions();
 	void createMenus();
+	void createCommands();
 	void updateMenus();
 	void parseCommandLineArguments();
 
-	void loadWindowSettings();
+	void initWindowSettings();
 	void saveWindowSettings();
-	void loadWindowStyles();
-	void createCommands();
+	void updateWindowStyles();
 
 	void showNotificationsMenu();
 	void hideNotificationsMenu();
@@ -70,6 +72,7 @@ private:
 
 	Tagger m_tagger;
 	ReverseSearch m_reverse_search;
+	SettingsDialog m_settings_dialog;
 
 	QString m_last_directory;
 	QString m_post_url;
@@ -92,6 +95,7 @@ private:
 	QAction a_reload_tags;
 	QAction a_ib_replace;
 	QAction a_ib_restore;
+	QAction a_show_settings;
 	QAction a_view_statusbar;
 	QAction a_view_fullscreen;
 	QAction a_view_menu;
@@ -105,8 +109,6 @@ private:
 	QMenu menu_navigation;
 	QMenu menu_view;
 	QMenu menu_options;
-	QMenu menu_options_lang;
-	QMenu menu_options_style;
 	QMenu menu_commands;
 	QMenu menu_help;
 	QMenu menu_notifications;

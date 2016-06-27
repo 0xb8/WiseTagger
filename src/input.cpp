@@ -23,11 +23,7 @@ Q_LOGGING_CATEGORY(inlc, "TagInput")
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
 	setMinimumHeight(30);
-	QSettings settings;
-	QFont font(settings.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
-	font.setPixelSize(settings.value(QStringLiteral("window/font-size"), 14).toInt());
-	setFont(font);
-
+	updateSettings();
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 }
 
@@ -194,6 +190,14 @@ QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
 		return ret2;
 	}
 	return ret;
+}
+
+void TagInput::updateSettings()
+{
+	QSettings settings;
+	QFont font(settings.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
+	font.setPixelSize(settings.value(QStringLiteral("window/font-size"), 14).toInt());
+	setFont(font);
 }
 //------------------------------------------------------------------------------
 

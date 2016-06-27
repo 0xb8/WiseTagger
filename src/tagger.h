@@ -107,6 +107,9 @@ public slots:
 	/// Reloads tag files used for autocomplete.
 	void reloadTags();
 
+	/// Updates configuration from QSettings.
+	void updateSettings();
+
 signals:
 
 	/*!

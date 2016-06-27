@@ -16,6 +16,7 @@ Q_LOGGING_CATEGORY(stlc, "Statistics")
 #define pdbg qCDebug(stlc)
 #define pwarn qCWarning(stlc)
 
+#define SETT_STATISTICS         QStringLiteral("stats/enabled")
 #define NUM_TIMES_LAUNCHED	QStringLiteral("stats/num_times_launched")
 #define NUM_REVERSE_SEARCHED	QStringLiteral("stats/num_reverse_searched")
 #define NUM_FILES_OPENED	QStringLiteral("stats/num_files/opened")
@@ -41,7 +42,7 @@ TaggerStatistics::TaggerStatistics(QObject *_parent) : QObject(_parent)
 
 TaggerStatistics::~TaggerStatistics()
 {
-	if(!m_enabled) {
+	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		return;
 	}
 	auto times_launched = m_settings.value(NUM_TIMES_LAUNCHED, 0).toInt();
@@ -51,14 +52,9 @@ TaggerStatistics::~TaggerStatistics()
 	m_settings.setValue(NUM_TIMES_LAUNCHED, ++times_launched);
 }
 
-void TaggerStatistics::setEnabled(bool enabled)
-{
-	m_enabled = enabled;
-}
-
 void TaggerStatistics::fileOpened(const QString &filename, QSize dimensions)
 {
-	if(!m_enabled) {
+	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		return;
 	}
 	auto files_opened = m_settings.value(NUM_FILES_OPENED, 0).toInt();
@@ -90,7 +86,7 @@ void TaggerStatistics::fileOpened(const QString &filename, QSize dimensions)
 
 void TaggerStatistics::fileRenamed(const QString &new_name)
 {
-	if(!m_enabled) {
+	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		return;
 	}
 	auto files_renamed = m_settings.value(NUM_FILES_RENAMED, 0ll).toLongLong();
@@ -109,7 +105,7 @@ void TaggerStatistics::fileRenamed(const QString &new_name)
 
 void TaggerStatistics::reverseSearched()
 {
-	if(!m_enabled) {
+	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		return;
 	}
 	auto num = m_settings.value(NUM_REVERSE_SEARCHED, 0).toInt();
@@ -119,7 +115,7 @@ void TaggerStatistics::reverseSearched()
 void TaggerStatistics::showStatsDialog()
 {
 	auto time_spent = m_settings.value(TIME_SPENT, 0).toLongLong();
-	if(m_enabled) {
+	if(m_settings.value(SETT_STATISTICS, true).toBool()) {
 		time_spent += m_elapsed_timer.elapsed() / 1000;
 		m_settings.setValue(TIME_SPENT, time_spent);
 		m_elapsed_timer.start();
@@ -140,7 +136,6 @@ void TaggerStatistics::showStatsDialog()
 	const auto dim_avg_str    = QStringLiteral("%1 x %2")
 		.arg(dimensions_avg.width()).arg(dimensions_avg.height());
 
-
 	// populate extensions list
 	m_settings.beginGroup(NUM_FILES_EXT_DIR);
 	auto ext_list = m_settings.childKeys();
@@ -149,7 +144,7 @@ void TaggerStatistics::showStatsDialog()
 		return m_settings.value(a).toInt() > m_settings.value(b).toInt();
 	});
 
-	const QString exts_html = util::read_resource_html("statistics_extensions.html");
+	const auto exts_html = util::read_resource_html("statistics_extensions.html");
 	QString exts_str;
 	for(auto&& key : ext_list) {
 		const auto num_exts = m_settings.value(key, 0).toInt();
@@ -158,7 +153,7 @@ void TaggerStatistics::showStatsDialog()
 	}
 	m_settings.endGroup();
 
-	auto desc = QString(util::read_resource_html("statistics.html"))
+	auto desc = util::read_resource_html("statistics.html")
 		.arg(times_launched_s,	// 1
 		     util::duration(time_spent)) // 2
 		.arg(files_opened_s,	// 3 (too much args, variadic templates when?)
@@ -172,9 +167,10 @@ void TaggerStatistics::showStatsDialog()
 		     tags_avg_s		// 11
 		);
 
-	if(!m_enabled) {
+	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		desc.append(tr("<br/><p><b>Note:</b> statistics collection is currently disabled. The stats displayed here are from previous launches.</p>"));
 	}
-
-	QMessageBox::information(nullptr, tr("Statistics"), desc);
+	QMessageBox mb(QMessageBox::Information, tr("Statistics"), desc, QMessageBox::Ok, nullptr);
+	mb.setTextInteractionFlags(Qt::TextBrowserInteraction);
+	mb.exec();
 }

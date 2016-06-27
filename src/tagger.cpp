@@ -248,6 +248,11 @@ void Tagger::reloadTags()
 	m_input.clearTagState();
 }
 
+void Tagger::updateSettings()
+{
+	m_input.updateSettings();
+}
+
 void Tagger::findTagsFiles()
 {
 	if(m_file_queue.empty())
