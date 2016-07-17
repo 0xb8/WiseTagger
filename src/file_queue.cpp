@@ -13,9 +13,11 @@
 #include <QCollator>
 #include <QFile>
 
-Q_LOGGING_CATEGORY(fqlc, "FileQueue")
-#define pdbg qCDebug(fqlc)
-#define pwarn qCWarning(fqlc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(filequeue, "FileQueue")
+}
+#define pdbg qCDebug(logging_category::filequeue)
+#define pwarn qCWarning(logging_category::filequeue)
 
 const QString FileQueue::m_empty{nullptr,0};
 

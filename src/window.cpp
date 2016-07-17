@@ -34,9 +34,11 @@
 #include "util/size.h"
 #include "util/misc.h"
 
-Q_LOGGING_CATEGORY(wilc, "Window")
-#define pdbg qCDebug(wilc)
-#define pwarn qCWarning(wilc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(window, "Window")
+}
+#define pdbg qCDebug(logging_category::window)
+#define pwarn qCWarning(logging_category::window)
 
 #define SETT_WINDOW_GEOMETRY    QStringLiteral("window/geometry")
 #define SETT_WINDOW_STATE       QStringLiteral("window/state")
@@ -46,6 +48,11 @@ Q_LOGGING_CATEGORY(wilc, "Window")
 #define SETT_SHOW_STATUS        QStringLiteral("window/show-statusbar")
 #define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
 #define SETT_STYLE              QStringLiteral("window/style")
+
+#define SETT_COMMANDS_KEY	QStringLiteral("window/commands")
+#define SETT_COMMAND_NAME	QStringLiteral("display_name")
+#define SETT_COMMAND_CMD	QStringLiteral("command")
+#define SETT_COMMAND_HOTKEY	QStringLiteral("hotkey")
 
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
@@ -480,6 +487,11 @@ void Window::updateStyle()
 }
 
 #ifdef Q_OS_WIN
+namespace logging_category {
+	Q_LOGGING_CATEGORY(vercheck, "Window.VersionCheck")
+}
+#define vcwarn qCWarning(logging_category::vercheck)
+#define vcdbg  qCDebug(logging_category::vercheck)
 void Window::checkNewVersion()
 {
 	QSettings sett;
@@ -487,27 +499,27 @@ void Window::checkNewVersion()
 	auto checking_disabled = !sett.value(SETT_VER_CHECK_ENABLED, true).toBool();
 
 	if(checking_disabled || last_checked == QDate::currentDate()) {
-		pdbg << (checking_disabled ? "vercheck disabled" : "vercheck enabled") << last_checked.toString();
+		vcdbg << (checking_disabled ? "vercheck disabled" : "vercheck enabled") << last_checked.toString();
 		return;
 	}
 	m_vernam.setProxy(m_reverse_search.proxy());
 	connect(&m_vernam, &QNetworkAccessManager::finished, this, &Window::processNewVersion);
 
-	QNetworkRequest req{QUrl{VER_CHECK_URL}};
+	QNetworkRequest req{VER_CHECK_URL};
 	req.setHeader(QNetworkRequest::UserAgentHeader, VER_CHECK_USERAGENT);
-	m_vernam.get(QNetworkRequest{VER_CHECK_URL});
+	m_vernam.get(req);
 }
 
 void Window::processNewVersion(QNetworkReply *r)
 {
 	if(r->error() != QNetworkReply::NoError) {
-		pwarn << "could not access" << r->url();
+		vcwarn << "could not access" << r->url() << "with error:" << r->errorString();
 		return;
 	}
 
 	auto status_code = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 	if(status_code != 200) {
-		pwarn << "got wrong HTTP status code:" << status_code;
+		vcwarn << "wrong HTTP status code:" << status_code;
 		return;
 	}
 
@@ -515,22 +527,22 @@ void Window::processNewVersion(QNetworkReply *r)
 	settings.setValue(SETT_LAST_VER_CHECK, QDate::currentDate());
 
 	QString response = r->readAll();
-	auto parts = response.split(' ',QString::SkipEmptyParts);
+	auto parts = response.split(' ', QString::SkipEmptyParts);
 	if(parts.size() < 2) {
-		pwarn << "processNewVersion(): invalid response";
+		vcwarn << "not enough parts";
 		return;
 	}
 
 	auto newver = QVersionNumber::fromString(parts[0]);
 	if(newver.isNull()) {
-		pwarn << "processNewVersion(): got invalid version";
+		vcwarn << "invalid version";
 		return;
 	}
 
 	auto url = parts[1].remove('\n');
 	bool url_valid = QUrl(url).isValid();
 	if(url.isEmpty() || !url_valid) {
-		pwarn << "processNewVersion(): got invalid url";
+		vcwarn << "invalid url";
 		return;
 	}
 
@@ -545,25 +557,21 @@ void Window::processNewVersion(QNetworkReply *r)
 			   "<p><a href=\"%2\">Click here to download new version</a>.</p>")
 				.arg(version_str, url));
 	}
-
 }
+#undef vcwarn
+#undef vcdbg
 #endif
-
-#define SETT_COMMANDS_DIR	QStringLiteral("window/commands")
-#define SETT_COMMAND_NAME	QStringLiteral("display_name")
-#define SETT_COMMAND_CMD	QStringLiteral("command")
-#define SETT_COMMAND_HKEY	QStringLiteral("hotkey")
 
 void Window::createCommands()
 {
 	menu_commands.setDisabled(true);
 	QSettings settings;
-	auto size = settings.beginReadArray(SETT_COMMANDS_DIR);
+	auto size = settings.beginReadArray(SETT_COMMANDS_KEY);
 	for(auto i{0}; i < size; ++i) {
 		settings.setArrayIndex(i);
 		auto name = settings.value(SETT_COMMAND_NAME).toString();
 		auto cmd  = settings.value(SETT_COMMAND_CMD).toString();
-		auto hkey = settings.value(SETT_COMMAND_HKEY).toString();
+		auto hkey = settings.value(SETT_COMMAND_HOTKEY).toString();
 
 		if(name.isEmpty() || cmd.isEmpty()) {
 			continue;

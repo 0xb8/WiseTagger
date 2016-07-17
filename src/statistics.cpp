@@ -12,9 +12,11 @@
 #include <QFileInfo>
 #include <QMessageBox>
 
-Q_LOGGING_CATEGORY(stlc, "Statistics")
-#define pdbg qCDebug(stlc)
-#define pwarn qCWarning(stlc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(stats, "Statistics")
+}
+#define pdbg qCDebug(logging_category::stats)
+#define pwarn qCWarning(logging_category::stats)
 
 #define SETT_STATISTICS         QStringLiteral("stats/enabled")
 #define NUM_TIMES_LAUNCHED	QStringLiteral("stats/num_times_launched")

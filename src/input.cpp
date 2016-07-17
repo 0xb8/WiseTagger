@@ -16,9 +16,11 @@
 #include <QTextCodec>
 #include <QTextStream>
 
-Q_LOGGING_CATEGORY(inlc, "TagInput")
-#define pdbg qCDebug(inlc)
-#define pwarn qCWarning(inlc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(input, "TagInput")
+}
+#define pdbg qCDebug(logging_category::input)
+#define pwarn qCWarning(logging_category::input)
 
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {

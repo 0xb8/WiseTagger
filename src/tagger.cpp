@@ -17,9 +17,11 @@
 #include "util/size.h"
 #include "window.h"
 
-Q_LOGGING_CATEGORY(tglc, "Tagger")
-#define pdbg qCDebug(tglc)
-#define pwarn qCWarning(tglc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(tagger, "Tagger")
+}
+#define pdbg qCDebug(logging_category::tagger)
+#define pwarn qCWarning(logging_category::tagger)
 
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)

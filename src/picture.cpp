@@ -14,10 +14,11 @@
 #include <QApplication>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(pclc, "Picture")
-
-#define pdbg qCDebug(pclc)
-#define pwarn qCWarning(pclc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(picture, "Picture")
+}
+#define pdbg qCDebug(logging_category::picture)
+#define pwarn qCWarning(logging_category::picture)
 
 Picture::Picture(QWidget *parent) : QLabel(parent), m_movie(nullptr) {
 	setFocusPolicy(Qt::ClickFocus);

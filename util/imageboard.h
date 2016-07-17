@@ -14,9 +14,11 @@
 #include <QString>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(iblc, "Imageboard")
-#define pdbg qCDebug(iblc)
-#define pwarn qCWarning(iblc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(imageboard, "Imageboard")
+}
+#define pdbg qCDebug(logging_category::imageboard)
+#define pwarn qCWarning(logging_category::imageboard)
 
 namespace std {
 	template<>

@@ -19,9 +19,11 @@
 #include <QFileInfo>
 #include <memory>
 
-Q_LOGGING_CATEGORY(rvlc, "ReverseSearch")
-#define pdbg qCDebug(rvlc)
-#define pwarn qCWarning(rvlc)
+namespace logging_category {
+	Q_LOGGING_CATEGORY(revsearch, "ReverseSearch")
+}
+#define pdbg qCDebug(logging_category::revsearch)
+#define pwarn qCWarning(logging_category::revsearch)
 
 ReverseSearch::ReverseSearch(QWidget *_parent) : QObject(_parent), m_proxy(QNetworkProxy::NoProxy)
 {
