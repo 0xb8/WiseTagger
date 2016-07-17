@@ -39,7 +39,7 @@ QString util::duration(uint64_t secs)
 	auto yr = secs / 31536000;
 	auto mon = (secs / 2678400) % 12;
 	auto d = (secs / 86400) % 31;
-	auto hr = (secs / 3600) % 60;
+	auto hr = (secs / 3600) % 24;
 	auto min = (secs / 60) % 60;
 
 	auto s = secs % 60;
