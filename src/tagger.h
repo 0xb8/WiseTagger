@@ -17,11 +17,10 @@
 #include "util/unordered_map_qt.h"
 #include "picture.h"
 #include "input.h"
-#include "tagger_enums.h"
 #include "file_queue.h"
 #include "statistics.h"
 
-/*!
+/**
  * Main widget of application. Contains Picture viewer and TagInput.
  */
 class Tagger : public QWidget
@@ -129,28 +128,28 @@ public slots:
 
 signals:
 
-	/*!
+	/**
 	 * \brief File successfully opened.
 	 * \retval File path.
 	 */
 	void fileOpened(const QString&);
 
 
-	/*!
+	/**
 	 * \brief File name modified by user.
 	 * \retval New file name.
 	 */
 	void tagsEdited(const QString&);
 
 
-	/*!
+	/**
 	 * \brief File renamed by user.
 	 * \retval New file name.
 	 */
 	void fileRenamed(const QString&);
 
 
-	/*!
+	/**
 	 * \brief New Tags were added by user.
 	 * \retval List of tags not in tag file added for current file.
 	 */

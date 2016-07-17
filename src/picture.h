@@ -27,7 +27,7 @@ class Picture : public QLabel
 public:
 	explicit Picture(QWidget *parent = nullptr);
 
-	/*!
+	/**
 	 * \brief Loads and displays image.
 	 * \param filename Image to show.
 	 * \retval true Loaded successfully.
