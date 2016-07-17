@@ -38,27 +38,25 @@ Q_LOGGING_CATEGORY(wilc, "Window")
 #define pdbg qCDebug(wilc)
 #define pwarn qCWarning(wilc)
 
-#define SETT_WINDOW_SIZE	QStringLiteral("window/size")
-#define SETT_WINDOW_POS		QStringLiteral("window/position")
-#define SETT_FULLSCREEN		QStringLiteral("window/show-fullscreen")
-#define SETT_MAXIMIZED		QStringLiteral("window/maximized")
-#define SETT_LAST_DIR		QStringLiteral("window/last-directory")
+#define SETT_WINDOW_GEOMETRY    QStringLiteral("window/geometry")
+#define SETT_WINDOW_STATE       QStringLiteral("window/state")
+#define SETT_LAST_DIR           QStringLiteral("window/last-directory")
 
-#define SETT_SHOW_MENU		QStringLiteral("window/show-menu")
-#define SETT_SHOW_STATUS	QStringLiteral("window/show-statusbar")
-#define SETT_SHOW_INPUT		QStringLiteral("window/show-input")
-#define SETT_STYLE		QStringLiteral("window/style")
+#define SETT_SHOW_MENU          QStringLiteral("window/show-menu")
+#define SETT_SHOW_STATUS        QStringLiteral("window/show-statusbar")
+#define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
+#define SETT_STYLE              QStringLiteral("window/style")
 
-#define SETT_REPLACE_TAGS	QStringLiteral("imageboard/replace-tags")
-#define SETT_RESTORE_TAGS	QStringLiteral("imageboard/restore-tags")
+#define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
+#define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
 
-#define SESSION_FILE_SUFFIX	QStringLiteral("wt-session")
-#define SESSION_FILE_PATTERN	QStringLiteral("*.wt-session")
+#define SESSION_FILE_SUFFIX     QStringLiteral("wt-session")
+#define SESSION_FILE_PATTERN    QStringLiteral("*.wt-session")
 
 #ifdef Q_OS_WIN
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
 #define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
-#define VER_CHECK_URL           QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt")
+#define VER_CHECK_URL           QUrl(QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt"))
 #define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0")
 #endif
 
@@ -108,14 +106,13 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, m_tray_icon()
 {
 	setCentralWidget(&m_tagger);
-	m_tagger.setObjectName("Tagger");
 	setAcceptDrops(true);
-	updateWindowStyles(); // NOTE: should be called before menus are created.
+	updateStyle(); // NOTE: should be called before menus are created.
 	createActions();
 	createMenus();
 	createCommands();
 	parseCommandLineArguments();
-	initWindowSettings();
+	initSettings();
 
 #ifdef Q_OS_WIN32
 	QTimer::singleShot(1500, this, &Window::checkNewVersion);
@@ -208,7 +205,7 @@ void Window::addNotification(const QString &title, const QString& description, c
 	QObject::disconnect(&m_tray_icon, &QSystemTrayIcon::messageClicked, nullptr, nullptr);
 
 	if(!body.isEmpty()) {
-		auto action = new QAction(title, this);
+		auto action = menu_notifications.addAction(title);
 
 		connect(action, &QAction::triggered, [title,body,this,action](){
 			QMessageBox mb(QMessageBox::Information, title, body, QMessageBox::Ok, this);
@@ -231,7 +228,6 @@ void Window::removeNotification(const QString& title) {
 	for(const auto a : actions) {
 		if(a && a->text() == title) {
 			menu_notifications.removeAction(a);
-			a->deleteLater();
 			if(m_notification_count > 0) --m_notification_count;
 		}
 	}
@@ -365,16 +361,16 @@ void Window::closeEvent(QCloseEvent *e)
 {
 	if(m_tagger.fileModified()) {
 		auto r = m_tagger.rename();
-		if(r == RenameStatus::Renamed || r == RenameStatus::Failed) {
-			saveWindowSettings();
-			e->accept();
+		if(r == Tagger::RenameStatus::Renamed || r == Tagger::RenameStatus::Failed) {
+			saveSettings();
+			QMainWindow::closeEvent(e);
 			return;
 		}
 		e->ignore();
 		return;
 	}
-	saveWindowSettings();
-	e->accept();
+	saveSettings();
+	QMainWindow::closeEvent(e);
 }
 
 void Window::showEvent(QShowEvent *e)
@@ -389,16 +385,19 @@ void Window::showEvent(QShowEvent *e)
 //------------------------------------------------------------------------------
 void Window::parseCommandLineArguments()
 {
-	QFileInfo f;
 	auto args = qApp->arguments();
 	args.pop_front();
 
 	if(args.size() == 1) {
-		f.setFile(args.first());
-		if(f.exists()) {
-			m_tagger.openFile(args.first());
+		if(args.first().endsWith(SESSION_FILE_SUFFIX)) {
+			m_tagger.openSession(args.first());
 			return;
 		}
+
+		if(!m_tagger.openFile(args.first())){
+			m_tagger.openDir(args.first());
+		}
+		return;
 	}
 
 	for(const auto& arg : args) {
@@ -406,43 +405,69 @@ void Window::parseCommandLineArguments()
 			continue;
 		}
 
-		f.setFile(arg);
-
-		if(!f.exists()) {
-			continue;
-		}
-
-		if(f.suffix() == SESSION_FILE_SUFFIX) {
-			m_tagger.openSession(f.absoluteFilePath());
-			return;
-		}
-
-		if(f.isFile() || f.isDir()) {
-			m_tagger.queue().push(f.absoluteFilePath());
-		}
+		m_tagger.queue().push(arg);
 	}
 	m_tagger.queue().sort();
 	m_tagger.openFileInQueue();
 }
 
 //------------------------------------------------------------------------------
-void Window::saveWindowSettings()
+void Window::initSettings()
+{
+	QSettings sett;
+
+	m_last_directory = sett.value(SETT_LAST_DIR).toString();
+	bool show_status = sett.value(SETT_SHOW_STATUS, false).toBool();
+	bool show_menu   = sett.value(SETT_SHOW_MENU,   true).toBool();
+	bool show_input  = sett.value(SETT_SHOW_INPUT,  true).toBool();
+
+	bool restored_geo   = restoreGeometry(sett.value(SETT_WINDOW_GEOMETRY).toByteArray());
+	bool restored_state = restoreState(sett.value(SETT_WINDOW_STATE).toByteArray());
+
+	if(!restored_state || !restored_geo) {
+		resize(1024,640);
+		move(100,100);
+		showNormal();
+	}
+
+	menuBar()->setVisible(show_menu);
+	m_tagger.setInputVisible(show_input);
+	m_statusbar.setVisible(show_status);
+
+	a_view_fullscreen.setChecked(isFullScreen());
+	a_view_statusbar.setChecked(show_status);
+	a_view_menu.setChecked(show_menu);
+	a_view_input.setChecked(show_input);
+
+	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
+	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
+}
+
+void Window::saveSettings()
 {
 	QSettings settings;
-	settings.setValue(SETT_WINDOW_SIZE, this->size());
-	settings.setValue(SETT_WINDOW_POS,  this->pos());
-	settings.setValue(SETT_MAXIMIZED,   this->isMaximized());
-	settings.setValue(SETT_LAST_DIR,    m_last_directory);
+
+	settings.setValue(SETT_WINDOW_GEOMETRY, saveGeometry());
+	settings.setValue(SETT_WINDOW_STATE,    saveState());
+	settings.setValue(SETT_LAST_DIR,        m_last_directory);
+	// NOTE: remove these after a couple of releases
+	settings.remove(QStringLiteral("window/size"));
+	settings.remove(QStringLiteral("window/position"));
+	settings.remove(QStringLiteral("window/show-fullscreen"));
+	settings.remove(QStringLiteral("window/maximized"));
 }
 
 void Window::updateSettings()
 {
-	updateWindowStyles();
+	updateStyle();
+	for(auto action : menu_commands.actions()) {
+		this->removeAction(action); // NOTE: to prevent hotkey conflicts
+	}
 	menu_commands.clear();
 	createCommands();
 }
 
-void Window::updateWindowStyles()
+void Window::updateStyle()
 {
 	QSettings sett;
 	auto style_path = QStringLiteral(":/css/%1.css").arg(sett.value(SETT_STYLE, QStringLiteral("Default")).toString());
@@ -452,44 +477,6 @@ void Window::updateWindowStyles()
 	qApp->setStyleSheet(styles_file.readAll());
 	qApp->setWindowIcon(QIcon(QStringLiteral(":/icon.png")));
 	m_tray_icon.setIcon(this->windowIcon());
-}
-
-void Window::initWindowSettings()
-{
-	QSettings sett;
-
-	m_last_directory = sett.value(SETT_LAST_DIR).toString();
-	resize(sett.value(SETT_WINDOW_SIZE, QSize(1024,600)).toSize());
-
-	if(sett.contains(SETT_WINDOW_POS)) {
-		move(sett.value(SETT_WINDOW_POS).toPoint());
-	}
-	bool maximized   = sett.value(SETT_MAXIMIZED,   false).toBool();
-	bool fullscreen  = sett.value(SETT_FULLSCREEN,  false).toBool();
-	bool show_status = sett.value(SETT_SHOW_STATUS, false).toBool();
-	bool show_menu   = sett.value(SETT_SHOW_MENU,   true).toBool();
-	bool show_input  = sett.value(SETT_SHOW_INPUT,  true).toBool();
-
-	if(fullscreen) {
-		showFullScreen();
-	} else if(maximized) {
-		showMaximized();
-	} else {
-		showNormal();
-	}
-
-	menuBar()->setVisible(show_menu);
-	m_tagger.setInputVisible(show_input);
-	m_statusbar.setVisible(show_status);
-
-	a_view_fullscreen.setChecked(fullscreen);
-	a_view_statusbar.setChecked(show_status);
-	a_view_menu.setChecked(show_menu);
-	a_view_input.setChecked(show_input);
-
-
-	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
-	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 }
 
 #ifdef Q_OS_WIN
@@ -508,49 +495,57 @@ void Window::checkNewVersion()
 
 	QNetworkRequest req{QUrl{VER_CHECK_URL}};
 	req.setHeader(QNetworkRequest::UserAgentHeader, VER_CHECK_USERAGENT);
-	m_vernam.get(QNetworkRequest{QUrl{VER_CHECK_URL}});
+	m_vernam.get(QNetworkRequest{VER_CHECK_URL});
 }
 
 void Window::processNewVersion(QNetworkReply *r)
 {
-	if(r->error() == QNetworkReply::NoError) {
-		auto status_code = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-		if(status_code == 200) {
-			QSettings sett;
-			sett.setValue(SETT_LAST_VER_CHECK, QDate::currentDate());
-			QString response = r->readAll();
-			auto parts = response.split(' ',QString::SkipEmptyParts);
-			if(parts.size() < 2) {
-				pwarn << "processNewVersion(): invalid response";
-				return;
-			}
-
-			auto newver = QVersionNumber::fromString(parts[0]);
-			if(newver.isNull()) {
-				pwarn << "processNewVersion(): got invalid version";
-				return;
-			}
-			auto url = parts[1].remove('\n');
-			bool url_valid = QUrl(url).isValid();
-			if(url.isEmpty() || !url_valid) {
-				pwarn << "processNewVersion(): got invalid url";
-				return;
-			}
-			const auto current = QVersionNumber::fromString(qApp->applicationVersion());
-			int res = QVersionNumber::compare(current, newver);
-
-			if(res < 0) {
-				const auto version_str = newver.toString();
-				addNotification(tr("New Version Available"),
-					tr("Version %1 is available.").arg(version_str),
-					tr("<h3>Updated version available: v%1</h3>"
-					   "<p><a href=\"%2\">Click here to download new version</a>.</p>")
-						.arg(version_str, url));
-			}
-		}
-	} else {
+	if(r->error() != QNetworkReply::NoError) {
 		pwarn << "could not access" << r->url();
+		return;
 	}
+
+	auto status_code = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+	if(status_code != 200) {
+		pwarn << "got wrong HTTP status code:" << status_code;
+		return;
+	}
+
+	QSettings settings;
+	settings.setValue(SETT_LAST_VER_CHECK, QDate::currentDate());
+
+	QString response = r->readAll();
+	auto parts = response.split(' ',QString::SkipEmptyParts);
+	if(parts.size() < 2) {
+		pwarn << "processNewVersion(): invalid response";
+		return;
+	}
+
+	auto newver = QVersionNumber::fromString(parts[0]);
+	if(newver.isNull()) {
+		pwarn << "processNewVersion(): got invalid version";
+		return;
+	}
+
+	auto url = parts[1].remove('\n');
+	bool url_valid = QUrl(url).isValid();
+	if(url.isEmpty() || !url_valid) {
+		pwarn << "processNewVersion(): got invalid url";
+		return;
+	}
+
+	const auto current = QVersionNumber::fromString(qApp->applicationVersion());
+	int res = QVersionNumber::compare(current, newver);
+
+	if(res < 0) {
+		const auto version_str = newver.toString();
+		addNotification(tr("New Version Available"),
+			tr("Version %1 is available.").arg(version_str),
+			tr("<h3>Updated version available: v%1</h3>"
+			   "<p><a href=\"%2\">Click here to download new version</a>.</p>")
+				.arg(version_str, url));
+	}
+
 }
 #endif
 
@@ -573,12 +568,14 @@ void Window::createCommands()
 		if(name.isEmpty() || cmd.isEmpty()) {
 			continue;
 		}
+
 		if(name == QStringLiteral("__separator__")) {
 			menu_commands.addSeparator();
 			continue;
 		}
 
-		auto action = std::make_unique<QAction>(name, nullptr);
+		auto action = menu_commands.addAction(name);
+		this->addAction(action); // NOTE: to make hotkeys work when menubar is hidden
 
 		if(!hkey.isEmpty()) {
 			action->setShortcut(hkey);
@@ -595,22 +592,28 @@ void Window::createCommands()
 		action->setIcon(util::get_icon_from_executable(binary));
 		action->setEnabled(false);
 
-		connect(action.get(), &QAction::triggered,
-			[this,name{std::move(name)},binary{std::move(binary)},args{std::move(args)}] () mutable
+		connect(action, &QAction::triggered,
+			[this,name,binary,args] () mutable
 		{
+			auto to_native = [](const auto& path)
+			{
+				return QDir::toNativeSeparators(path);
+			};
+
 			for(QString& arg : args) {
 				if(arg.indexOf("%s") != -1) {
-					arg.replace("%s",QDir::toNativeSeparators(this->m_tagger.currentFile()));
+					arg.replace("%s", to_native(this->m_tagger.currentFile()));
 				}
 				if(arg.indexOf("%d") != -1) {
-					arg.replace("%d",QDir::toNativeSeparators(this->m_tagger.currentDir()));
+					arg.replace("%d", to_native(this->m_tagger.currentDir()));
 				}
 				if(arg.indexOf("%f") != -1) {
-					arg.replace("%f", QDir::toNativeSeparators(this->m_tagger.currentFileName()));
+					arg.replace("%f", to_native(this->m_tagger.currentFileName()));
 				}
 				if(arg.indexOf("%b") != -1) {
 					auto filename = this->m_tagger.currentFileName();
-					arg.replace("%b", QDir::toNativeSeparators(filename.remove(filename.indexOf('.'), 10)));
+					filename.truncate(filename.lastIndexOf('.'));
+					arg.replace("%b", to_native(filename));
 				}
 			}
 			auto success = QProcess::startDetached(binary,args);
@@ -621,8 +624,6 @@ void Window::createCommands()
 						.arg(name, binary));
 			}
 		});
-		action->setParent(this);
-		menu_commands.addAction(action.release());
 		menu_commands.setEnabled(true);
 	}
 	settings.endArray();
@@ -717,11 +718,11 @@ void Window::createActions()
 	});
 	connect(&a_save_next,   &QAction::triggered, [this]()
 	{
-		m_tagger.nextFile(RenameFlags::Force);
+		m_tagger.nextFile(Tagger::RenameOption::ForceRename);
 	});
 	connect(&a_save_prev,   &QAction::triggered, [this]()
 	{
-		m_tagger.prevFile(RenameFlags::Force);
+		m_tagger.prevFile(Tagger::RenameOption::ForceRename);
 	});
 	connect(&a_open_post,   &QAction::triggered, [this]()
 	{
@@ -751,14 +752,16 @@ void Window::createActions()
 	});
 	connect(&a_view_fullscreen, &QAction::triggered, [this](bool checked)
 	{
-		QSettings s; s.setValue(SETT_FULLSCREEN, checked);
+		static bool isMax = false;
 		if(checked) {
-			this->showFullScreen();
-		} else if(s.value(SETT_MAXIMIZED, false).toBool()) {
-			this->showMaximized();
+			isMax = isMaximized();
+			showFullScreen();
 		} else {
-			this->showNormal();
-			this->resize(QSize(1024,600));
+			if(isMax) {
+				showMaximized();
+			} else {
+				showNormal();
+			}
 		}
 	});
 	connect(&a_view_menu, &QAction::triggered, [this](bool checked)
@@ -821,7 +824,6 @@ void Window::createActions()
 	connect(&m_settings_dialog, &SettingsDialog::updated, this, &Window::updateSettings);
 	connect(&m_settings_dialog, &SettingsDialog::updated, &m_reverse_search, &ReverseSearch::updateSettings);
 	connect(&m_settings_dialog, &SettingsDialog::updated, &m_tagger, &Tagger::updateSettings);
-
 }
 
 // For enabling addSeparator() in QMenuBar.
@@ -845,11 +847,11 @@ void Window::createMenus()
 	auto add_action = [this](auto& object,auto& action)
 	{
 		this->addAction(&action);
-		(&object)->addAction(&action);
+		object.addAction(&action);
 	};
 	auto add_separator = [](auto& object)
 	{
-		(&object)->addSeparator();
+		object.addSeparator();
 	};
 
 	// File menu actions

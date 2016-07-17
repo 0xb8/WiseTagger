@@ -59,9 +59,9 @@ private:
 	void updateMenus();
 	void parseCommandLineArguments();
 
-	void initWindowSettings();
-	void saveWindowSettings();
-	void updateWindowStyles();
+	void initSettings();
+	void saveSettings();
+	void updateStyle();
 
 	void showNotificationsMenu();
 	void hideNotificationsMenu();

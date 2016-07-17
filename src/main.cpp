@@ -5,13 +5,20 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
-#include "window.h"
 #include "util/misc.h"
+#include "window.h"
 #include <QApplication>
-#include <QLocale>
-#include <QTranslator>
-#include <QSettings>
 #include <QFile>
+#include <QLocale>
+#include <QLoggingCategory>
+#include <QSettings>
+#include <QTranslator>
+
+namespace logging_category {
+	Q_LOGGING_CATEGORY(main, "Main")
+}
+#define pdbg qCDebug(logging_category::main)
+#define pwarn qCWarning(logging_category::main)
 
 int main(int argc, char *argv[])
 {
@@ -36,18 +43,24 @@ int main(int argc, char *argv[])
 		settings.setValue(QStringLiteral("settings-portable"), true);
 	}
 
-	auto language_code = util::language_from_settings();
-	auto language_name = util::language_name(language_code);
+	const auto language_code = util::language_from_settings();
+	const auto language_name = util::language_name(language_code);
 	QLocale::setDefault(language_code);
+	const auto qt_qm = QStringLiteral("qt_%1").arg(QLocale(language_code).name());
+	const auto wt_qm = QStringLiteral(":/i18n/%1.qm").arg(language_name);
 
 	QTranslator wt, qt;
-	if(qt.load(QStringLiteral("qt_%1").arg(QLocale(language_code).name()),
-			      QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
-		qApp->installTranslator(&qt);
+	if(qt.load(qt_qm, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+	{
+		a.installTranslator(&qt);
+	} else {
+		pwarn << "failed to load" << qt_qm << "from" << QLibraryInfo::location(QLibraryInfo::TranslationsPath);
 	}
 
-	if(wt.load(QStringLiteral(":/i18n/%1.qm").arg(language_name))) {
-		qApp->installTranslator(&wt);
+	if(wt.load(wt_qm)) {
+		a.installTranslator(&wt);
+	} else {
+		pwarn << "failed to load" << wt_qm;
 	}
 
 	Window w;

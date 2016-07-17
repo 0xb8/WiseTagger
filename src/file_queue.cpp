@@ -55,8 +55,10 @@ void FileQueue::push(const QString &f)
 
 const QString& FileQueue::select(size_t index)
 {
-	if(index >= m_files.size())
+	if(index >= m_files.size()) {
+		pwarn << "select() index out of bounds";
 		return m_empty;
+	}
 
 	const auto& ret = m_files[index]; // let the exception escape before modifying state
 	m_current = index;

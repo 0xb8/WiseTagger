@@ -33,10 +33,10 @@ public:
 	~Tagger() override;
 
 	/// Opens file and enqueues its directory.
-	void openFile(const QString&);
+	bool openFile(const QString&);
 
 	/// brief Enqueues directory contents and opens first file.
-	void openDir(const QString&);
+	bool openDir(const QString&);
 
 	/// Opens file with specified index in queue.
 	void openFileInQueue(size_t index = 0);
@@ -44,28 +44,45 @@ public:
 	/// Opens tagging session from file.
 	void openSession(const QString& sfile);
 
-	/*!
+	/// Result of rename operation
+	enum class RenameStatus
+	{
+		Cancelled = -1, ///< Rename was cancelled by user.
+		Failed = 0,     ///< Rename failed.
+		Renamed = 1     ///< Renamed successfully
+	};
+
+	/// Options controlling UI behavior when renaming file.
+	enum class RenameOption
+	{
+		NoOption = 0x0,          ///< Default UI behavior.
+		ForceRename = 0x1,       ///< Force rename - do not show rename dialog.
+		HideCancelButton = 0x2,  ///< Remove Cancel button.
+	};
+	using RenameOptions = QFlags<RenameOption>;
+
+	/**
 	 * \brief Renames current file
-	 * \param flags UI behavior modifiers. See ::RenameFlags description.
+	 * \param options UI behavior modifiers.
 	 * \retval RenameStatus::Renamed Renamed successfully
 	 * \retval RenameStatus::Cancelled Rename cancelled by user.
 	 * \retval RenameStatus::Failed Failed to rename.
 	 */
-	RenameStatus rename(RenameFlags flags = RenameFlags::Default);
+	RenameStatus rename(RenameOptions options = RenameOption::NoOption);
 
 
-	/*!
+	/**
 	 * \brief Asks to rename current file and opens next.
-	 * \param flags UI behavior modifiers. See ::RenameFlags description.
+	 * \param options UI behavior modifiers.
 	 */
-	void nextFile(RenameFlags flags = RenameFlags::Default);
+	void nextFile(RenameOptions options = RenameOption::NoOption);
 
 
-	/*!
+	/**
 	 * \brief Asks to rename current file and opens previous.
-	 * \param flags UI behavior modifiers. See ::RenameFlags description.
+	 * \param options UI behavior modifiers.
 	 */
-	void prevFile(RenameFlags flags = RenameFlags::Default);
+	void prevFile(RenameOptions options = RenameOption::NoOption);
 
 	/// Returns whether current file name is modified by user.
 	bool    fileModified()    const;
@@ -141,7 +158,7 @@ signals:
 
 private:
 	void loadCurrentFile();
-	bool loadFile(size_t index);
+	bool loadFile(size_t index, bool silent = false);
 	void findTagsFiles();
 	void updateNewTagsCounts();
 	void clear();
@@ -156,8 +173,10 @@ private:
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
-	std::unordered_map<QString, unsigned>   m_new_tag_counts;
+	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	TaggerStatistics m_statistics;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(Tagger::RenameOptions)
 
 #endif // WISETAGGER_H

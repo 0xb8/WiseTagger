@@ -17,8 +17,8 @@ namespace std {
 	struct hash<QString> {
 		typedef QString      argument_type;
 		typedef std::size_t  result_type;
-		result_type operator()(const QString &s) const {
-			/* qHash() returns uint, we can't use it directly */
+		result_type operator()(const argument_type &s) const {
+			// NOTE: qHash() returns uint, we can't use it directly
 			return std::hash<unsigned int>()(qHash(s));
 		}
 	};

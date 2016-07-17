@@ -27,7 +27,7 @@ QString util::read_resource_html(const char *filename)
 	QFile file(HTML_LOCATION.arg(language, filename));
 	bool open = file.open(QIODevice::ReadOnly);
 	if(!open) {
-		file.setFileName(HTML_LOCATION.arg(QStringLiteral("en")).arg(filename));
+		file.setFileName(HTML_LOCATION.arg(QStringLiteral("English"), filename));
 		open = file.open(QIODevice::ReadOnly);
 	}
 	Q_ASSERT(open && "resource file not opened");
