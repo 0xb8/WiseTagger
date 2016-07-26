@@ -29,7 +29,10 @@ class Tagger : public QWidget
 
 public:
 	explicit Tagger(QWidget *_parent = nullptr);
-	~Tagger() override;
+	~Tagger() override = default;
+	
+	/// Opens file, session or directory.
+	bool open(const QString& filename);
 
 	/// Opens file and enqueues its directory.
 	bool openFile(const QString&);
@@ -37,11 +40,11 @@ public:
 	/// brief Enqueues directory contents and opens first file.
 	bool openDir(const QString&);
 
-	/// Opens file with specified index in queue.
-	void openFileInQueue(size_t index = 0);
-
 	/// Opens tagging session from file.
-	void openSession(const QString& sfile);
+	bool openSession(const QString& sfile);
+	
+	/// Opens file with specified index in queue.
+	bool openFileInQueue(size_t index = 0);
 
 	/// Result of rename operation
 	enum class RenameStatus
@@ -85,6 +88,9 @@ public:
 
 	/// Returns whether current file name is modified by user.
 	bool    fileModified()    const;
+	
+	/// Returns whether the file queue is empty.
+	bool    isEmpty() const;
 
 	/// Returns dimensions of current image.
 	QSize   pictureDimensions() const;
@@ -156,7 +162,7 @@ signals:
 	void newTagsAdded(const QStringList&);
 
 private:
-	void loadCurrentFile();
+	bool loadCurrentFile();
 	bool loadFile(size_t index, bool silent = false);
 	void findTagsFiles();
 	void updateNewTagsCounts();

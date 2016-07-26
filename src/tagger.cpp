@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <algorithm>
 #include "util/size.h"
+#include "util/misc.h"
 #include "window.h"
 
 namespace logging_category {
@@ -28,11 +29,7 @@ Tagger::Tagger(QWidget *_parent) :
 {
 	installEventFilter(_parent);
 	m_picture.installEventFilter(_parent);
-	m_file_queue.setNameFilter(QStringList({QStringLiteral("*.jpg"),
-						QStringLiteral("*.jpeg"),
-						QStringLiteral("*.png"),
-						QStringLiteral("*.gif"),
-						QStringLiteral("*.bmp")}));
+	m_file_queue.setNameFilter(util::supported_image_formats_namefilter());
 
 	m_main_layout.setMargin(0);
 	m_main_layout.setSpacing(0);
@@ -61,56 +58,58 @@ Tagger::Tagger(QWidget *_parent) :
 	});
 }
 
-
-Tagger::~Tagger() { }
+bool Tagger::open(const QString& filename)
+{
+	bool res     = openDir(filename);
+	if(!res) res = openSession(filename);
+	if(!res) res = openFile(filename);
+	return res;
+}
 
 bool Tagger::openFile(const QString &filename)
 {
 	const QFileInfo fi(filename);
 	if(!fi.isReadable() || !fi.isFile() || !fi.isAbsolute()) {
-		pwarn << "invalid file path";
 		return false;
 	}
 	m_file_queue.clear();
 	m_file_queue.push(fi.absolutePath());
 	m_file_queue.sort();
 	m_file_queue.select(m_file_queue.find(fi.absoluteFilePath()));
-	loadCurrentFile();
-	return !m_file_queue.empty();
+	return loadCurrentFile();
 }
 
 bool Tagger::openDir(const QString &dir)
 {
 	const QFileInfo fi(dir);
 	if(!fi.isReadable() || !fi.isDir() || !fi.isAbsolute()) {
-		pwarn << "invalid directory path";
 		return false;
 	}
 	m_file_queue.clear();
 	m_file_queue.push(dir);
 	m_file_queue.sort();
-	m_file_queue.select(0u);
-	loadCurrentFile();
-	return !m_file_queue.empty();
+	m_file_queue.select(0u);	
+	return loadCurrentFile();
 }
 
-void Tagger::openFileInQueue(size_t index)
+bool Tagger::openSession(const QString& sfile)
 {
-	m_file_queue.select(index);
-	loadCurrentFile();
-}
-
-void Tagger::openSession(const QString& sfile)
-{
-	if(sfile.isEmpty())
-		return;
+	// NOTE: to prevent error message when opening normal file or directory
+	if(!sfile.endsWith(FileQueue::sessionFileSuffix)) return false;
+	
 	if(!m_file_queue.loadFromFile(sfile)) {
 		QMessageBox::critical(this,
 			tr("Load Session Failed"),
 			tr("<p>Could not load session from <b>%1</b></p>").arg(sfile));
-		return;
+		return false;
 	}
-	loadCurrentFile();
+	return loadCurrentFile();
+}
+
+bool Tagger::openFileInQueue(size_t index)
+{
+	m_file_queue.select(index);
+	return loadCurrentFile();
 }
 
 void Tagger::deleteCurrentFile()
@@ -174,7 +173,7 @@ void Tagger::prevFile(RenameOptions options)
 
 
 /* just load picture into tagger */
-void Tagger::loadCurrentFile()
+bool Tagger::loadCurrentFile()
 {
 	bool silent = false;
 	while(!loadFile(m_file_queue.currentIndex(), silent) && !m_file_queue.empty()) {
@@ -185,9 +184,10 @@ void Tagger::loadCurrentFile()
 
 	if(m_file_queue.empty()) {
 		clear();
-		return;
+		return false;
 	}
 	emit fileOpened(m_file_queue.current());
+	return true;
 }
 //------------------------------------------------------------------------------
 
@@ -218,6 +218,11 @@ bool Tagger::fileModified() const
 		return false;
 
 	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
+}
+
+bool Tagger::isEmpty() const
+{
+	return m_file_queue.empty();
 }
 
 QSize Tagger::pictureDimensions() const

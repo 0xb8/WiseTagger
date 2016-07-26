@@ -32,7 +32,6 @@ public:
 public slots:
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 	void hideUploadProgress();
-	void updateCurrentDirectory();
 	void updateWindowTitle();
 	void updateWindowTitleProgress(int progress);
 	void updateStatusBarText();
@@ -89,8 +88,8 @@ private:
 	QAction a_save_next;
 	QAction a_save_prev;
 	QAction a_go_to_number;
+	QAction a_open_session;
 	QAction a_save_session;
-	QAction a_load_session;
 	QAction a_open_loc;
 	QAction a_reload_tags;
 	QAction a_ib_replace;
@@ -117,8 +116,9 @@ private:
 	QStatusBar m_statusbar;
 	QLabel     m_statusbar_label;
 	QTimer     m_notification_display_timer;
-	int        m_notification_count = 0;
 	QSystemTrayIcon m_tray_icon;
+	int        m_notification_count = 0;
+	bool       m_show_current_directory;
 
 #ifdef Q_OS_WIN32
 	QWinTaskbarButton m_win_taskbar_button;

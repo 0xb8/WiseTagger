@@ -19,7 +19,10 @@ namespace logging_category {
 #define pdbg qCDebug(logging_category::filequeue)
 #define pwarn qCWarning(logging_category::filequeue)
 
+/* static data */
 const QString FileQueue::m_empty{nullptr,0};
+const QString FileQueue::sessionFileSuffix = QStringLiteral("wt-session");
+const QString FileQueue::sessionNameFilter = QStringLiteral("*.wt-session");
 
 void FileQueue::setNameFilter(const QStringList &f)
 {
@@ -133,7 +136,7 @@ void FileQueue::eraseCurrent()
 
 size_t FileQueue::saveToFile(const QString &path) const
 {
-	if(empty())
+	if(empty() || !path.endsWith(FileQueue::sessionFileSuffix))
 		return 0;
 
 	QFile f(path);
@@ -165,6 +168,10 @@ size_t FileQueue::saveToFile(const QString &path) const
 
 size_t FileQueue::loadFromFile(const QString &path)
 {
+	if(!path.endsWith(FileQueue::sessionFileSuffix)) {
+		return 0;
+	}
+
 	QFile f(path);
 	bool opened = f.open(QIODevice::ReadOnly);
 	if(!opened) {

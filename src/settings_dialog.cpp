@@ -11,6 +11,7 @@
 #define S_STYLE         QStringLiteral("window/style")
 #define S_FONT          QStringLiteral("window/font")
 #define S_FONT_SIZE     QStringLiteral("window/font-size")
+#define S_SHOW_DIR      QStringLiteral("window/show-current-directory")
 #define S_STATISTICS    QStringLiteral("stats/enabled")
 #define S_VERCHECK	QStringLiteral("version-check-enabled")
 #define S_PROXY_ENABLED QStringLiteral("proxy/enabled")
@@ -22,6 +23,7 @@
 #define D_STYLE         QStringLiteral("Default")
 #define D_FONT          QStringLiteral("Consolas")
 #define D_FONT_SIZE     14
+#define D_SHOW_DIR      true
 #define D_STATISTICS    true
 #define D_VERCHECK      true
 #define D_PROXY_ENABLED false
@@ -71,6 +73,7 @@ void SettingsDialog::reset()
 	ui->appStyle->     setCurrentText(settings.value(S_STYLE,         D_STYLE).toString());
 	ui->fontFamily->   setCurrentText(settings.value(S_FONT,          D_FONT).toString());
 	ui->proxyProtocol->setCurrentText(settings.value(S_PROXY_PROTO,   D_PROXY_PROTO).toString());
+	ui->showCurrentDir->setChecked(   settings.value(S_SHOW_DIR,      D_SHOW_DIR).toBool());
 	ui->statsEnabled-> setChecked(    settings.value(S_STATISTICS,    D_STATISTICS).toBool());
 	ui->vercheckEnabled->setChecked(  settings.value(S_VERCHECK,      D_VERCHECK).toBool());
 	ui->proxyGroup->   setChecked(    settings.value(S_PROXY_ENABLED, D_PROXY_ENABLED).toBool());
@@ -96,6 +99,7 @@ void SettingsDialog::apply()
 	settings.setValue(S_STYLE,         ui->appStyle->currentText());
 	settings.setValue(S_FONT,          ui->fontFamily->currentText());
 	settings.setValue(S_FONT_SIZE,     ui->fontSize->value());
+	settings.setValue(S_SHOW_DIR,      ui->showCurrentDir->isChecked());
 	settings.setValue(S_STATISTICS,    ui->statsEnabled->isChecked());
 	settings.setValue(S_VERCHECK,      ui->vercheckEnabled->isChecked());
 	settings.setValue(S_PROXY_PROTO,   ui->proxyProtocol->currentText());
@@ -112,6 +116,7 @@ void SettingsDialog::restoreDefaults()
 	ui->appStyle->     setCurrentText(D_STYLE);
 	ui->fontFamily->   setCurrentText(D_FONT);
 	ui->proxyProtocol->setCurrentText(D_PROXY_PROTO);
+	ui->showCurrentDir->setChecked(   D_SHOW_DIR);
 	ui->statsEnabled-> setChecked(    D_STATISTICS);
 	ui->vercheckEnabled->setChecked(  D_VERCHECK);
 	ui->proxyGroup->   setChecked(    D_PROXY_ENABLED);

@@ -19,21 +19,17 @@
  * Stored file paths are absolute and all member functions taking file paths as
  * parameters expect them to be absolute too.
  */
-class FileQueue : public QObject {
-	Q_OBJECT
+class FileQueue {
 public:
-	/*!
-	 * \brief Value used as invalid index.
-	 */
+
+	/// Value used as invalid index.
 	static constexpr size_t npos = std::numeric_limits<size_t>::max();
-
-	FileQueue()           = default;
-	~FileQueue() override = default;
-
-	FileQueue(const FileQueue&) = default;
-	FileQueue(FileQueue&&)      = default;
-	FileQueue& operator= (const FileQueue&) = default;
-	FileQueue& operator= (FileQueue&&)      = default;
+	
+	/// Suffix of session files.
+	static const QString sessionFileSuffix;
+	
+	/// Name Filter for session files.
+	static const QString sessionNameFilter;
 
 
 	/*!

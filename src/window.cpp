@@ -46,19 +46,19 @@ namespace logging_category {
 
 #define SETT_SHOW_MENU          QStringLiteral("window/show-menu")
 #define SETT_SHOW_STATUS        QStringLiteral("window/show-statusbar")
+#define SETT_SHOW_CURRENT_DIR   QStringLiteral("window/show-current-directory")
 #define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
 #define SETT_STYLE              QStringLiteral("window/style")
 
-#define SETT_COMMANDS_KEY	QStringLiteral("window/commands")
-#define SETT_COMMAND_NAME	QStringLiteral("display_name")
-#define SETT_COMMAND_CMD	QStringLiteral("command")
-#define SETT_COMMAND_HOTKEY	QStringLiteral("hotkey")
+#define SETT_COMMANDS_KEY       QStringLiteral("window/commands")
+#define SETT_COMMAND_NAME       QStringLiteral("display_name")
+#define SETT_COMMAND_CMD        QStringLiteral("command")
+#define SETT_COMMAND_HOTKEY     QStringLiteral("hotkey")
+
+#define SETT_SESSIONS_KEY       QStringLiteral("sessions")
 
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
-
-#define SESSION_FILE_SUFFIX     QStringLiteral("wt-session")
-#define SESSION_FILE_PATTERN    QStringLiteral("*.wt-session")
 
 #ifdef Q_OS_WIN
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
@@ -85,8 +85,8 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_save_next(       tr("Save and Open Next Image"), nullptr)
 	, a_save_prev(       tr("Save and Open Previous Image"), nullptr)
 	, a_go_to_number(    tr("Go To File Number"), nullptr)
+	, a_open_session(    tr("Open Session"), nullptr)
 	, a_save_session(    tr("Save Session"), nullptr)
-	, a_load_session(    tr("Open Session"),nullptr)
 	, a_open_loc(        tr("Open &Containing Folder"), nullptr)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
@@ -132,9 +132,11 @@ void Window::fileOpenDialog()
 	auto fileName = QFileDialog::getOpenFileName(this,
 		tr("Open File"),
 		m_last_directory,
-		tr("Image files (*.gif *.jpg *.jpeg *.jpg *.png *.bmp)"));
-
-	m_tagger.openFile(fileName);
+		tr("Image Files (%1);;Session Files (%2)")
+			.arg(util::join(util::supported_image_formats_namefilter()))
+			.arg(FileQueue::sessionNameFilter));
+	m_tagger.open(fileName);
+	
 }
 
 void Window::directoryOpenDialog()
@@ -150,7 +152,7 @@ void Window::directoryOpenDialog()
 
 void Window::updateWindowTitle()
 {
-	if(m_tagger.queue().empty()) {
+	if(m_tagger.isEmpty()) {
 		setWindowTitle(tr(Window::MainWindowTitleEmpty)
 			.arg(qApp->applicationVersion()));
 		return;
@@ -167,7 +169,7 @@ void Window::updateWindowTitle()
 
 void Window::updateWindowTitleProgress(int progress)
 {
-	if(m_tagger.queue().empty()) {
+	if(m_tagger.isEmpty()) {
 		setWindowTitle(tr(Window::MainWindowTitleEmpty)
 			.arg(qApp->applicationVersion()));
 		return;
@@ -184,12 +186,16 @@ void Window::updateWindowTitleProgress(int progress)
 
 void Window::updateStatusBarText()
 {
-	if(m_tagger.queue().empty()) {
+	if(m_tagger.isEmpty()) {
 		m_statusbar_label.clear();
 		return;
 	}
-	auto current = m_tagger.queue().currentIndex() + 1u;
-	auto qsize   = m_tagger.queue().size();
+	if(m_show_current_directory) {
+		statusBar()->showMessage(tr("In directory:  %1")
+			.arg(m_tagger.currentDir()));
+	}
+	const auto current = m_tagger.queue().currentIndex() + 1u;
+	const auto qsize   = m_tagger.queue().size();
 	m_statusbar_label.setText(QStringLiteral("%1 / %2  ")
 		.arg(QString::number(current), QString::number(qsize)));
 }
@@ -197,11 +203,7 @@ void Window::updateStatusBarText()
 void Window::updateImageboardPostURL(QString url)
 {
 	a_open_post.setDisabled(url.isEmpty());
-	if(url.isEmpty()) {
-		m_post_url.clear();
-	} else {
-		m_post_url = url;
-	}
+	m_post_url = url;
 }
 
 void Window::addNotification(const QString &title, const QString& description, const QString &body)
@@ -291,11 +293,6 @@ void Window::hideUploadProgress()
 	statusBar()->showMessage(tr("Done."), 3000);
 }
 
-void Window::updateCurrentDirectory()
-{
-	m_last_directory = m_tagger.currentDir();
-}
-
 //------------------------------------------------------------------------------
 bool Window::eventFilter(QObject*, QEvent *e)
 {
@@ -314,7 +311,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 			QFileInfo dropfile(urls.first().toLocalFile());
 			if(!(dropfile.isDir()
 				|| m_tagger.queue().checkExtension(dropfile.suffix())
-				|| dropfile.suffix() == SESSION_FILE_SUFFIX))
+				|| dropfile.suffix() == FileQueue::sessionFileSuffix))
 			{
 				return true;
 			}
@@ -332,31 +329,15 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		if(fileurls.size() == 1) {
 			dropfile.setFile(fileurls.first().toLocalFile());
-
-			if(dropfile.isFile()) {
-				if(dropfile.suffix() == SESSION_FILE_SUFFIX) {
-					m_tagger.openSession(dropfile.absoluteFilePath());
-				} else {
-					m_tagger.openFile(dropfile.absoluteFilePath());
-				}
-			}
-
-			if(dropfile.isDir())
-				m_tagger.openDir(dropfile.absoluteFilePath());
-
+			m_tagger.open(dropfile.absoluteFilePath());
 			return true;
 		}
 
 		m_tagger.queue().clear();
 		for(auto&& fileurl : fileurls) {
 			dropfile.setFile(fileurl.toLocalFile());
-			if(dropfile.isFile() || dropfile.isDir()) {
-				m_tagger.queue().push(dropfile.absoluteFilePath());
-				pdbg << "added" << dropfile.absoluteFilePath();
-			}
+			m_tagger.queue().push(dropfile.absoluteFilePath());
 		}
-
-		pdbg << "loaded" << m_tagger.queue().size() << "images from" << fileurls.size() << "dropped items";
 
 		m_tagger.openFileInQueue();
 		return true;
@@ -396,14 +377,7 @@ void Window::parseCommandLineArguments()
 	args.pop_front();
 
 	if(args.size() == 1) {
-		if(args.first().endsWith(SESSION_FILE_SUFFIX)) {
-			m_tagger.openSession(args.first());
-			return;
-		}
-
-		if(!m_tagger.openFile(args.first())){
-			m_tagger.openDir(args.first());
-		}
+		m_tagger.open(args.first());
 		return;
 	}
 
@@ -448,6 +422,7 @@ void Window::initSettings()
 
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
+	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 }
 
 void Window::saveSettings()
@@ -466,6 +441,8 @@ void Window::saveSettings()
 
 void Window::updateSettings()
 {
+	QSettings settings;
+	m_show_current_directory = settings.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 	updateStyle();
 	for(auto action : menu_commands.actions()) {
 		this->removeAction(action); // NOTE: to prevent hotkey conflicts
@@ -688,6 +665,7 @@ void Window::createActions()
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
+	connect(&m_reverse_search, &ReverseSearch::finished,       &m_tagger.statistics(), &TaggerStatistics::reverseSearched);
 	connect(&m_reverse_search, &ReverseSearch::finished, [this](){
 		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
 	});
@@ -705,9 +683,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
-
-
-
+	
 	connect(&m_tagger,      &Tagger::fileOpened, [this]()
 	{
 		updateImageboardPostURL(m_tagger.postURL());
@@ -739,7 +715,6 @@ void Window::createActions()
 	connect(&a_iqdb_search, &QAction::triggered, [this]()
 	{
 		m_reverse_search.search(m_tagger.currentFile());
-		m_tagger.statistics().reverseSearched();
 	});
 	connect(&a_open_loc,    &QAction::triggered, [this]()
 	{
@@ -786,7 +761,7 @@ void Window::createActions()
 		auto filename = QFileDialog::getSaveFileName(this,
 			tr("Save Session"),
 			m_last_directory,
-			QStringLiteral("Session Files (%1)").arg(SESSION_FILE_PATTERN));
+			QStringLiteral("Session Files (%1)").arg(FileQueue::sessionNameFilter));
 		if(filename.isEmpty())
 			return;
 
@@ -796,18 +771,18 @@ void Window::createActions()
 				tr("<p>Could not save session to <b>%1</b>.</p><p>Check file permissions.</p>").arg(filename));
 		}
 	});
-	connect(&a_load_session, &QAction::triggered, [this](){
+	connect(&a_open_session, &QAction::triggered, [this](){
 		auto filename = QFileDialog::getOpenFileName(this,
 			tr("Open Session"),
 			m_last_directory,
-			QStringLiteral("Session Files (%1)").arg(SESSION_FILE_PATTERN));
+			QStringLiteral("Session Files (%1)").arg(FileQueue::sessionNameFilter));
 		m_tagger.openSession(filename);
 	});
 	connect(&a_go_to_number, &QAction::triggered, [this](){
 		auto number = QInputDialog::getInt(this,
 			tr("Enter Number"),
 			tr("Enter file number to open:"),
-			m_tagger.queue().currentIndex()+1, 1);
+			m_tagger.queue().currentIndex()+1, 1, m_tagger.queue().size());
 		m_tagger.openFileInQueue(number-1);
 	});
 
@@ -865,7 +840,7 @@ void Window::createMenus()
 	// File menu actions
 	add_action(menu_file, a_open_file);
 	add_action(menu_file, a_open_dir);
-	add_action(menu_file, a_load_session);
+	add_action(menu_file, a_open_session);
 	add_separator(menu_file);
 	add_action(menu_file, a_save_file);
 	add_action(menu_file, a_save_session);
@@ -876,7 +851,7 @@ void Window::createMenus()
 	add_action(menu_file, a_iqdb_search);
 	add_separator(menu_file);
 	add_action(menu_file, a_exit);
-
+	
 	// Tray context menu actions
 	add_action(menu_tray, a_view_fullscreen);
 	add_action(menu_tray, a_view_menu);
@@ -945,7 +920,7 @@ void Window::createMenus()
 
 void Window::updateMenus()
 {
-	bool val = m_tagger.queue().empty();
+	bool val = m_tagger.isEmpty();
 	a_next_file.setDisabled(val);
 	a_prev_file.setDisabled(val);
 	a_save_file.setDisabled(val);

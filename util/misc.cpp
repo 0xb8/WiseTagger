@@ -5,10 +5,11 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
-#include <QSettings>
-#include <QFile>
-#include <QDir>
 #include <QApplication>
+#include <QDir>
+#include <QFile>
+#include <QImageReader>
+#include <QSettings>
 #include "misc.h"
 
 #ifdef Q_OS_WIN
@@ -125,4 +126,31 @@ QLocale::Language util::language_from_settings()
 	return static_cast<QLocale::Language>(code.toInt());
 }
 
+QStringList util::supported_image_formats_namefilter()
+{
+	QStringList ret;
+	QString tmp;
+	for(auto& ext : QImageReader::supportedImageFormats()) {
+		if(ext == "pbm" // NOTE: who even uses these formats and why are they builtin
+		|| ext == "pgm" 
+		|| ext == "ppm" 
+		|| ext == "xbm" 
+		|| ext == "xpm") continue;
+		
+		tmp = QStringLiteral("*.");
+		tmp.append(ext);
+		ret.push_back(tmp);
+	}
+	return ret;
+}
 
+QString util::join(const QStringList& list, QChar separator)
+{
+	QString ret;
+	for(const auto& s : list) {
+		ret.append(s);
+		ret.append(separator);
+	}
+	ret.truncate(ret.lastIndexOf(separator));
+	return ret;
+}
