@@ -26,6 +26,7 @@ Picture::Picture(QWidget *parent) : QLabel(parent), m_movie(nullptr) {
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setBackgroundStyle();
 	connect(&m_resize_timer, &QTimer::timeout, this, &Picture::resizeTimeout);
+	m_resize_timer.setSingleShot(true);
 	clear();
 }
 
@@ -36,30 +37,40 @@ void Picture::dropEvent(QDropEvent*)           {}
 
 bool Picture::loadPicture(const QString &filename)
 {
-	if(filename.endsWith(QStringLiteral(".gif"))) {
-		m_movie_buf.close();
-		QFile file(filename);
-		bool open = file.open(QIODevice::ReadOnly);
-		if(!open) {
+	clearData();
+	
+	QFile file(filename);
+	bool open = file.open(QIODevice::ReadOnly);	
+	if(!open) {
+		pwarn << "failed to open file for reading";
+		return false;
+	}
+	m_file_buf.setData(file.readAll());
+	file.close();
+	
+	QImageReader reader(&m_file_buf);
+	
+	if(reader.imageCount() > 1) {
+		reader.jumpToImage(0);
+		const auto first_frame = reader.read();
+		
+		m_initial_size = first_frame.size();
+		m_type = first_frame.hasAlphaChannel() ? Type::MovieWithAlpha : Type::Movie;
+		m_file_buf.reset();
+		m_movie = std::make_unique<QMovie>(&m_file_buf);
+		
+		if(!m_movie->isValid()) {
+			pwarn << "invalid movie";
 			clear();
 			return false;
 		}
 
-		m_movie_buf.setData(file.readAll());
-		file.close();
-		m_movie = std::make_unique<QMovie>(&m_movie_buf);
-		if(!m_movie->isValid()) {
-			clear();
-			return false;
-		}
-		m_movie->setCacheMode(QMovie::CacheAll);
-		QLabel::setMovie(m_movie.get());
-		movie()->start();
-		const auto cpm = movie()->currentPixmap();
-		m_initial_size = cpm.size();
-		m_type = cpm.hasAlpha() ? Type::MovieWithAlpha : Type::Movie;
+		this->setMovie(m_movie.get());
 	} else {
-		if(!m_pixmap.load(filename)) {
+		m_pixmap = QPixmap::fromImage(reader.read());
+		m_file_buf.close();
+		if(m_pixmap.isNull()) {
+			pwarn << "invalid pixmap";
 			clear();
 			return false;
 		}
@@ -98,9 +109,12 @@ void Picture::resizeAndSetPixmap()
 			break;
 		case Type::Movie:
 		case Type::MovieWithAlpha:
+			m_movie->stop();
 			m_movie->setCacheMode(QMovie::CacheNone);
 			m_movie->setScaledSize(m_current_size);
 			m_movie->setCacheMode(QMovie::CacheAll);
+			m_movie->jumpToFrame(0);
+			m_movie->start();
 			break;
 		default:
 			pwarn << "unknown type";
@@ -120,13 +134,19 @@ void Picture::setBackgroundStyle()
 	}
 }
 
-void Picture::clear()
+void Picture::clearData()
 {
 	m_pixmap.loadFromData(nullptr);
 	m_movie.reset(nullptr);
-	m_movie_buf.close();
+	m_file_buf.close();
 	m_current_size = m_initial_size = QSize(0,0);
 	m_type = Type::None;
+}
+
+void Picture::clear()
+{
+	clearData();
+	setBackgroundStyle();
 	setText(util::read_resource_html("welcome.html"));
 }
 
@@ -139,7 +159,6 @@ void Picture::resizeEvent(QResizeEvent*)
 /* Perform actual pixmap resize on time out */
 void Picture::resizeTimeout()
 {
-	m_resize_timer.stop();
 	if(!m_pixmap.isNull() || (m_movie && m_movie->isValid())) {
 		resizeAndSetPixmap();
 	}

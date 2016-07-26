@@ -62,12 +62,13 @@ private:
 
 	void resizeAndSetPixmap();
 	void setBackgroundStyle();
+	void clearData();
 
 	QSize   m_current_size;
 	QSize   m_initial_size;
 
 	QPixmap m_pixmap;
-	QBuffer m_movie_buf;
+	QBuffer m_file_buf;
 	QTimer  m_resize_timer;
 	Movie   m_movie;
 	Type    m_type;
