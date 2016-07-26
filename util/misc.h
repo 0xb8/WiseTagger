@@ -26,6 +26,10 @@ auto parse_arguments(const QString& args) -> QStringList;
 
 auto get_icon_from_executable(const QString& path) -> QIcon;
 
+auto backup_settings_to_file(const QString& path) -> void;
+
+auto restore_settings_from_file(const QString& path) -> void;
+
 auto supported_image_formats_namefilter() -> QStringList;
 
 auto join(const QStringList&, QChar separator = QChar(' ')) -> QString;
