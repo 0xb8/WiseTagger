@@ -53,3 +53,10 @@ FORMS +=                                             \
 # lupdate cannot into wildcard expansion
 TRANSLATIONS = resources/i18n/Russian.ts             \
 	       resources/i18n/English.ts
+
+isEmpty(PREFIX) {
+    PREFIX = /usr/local/
+}
+
+target.path = $$PREFIX/bin
+INSTALLS += target
