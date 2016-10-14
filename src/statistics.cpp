@@ -8,38 +8,42 @@
 #include "statistics.h"
 #include "util/size.h"
 #include "util/misc.h"
+#include <cmath>
 #include <QLoggingCategory>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QDateTime>
 
-namespace logging_category {
-	Q_LOGGING_CATEGORY(stats, "Statistics")
-}
+namespace logging_category {Q_LOGGING_CATEGORY(stats, "Statistics")}
 #define pdbg qCDebug(logging_category::stats)
 #define pwarn qCWarning(logging_category::stats)
 
 #define SETT_STATISTICS         QStringLiteral("stats/enabled")
-#define NUM_TIMES_LAUNCHED	QStringLiteral("stats/num_times_launched")
-#define NUM_REVERSE_SEARCHED	QStringLiteral("stats/num_reverse_searched")
-#define NUM_FILES_OPENED	QStringLiteral("stats/num_files/opened")
-#define NUM_FILES_RENAMED	QStringLiteral("stats/num_files/renamed")
-#define NUM_TAGS_TOTAL		QStringLiteral("stats/num_tags/total")
-#define NUM_TAGS_MAX		QStringLiteral("stats/num_tags/maximum")
-#define NUM_TAGS_AVG		QStringLiteral("stats/num_tags/average")
-#define NUM_TAGS_TOTAL		QStringLiteral("stats/num_tags/total")
+#define NUM_TIMES_LAUNCHED      QStringLiteral("stats/num_times_launched")
+#define NUM_REVERSE_SEARCHED    QStringLiteral("stats/num_reverse_searched")
+#define NUM_FILES_OPENED        QStringLiteral("stats/num_files/opened")
+#define NUM_FILES_RENAMED       QStringLiteral("stats/num_files/renamed")
+#define NUM_TAGS_TOTAL          QStringLiteral("stats/num_tags/total")
+#define NUM_TAGS_MAX            QStringLiteral("stats/num_tags/maximum")
+#define NUM_TAGS_AVG            QStringLiteral("stats/num_tags/average")
+#define NUM_TAGS_TOTAL          QStringLiteral("stats/num_tags/total")
 
-#define IMG_DIMENSIONS_SUM_W	QStringLiteral("stats/img_dimensions/sum/width")
-#define IMG_DIMENSIONS_SUM_H	QStringLiteral("stats/img_dimensions/sum/height")
-#define IMG_DIMENSIONS_MAX	QStringLiteral("stats/img_dimensions/max")
-#define IMG_DIMENSIONS_AVG	QStringLiteral("stats/img_dimensions/avg")
+#define IMG_DIMENSIONS_SUM_W    QStringLiteral("stats/img_dimensions/sum/width")
+#define IMG_DIMENSIONS_SUM_H    QStringLiteral("stats/img_dimensions/sum/height")
+#define IMG_DIMENSIONS_MAX      QStringLiteral("stats/img_dimensions/max")
+#define IMG_DIMENSIONS_AVG      QStringLiteral("stats/img_dimensions/avg")
 
-#define NUM_FILES_EXT		QStringLiteral("stats/num_files/extensions/%1")
-#define NUM_FILES_EXT_DIR	QStringLiteral("stats/num_files/extensions")
-#define TIME_SPENT		QStringLiteral("stats/time_spent_seconds")
+#define NUM_FILES_EXT           QStringLiteral("stats/num_files/extensions/%1")
+#define NUM_FILES_EXT_DIR       QStringLiteral("stats/num_files/extensions")
+#define TIME_SPENT              QStringLiteral("stats/time_spent_seconds")
+#define DATE_FIRST_LAUNCHED     QStringLiteral("stats/date_first_launched")
 
 TaggerStatistics::TaggerStatistics(QObject *_parent) : QObject(_parent)
 {
 	m_elapsed_timer.start();
+	if(m_settings.value(DATE_FIRST_LAUNCHED).isNull()) {
+		m_settings.setValue(DATE_FIRST_LAUNCHED, QDateTime::currentDateTimeUtc());
+	}
 }
 
 TaggerStatistics::~TaggerStatistics()
@@ -122,6 +126,10 @@ void TaggerStatistics::showStatsDialog()
 		m_settings.setValue(TIME_SPENT, time_spent);
 		m_elapsed_timer.start();
 	}
+	const auto first_launch     = m_settings.value(DATE_FIRST_LAUNCHED).toDateTime().toLocalTime();
+	const auto first_launch_dt  = first_launch.daysTo(QDateTime::currentDateTime());
+	const auto first_launch_s   = first_launch.toString(QStringLiteral("yyyy-MM-dd hh:mm:ss"));
+	const auto first_launch_dts = qApp->translate("Duration", "%n days", "", first_launch_dt);
 	const auto files_opened     = m_settings.value(NUM_FILES_OPENED, 0).toInt();
 	const auto dimensions_max   = m_settings.value(IMG_DIMENSIONS_MAX, QSize(0,0)).toSize();
 	const auto dimensions_avg   = m_settings.value(IMG_DIMENSIONS_AVG, QSize(0,0)).toSize();
@@ -131,7 +139,7 @@ void TaggerStatistics::showStatsDialog()
 	const auto tags_max_s       = m_settings.value(NUM_TAGS_MAX, 0ll).toString();
 	const auto tags_avg_s       = m_settings.value(NUM_TAGS_AVG, 0ll).toString();
 	const auto rev_searched_s   = m_settings.value(NUM_REVERSE_SEARCHED, 0).toString();
-	const auto files_opened_s  = QString::number(files_opened);
+	const auto files_opened_s   = QString::number(files_opened);
 
 	const auto dim_max_str    = QStringLiteral("%1 x %2")
 		.arg(dimensions_max.width()).arg(dimensions_max.height());
@@ -157,20 +165,23 @@ void TaggerStatistics::showStatsDialog()
 
 	auto desc = util::read_resource_html("statistics.html")
 		.arg(times_launched_s,	// 1
-		     util::duration(time_spent)) // 2
-		.arg(files_opened_s,	// 3 (too much args, variadic templates when?)
-		     files_renamed_s,	// 4
-		     rev_searched_s,	// 5
+		     util::duration(time_spent), // 2
+		     files_opened_s,	// 3
+		     files_renamed_s)	// 4
+		.arg(rev_searched_s,	// 5
 		     dim_max_str,	// 6
 		     dim_avg_str,	// 7
 		     exts_str,		// 8
 		     tags_total_s,	// 9
 		     tags_max_s,	// 10
-		     tags_avg_s		// 11
+		     tags_avg_s,	// 11
+		     first_launch_s,	// 12
+		     first_launch_dts	// 13
 		);
 
 	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
-		desc.append(tr("<br/><p><b>Note:</b> statistics collection is currently disabled. The stats displayed here are from previous launches.</p>"));
+		desc.append(tr("<br/><p><b>Note:</b> statistics collection is currently disabled. "
+		               "The stats displayed here are from previous launches.</p>"));
 	}
 	QMessageBox mb(QMessageBox::Information, tr("Statistics"), desc, QMessageBox::Ok, nullptr);
 	mb.setTextInteractionFlags(Qt::TextBrowserInteraction);

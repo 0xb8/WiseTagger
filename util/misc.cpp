@@ -51,7 +51,8 @@ QString util::duration(uint64_t secs)
 	auto mons = mon != 0 ? qApp->translate("Duration", "%n months", "", mon)  : QStringLiteral("");
 	auto yrs  = yr  != 0 ? qApp->translate("Duration", "%n years", "", yr)    : QStringLiteral("");
 
-	return QStringLiteral("%1 %2 %3 %4 %5 %6").arg(yrs, mons, days, hrs, mins, sec);
+	auto res = QStringLiteral("%1 %2 %3 %4 %5 %6").arg(yrs, mons, days, hrs, mins, sec);
+	return res.simplified();
 }
 
 QStringList util::parse_arguments(const QString & args)
@@ -151,18 +152,20 @@ void util::restore_settings_from_file(const QString & path)
 
 QStringList util::supported_image_formats_namefilter()
 {
-	QStringList ret;
-	QString tmp;
-	for(auto& ext : QImageReader::supportedImageFormats()) {
-		if(ext == "pbm" // NOTE: who even uses these formats and why are they builtin
-		|| ext == "pgm" 
-		|| ext == "ppm" 
-		|| ext == "xbm" 
-		|| ext == "xpm") continue;
-		
-		tmp = QStringLiteral("*.");
-		tmp.append(ext);
-		ret.push_back(tmp);
+	static thread_local QStringList ret;
+	if(ret.isEmpty()) {
+		QString tmp;
+		for(auto& ext : QImageReader::supportedImageFormats()) {
+			if(ext == "pbm" // NOTE: who even uses these formats and why are they builtin
+			|| ext == "pgm"
+			|| ext == "ppm"
+			|| ext == "xbm"
+			|| ext == "xpm") continue;
+
+			tmp = QStringLiteral("*.");
+			tmp.append(ext);
+			ret.push_back(tmp);
+		}
 	}
 	return ret;
 }
