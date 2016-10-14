@@ -22,8 +22,6 @@ auto language_name(QLocale::Language) -> QString;
 
 auto duration(std::uint64_t ms) -> QString;
 
-auto parse_arguments(const QString& args) -> QStringList;
-
 auto get_icon_from_executable(const QString& path) -> QIcon;
 
 auto backup_settings_to_file(const QString& path) -> void;

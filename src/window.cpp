@@ -31,6 +31,7 @@
 
 #include "window.h"
 #include "util/open_graphical_shell.h"
+#include "util/command_placeholders.h"
 #include "util/size.h"
 #include "util/misc.h"
 
@@ -55,8 +56,6 @@ namespace logging_category {
 #define SETT_COMMAND_CMD        QStringLiteral("command")
 #define SETT_COMMAND_HOTKEY     QStringLiteral("hotkey")
 
-#define SETT_SESSIONS_KEY       QStringLiteral("sessions")
-
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
 
@@ -72,7 +71,6 @@ namespace logging_category {
 Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, m_tagger(          this)
 	, m_reverse_search(  this)
-	, m_settings_dialog( this)
 	, a_open_file(       tr("&Open File..."), nullptr)
 	, a_open_dir(        tr("Open &Folder..."), nullptr)
 	, a_delete_file(     tr("&Delete Current Image"), nullptr)
@@ -124,6 +122,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 #ifdef Q_OS_WIN32
 	QTimer::singleShot(1500, this, &Window::checkNewVersion);
 #endif
+
 }
 
 //------------------------------------------------------------------------------
@@ -136,7 +135,7 @@ void Window::fileOpenDialog()
 			.arg(util::join(util::supported_image_formats_namefilter()))
 			.arg(FileQueue::sessionNameFilter));
 	m_tagger.open(fileName);
-	
+
 }
 
 void Window::directoryOpenDialog()
@@ -547,61 +546,62 @@ void Window::createCommands()
 	for(auto i{0}; i < size; ++i) {
 		settings.setArrayIndex(i);
 		auto name = settings.value(SETT_COMMAND_NAME).toString();
-		auto cmd  = settings.value(SETT_COMMAND_CMD).toString();
+		auto cmd  = settings.value(SETT_COMMAND_CMD).toStringList();
 		auto hkey = settings.value(SETT_COMMAND_HOTKEY).toString();
-
-		if(name.isEmpty() || cmd.isEmpty()) {
-			continue;
-		}
 
 		if(name == QStringLiteral("__separator__")) {
 			menu_commands.addSeparator();
 			continue;
 		}
 
+		if(name.isEmpty() || cmd.isEmpty()) {
+			continue;
+		}
+
+		auto binary = cmd.first();
+		if(!QFile::exists(binary)) {
+			pwarn << "Invalid command: executable does not exist";
+			continue;
+		}
+		cmd.removeFirst();
+
 		auto action = menu_commands.addAction(name);
 		this->addAction(action); // NOTE: to make hotkeys work when menubar is hidden
-
+		action->setIcon(util::get_icon_from_executable(binary));
+		action->setEnabled(false);
 		if(!hkey.isEmpty()) {
 			action->setShortcut(hkey);
 		}
 
-		auto args = util::parse_arguments(cmd);
-		if(args.isEmpty() || !QFile::exists(args.first())) {
-			pwarn << "Invalid command: key empty or executable does not exist";
-			continue;
-		}
-		auto binary = args.first();
-		args.removeFirst();
-
-		action->setIcon(util::get_icon_from_executable(binary));
-		action->setEnabled(false);
-
 		connect(action, &QAction::triggered,
-			[this,name,binary,args] () mutable
+			[this,name,binary,cmd] () mutable
 		{
 			auto to_native = [](const auto& path)
 			{
 				return QDir::toNativeSeparators(path);
 			};
 
-			for(QString& arg : args) {
-				if(arg.indexOf("%s") != -1) {
-					arg.replace("%s", to_native(this->m_tagger.currentFile()));
-				}
-				if(arg.indexOf("%d") != -1) {
-					arg.replace("%d", to_native(this->m_tagger.currentDir()));
-				}
-				if(arg.indexOf("%f") != -1) {
-					arg.replace("%f", to_native(this->m_tagger.currentFileName()));
-				}
-				if(arg.indexOf("%b") != -1) {
-					auto filename = this->m_tagger.currentFileName();
-					filename.truncate(filename.lastIndexOf('.'));
-					arg.replace("%b", to_native(filename));
-				}
+			auto remove_ext = [](const auto& filename)
+			{
+				auto lastdot = filename.lastIndexOf('.');
+				return filename.left(lastdot);
+			};
+
+			for(QString& arg : cmd) {
+				arg.replace(QStringLiteral(CMD_PLDR_PATH),
+					to_native(m_tagger.currentFile()));
+
+				arg.replace(QStringLiteral(CMD_PLDR_DIR),
+					to_native(m_tagger.currentDir()));
+
+				arg.replace(QStringLiteral(CMD_PLDR_FULLNAME),
+					to_native(m_tagger.currentFileName()));
+
+				arg.replace(QStringLiteral(CMD_PLDR_BASENAME),
+					to_native(remove_ext(m_tagger.currentFileName())));
+
 			}
-			auto success = QProcess::startDetached(binary,args);
+			auto success = QProcess::startDetached(binary,cmd);
 			if(!success) {
 				QMessageBox::critical(this,
 					tr("Failed to start command"),
@@ -683,7 +683,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
-	
+
 	connect(&m_tagger,      &Tagger::fileOpened, [this]()
 	{
 		updateImageboardPostURL(m_tagger.postURL());
@@ -803,27 +803,20 @@ void Window::createActions()
 		msg.append(QStringLiteral("</li></ul>"));
 		addNotification(tr("New Tags Added"), tr("Check Notifications menu for list of added tags."), msg);
 	});
-	connect(&a_show_settings, &QAction::triggered, &m_settings_dialog, &SettingsDialog::exec);
-	connect(&m_settings_dialog, &SettingsDialog::updated, this, &Window::updateSettings);
-	connect(&m_settings_dialog, &SettingsDialog::updated, &m_reverse_search, &ReverseSearch::updateSettings);
-	connect(&m_settings_dialog, &SettingsDialog::updated, &m_tagger, &Tagger::updateSettings);
+	connect(&a_show_settings, &QAction::triggered, [this](){
+		auto sd = new SettingsDialog(this);
+		connect(sd, &SettingsDialog::updated, this, &Window::updateSettings);
+		connect(sd, &SettingsDialog::updated, &m_reverse_search, &ReverseSearch::updateSettings);
+		connect(sd, &SettingsDialog::updated, &m_tagger, &Tagger::updateSettings);
+		connect(sd, &SettingsDialog::finished, [sd](int){
+			sd->deleteLater();
+		});
+		sd->open();
+	});
+
 }
 
-// For enabling addSeparator() in QMenuBar.
-class ProxyStyle : public QProxyStyle
-{
-public:
-	virtual int styleHint(StyleHint hint,
-			      const QStyleOption *option = nullptr,
-			      const QWidget *widget = nullptr,
-			      QStyleHintReturn *returnData = nullptr) const override
-	{
-		if (hint == SH_DrawMenuBarSeparator)
-			return hint; // NOTE: seems like returning any non-zero value works.
 
-		return QProxyStyle::styleHint(hint, option, widget, returnData);
-	}
-};
 
 void Window::createMenus()
 {
@@ -851,7 +844,7 @@ void Window::createMenus()
 	add_action(menu_file, a_iqdb_search);
 	add_separator(menu_file);
 	add_action(menu_file, a_exit);
-	
+
 	// Tray context menu actions
 	add_action(menu_tray, a_view_fullscreen);
 	add_action(menu_tray, a_view_menu);
@@ -894,10 +887,26 @@ void Window::createMenus()
 	add_action(menu_help, a_about);
 	add_action(menu_help, a_about_qt);
 
-	// Menu bar menus
+	// For enabling addSeparator() in QMenuBar.
+	class ProxyStyle : public QProxyStyle
+	{
+	public:
+		virtual int styleHint(StyleHint hint,
+		                      const QStyleOption *option = nullptr,
+		                      const QWidget *widget = nullptr,
+		                      QStyleHintReturn *returnData = nullptr) const override
+		{
+			if (hint == SH_DrawMenuBarSeparator)
+				return hint; // NOTE: seems like returning any non-zero value works.
+
+			return QProxyStyle::styleHint(hint, option, widget, returnData);
+		}
+	};
 	auto proxy_style = new ProxyStyle();
 	proxy_style->setParent(this);
 	menuBar()->setStyle(proxy_style);
+
+	// Menu bar menus
 	menuBar()->addMenu(&menu_file);
 	menuBar()->addMenu(&menu_navigation);
 	menuBar()->addMenu(&menu_view);

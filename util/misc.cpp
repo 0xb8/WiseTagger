@@ -10,6 +10,7 @@
 #include <QFile>
 #include <QImageReader>
 #include <QSettings>
+#include <QMetaEnum>
 #include "misc.h"
 
 #ifdef Q_OS_WIN
@@ -54,33 +55,6 @@ QString util::duration(uint64_t secs)
 	auto res = QStringLiteral("%1 %2 %3 %4 %5 %6").arg(yrs, mons, days, hrs, mins, sec);
 	return res.simplified();
 }
-
-QStringList util::parse_arguments(const QString & args)
-{
-	QStringList ret;
-	QString curr_arg;
-
-	bool open_quote = false;
-	for(auto c : args) {
-		if(c == '"') {
-			open_quote = !open_quote;
-			continue;
-		}
-		if(c.isSpace() && !open_quote) {
-			if(!curr_arg.isEmpty()) {
-				ret.push_back(curr_arg);
-				curr_arg.clear();
-			}
-			continue;
-		}
-		curr_arg.push_back(c);
-	}
-	if(!curr_arg.isEmpty()) {
-		ret.push_back(curr_arg);
-	}
-	return ret;
-}
-
 
 QIcon util::get_icon_from_executable(const QString &path)
 {

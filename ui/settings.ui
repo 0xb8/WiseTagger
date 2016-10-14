@@ -33,7 +33,7 @@
        <string/>
       </property>
       <attribute name="title">
-       <string>General</string>
+       <string>&amp;General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="topMargin">
@@ -388,22 +388,13 @@
      </widget>
      <widget class="QWidget" name="commands">
       <attribute name="title">
-       <string>Commands</string>
+       <string>&amp;Commands</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_3">
+      <layout class="QGridLayout" name="gridLayout_4">
        <item row="0" column="0">
-        <widget class="QTableView" name="tableView">
+        <widget class="QTableView" name="cmdView">
          <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
-         </property>
-         <property name="dragEnabled">
-          <bool>true</bool>
-         </property>
-         <property name="dragDropMode">
-          <enum>QAbstractItemView::DragDrop</enum>
-         </property>
-         <property name="defaultDropAction">
-          <enum>Qt::MoveAction</enum>
+          <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
          </property>
          <property name="alternatingRowColors">
           <bool>true</bool>
@@ -415,9 +406,181 @@
           <enum>QAbstractItemView::SelectRows</enum>
          </property>
          <property name="textElideMode">
-          <enum>Qt::ElideLeft</enum>
+          <enum>Qt::ElideNone</enum>
          </property>
+         <property name="wordWrap">
+          <bool>false</bool>
+         </property>
+         <property name="cornerButtonEnabled">
+          <bool>false</bool>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
         </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QPushButton" name="upCmd">
+           <property name="text">
+            <string>&amp;Up</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="downCmd">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>&amp;Down</string>
+           </property>
+           <property name="checkable">
+            <bool>false</bool>
+           </property>
+           <property name="autoDefault">
+            <bool>true</bool>
+           </property>
+           <property name="default">
+            <bool>false</bool>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="newCmd">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>A&amp;dd...</string>
+           </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextOnly</enum>
+           </property>
+           <property name="arrowType">
+            <enum>Qt::NoArrow</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="removeCmd">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="cmdExecutableEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="cmdExecutableBrowse">
+           <property name="text">
+            <string>&amp;Browse...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="cmdExeLb">
+           <property name="text">
+            <string>E&amp;xecutable</string>
+           </property>
+           <property name="buddy">
+            <cstring>cmdExecutableEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="cmdArgsLb">
+           <property name="text">
+            <string>&amp;Arguments</string>
+           </property>
+           <property name="buddy">
+            <cstring>cmdArgsEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="cmdArgsEdit"/>
+         </item>
+         <item row="2" column="2">
+          <widget class="QToolButton" name="cmdArgsPlaceholderShow">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Placeholder</string>
+           </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextOnly</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -437,19 +600,82 @@
     </widget>
    </item>
   </layout>
+  <action name="a_newcmd">
+   <property name="text">
+    <string>New Command</string>
+   </property>
+   <property name="toolTip">
+    <string>Inserts new command</string>
+   </property>
+  </action>
+  <action name="a_newsep">
+   <property name="text">
+    <string>New Separator</string>
+   </property>
+   <property name="toolTip">
+    <string>Inserts separator</string>
+   </property>
+  </action>
+  <action name="p_filepath">
+   <property name="text">
+    <string>Path</string>
+   </property>
+   <property name="toolTip">
+    <string>Inserts current file path placeholder</string>
+   </property>
+  </action>
+  <action name="p_filedir">
+   <property name="text">
+    <string>Directory</string>
+   </property>
+   <property name="toolTip">
+    <string>Inserts current directory placeholder</string>
+   </property>
+  </action>
+  <action name="p_filename">
+   <property name="text">
+    <string>Name</string>
+   </property>
+   <property name="toolTip">
+    <string>Inserts current file name placeholder</string>
+   </property>
+  </action>
+  <action name="p_basename">
+   <property name="text">
+    <string>Base Name</string>
+   </property>
+   <property name="toolTip">
+    <string>Inserts current file base name (without extension) placeholder</string>
+   </property>
+  </action>
+  <action name="a_removeitem">
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
  </widget>
  <tabstops>
+  <tabstop>tab_widget</tabstop>
   <tabstop>appLanguage</tabstop>
   <tabstop>appStyle</tabstop>
   <tabstop>fontFamily</tabstop>
   <tabstop>fontSize</tabstop>
   <tabstop>statsEnabled</tabstop>
+  <tabstop>showCurrentDir</tabstop>
+  <tabstop>vercheckEnabled</tabstop>
   <tabstop>proxyGroup</tabstop>
   <tabstop>proxyProtocol</tabstop>
   <tabstop>proxyHost</tabstop>
   <tabstop>proxyPort</tabstop>
-  <tabstop>tab_widget</tabstop>
-  <tabstop>tableView</tabstop>
+  <tabstop>cmdView</tabstop>
+  <tabstop>upCmd</tabstop>
+  <tabstop>downCmd</tabstop>
+  <tabstop>newCmd</tabstop>
+  <tabstop>removeCmd</tabstop>
+  <tabstop>cmdExecutableEdit</tabstop>
+  <tabstop>cmdExecutableBrowse</tabstop>
+  <tabstop>cmdArgsEdit</tabstop>
+  <tabstop>cmdArgsPlaceholderShow</tabstop>
  </tabstops>
  <resources/>
  <connections>
@@ -460,8 +686,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>257</x>
-     <y>340</y>
+     <x>266</x>
+     <y>361</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -476,8 +702,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>325</x>
-     <y>340</y>
+     <x>334</x>
+     <y>361</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

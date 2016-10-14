@@ -71,7 +71,6 @@ private:
 
 	Tagger m_tagger;
 	ReverseSearch m_reverse_search;
-	SettingsDialog m_settings_dialog;
 
 	QString m_last_directory;
 	QString m_post_url;
