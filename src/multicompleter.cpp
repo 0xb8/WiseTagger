@@ -4,7 +4,7 @@
 
 #include "multicompleter.h"
 
-class QLineEdit;
+#include <QLineEdit>
 
 MultiSelectCompleter::MultiSelectCompleter(const QStringList& items, QObject* _parent)
 	: QCompleter(items, _parent){}
@@ -14,7 +14,7 @@ MultiSelectCompleter::~MultiSelectCompleter(){}
 QString MultiSelectCompleter::pathFromIndex(const QModelIndex& index) const
 {
 	auto path = QCompleter::pathFromIndex(index);
-	auto text = static_cast<QLineEdit*>(widget())->text();
+	auto text = qobject_cast<QLineEdit*>(widget())->text();
 	int pos   = text.lastIndexOf(QChar(' '));
 
 	if (pos >= 0) {

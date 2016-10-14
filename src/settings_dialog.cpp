@@ -1,6 +1,7 @@
 #include "settings_dialog.h"
 #include "ui_settings.h"
 #include "util/misc.h"
+#include "util/project_info.h"
 #include "util/command_placeholders.h"
 #include <QDataWidgetMapper>
 #include <QDirIterator>

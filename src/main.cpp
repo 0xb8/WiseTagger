@@ -6,6 +6,7 @@
  */
 
 #include "util/misc.h"
+#include "util/project_info.h"
 #include "window.h"
 #include <QApplication>
 #include <QFile>

@@ -955,8 +955,7 @@ void Window::about()
 	util::read_resource_html("about.html").arg(
 		QStringLiteral(TARGET_PRODUCT),
 		qApp->applicationVersion(),
-		QStringLiteral(__DATE__),
-		QStringLiteral(__TIME__)));
+		QStringLiteral(BUILD_FROM)).arg(QDate::currentDate().year()));
 }
 
 void Window::help()

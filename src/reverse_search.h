@@ -11,6 +11,7 @@
 #include <QNetworkAccessManager>
 #include <QProgressDialog>
 #include <QHttpMultiPart>
+#include <QNetworkProxy>
 #include <QHttpPart>
 #include <QString>
 #include <QVector>

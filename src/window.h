@@ -11,6 +11,7 @@
 #include "reverse_search.h"
 #include "tagger.h"
 #include "settings_dialog.h"
+#include "util/project_info.h"
 #include <vector>
 #include <QMainWindow>
 #include <QAction>

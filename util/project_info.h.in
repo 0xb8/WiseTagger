@@ -1,0 +1,32 @@
+#ifndef PROJECT_INFO_H
+#define PROJECT_INFO_H
+
+#ifndef APP_VERSION
+	#define APP_VERSION "@APP_VERSION@"
+#endif // APP_VERSION
+
+
+
+#ifndef TARGET_PRODUCT
+	#define TARGET_PRODUCT "@TARGET_PRODUCT@"
+#endif // TARGET_PRODUCT
+
+
+
+#ifndef TARGET_COMPANY
+	#define TARGET_COMPANY "@TARGET_COMPANY@"
+#endif // TARGET_COMPANY
+
+
+
+#ifdef USE_REVISION_INFO
+	#cmakedefine TARGET_REVISION "@TARGET_REVISION@"
+	#cmakedefine TARGET_DEVBUILD @TARGET_DEVBUILD@
+	#cmakedefine BUILD_FROM "@BUILD_FROM@"
+#else
+	#define BUILD_FROM __DATE__ ", " __TIME__
+#endif // USE_REVISION_INFO
+
+
+
+#endif // PROJECT_INFO_H 

@@ -11,12 +11,11 @@
 #include <QNetworkRequest>
 #include <QStandardPaths>
 #include <QNetworkReply>
-#include <QNetworkProxy>
 #include <QMimeDatabase>
 #include <QMessageBox>
 #include <QSettings>
-#include <stdexcept>
 #include <QFileInfo>
+#include <stdexcept>
 #include <memory>
 
 namespace logging_category {

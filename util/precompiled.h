@@ -24,10 +24,12 @@
 #include <QFileInfo>
 #include <QFrame>
 #include <QHash>
+#include <QImageReader>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
+#include <QLocale>
 #include <QLoggingCategory>
 #include <QMainWindow>
 #include <QMenu>
@@ -48,14 +50,16 @@
 #include <QSystemTrayIcon>
 #include <QTextCodec>
 #include <QTextStream>
+#include <QTranslator>
 #include <QUrl>
 #include <QVBoxLayout>
 #include <QVector>
 #include <QVersionNumber>
 #include <QWidget>
 
-
 #ifdef Q_OS_WIN32
+#include <qt_windows.h>
+#include <QtWin>
 #include <QtWinExtras>
 #endif
 
@@ -70,7 +74,5 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-
 
 #endif
