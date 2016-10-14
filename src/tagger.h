@@ -30,19 +30,19 @@ class Tagger : public QWidget
 public:
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override = default;
-	
+
 	/// Opens file, session or directory.
 	bool open(const QString& filename);
 
 	/// Opens file and enqueues its directory.
 	bool openFile(const QString&);
 
-	/// brief Enqueues directory contents and opens first file.
+	/// Enqueues directory contents and opens first file.
 	bool openDir(const QString&);
 
 	/// Opens tagging session from file.
 	bool openSession(const QString& sfile);
-	
+
 	/// Opens file with specified index in queue.
 	bool openFileInQueue(size_t index = 0);
 
@@ -88,29 +88,29 @@ public:
 
 	/// Returns whether current file name is modified by user.
 	bool    fileModified()    const;
-	
+
 	/// Returns whether the file queue is empty.
 	bool    isEmpty() const;
 
-	/// Returns dimensions of current image.
-	QSize   pictureDimensions() const;
+	/// Returns dimensions of current media.
+	QSize   mediaDimensions() const;
 
-	/// Returns file size of current image.
-	qint64  pictureSize()     const;
+	/// Returns file size of current media.
+	size_t  mediaFileSize()     const;
 
-	/// Returns imageboard post URL of current image.
+	/// Returns imageboard post URL of current media.
 	QString postURL()         const;
 
-	/// Returns current image path.
+	/// Returns current media path.
 	QString currentFile()     const;
 
-	/// Returns path to directory of current image.
+	/// Returns path to directory of current media.
 	QString currentDir()      const;
 
-	/// Returns file name of current image.
+	/// Returns file name of current media.
 	QString currentFileName() const;
 
-	/// Returns file type of current image.
+	/// Returns file type of current media.
 	QString currentFileType() const;
 
 	/// Returns reference to FileQueue.

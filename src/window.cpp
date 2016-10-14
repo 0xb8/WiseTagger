@@ -161,9 +161,9 @@ void Window::updateWindowTitle()
 	setWindowTitle(tr(Window::MainWindowTitle).arg(
 		m_tagger.currentFileName(),
 		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
-		QString::number(m_tagger.pictureDimensions().width()),
-		QString::number(m_tagger.pictureDimensions().height()),
-		util::size::printable(m_tagger.pictureSize()),
+		QString::number(m_tagger.mediaDimensions().width()),
+		QString::number(m_tagger.mediaDimensions().height()),
+		util::size::printable(m_tagger.mediaFileSize()),
 		qApp->applicationVersion()));
 }
 
@@ -177,9 +177,9 @@ void Window::updateWindowTitleProgress(int progress)
 	setWindowTitle(tr(Window::MainWindowTitleProgress).arg(
 		m_tagger.currentFileName(),
 		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
-		QString::number(m_tagger.pictureDimensions().width()),
-		QString::number(m_tagger.pictureDimensions().height()),
-		util::size::printable(m_tagger.pictureSize()),
+		QString::number(m_tagger.mediaDimensions().width()),
+		QString::number(m_tagger.mediaDimensions().height()),
+		util::size::printable(m_tagger.mediaFileSize()),
 		qApp->applicationVersion(),
 		QString::number(progress)));
 }
@@ -192,7 +192,7 @@ void Window::updateStatusBarText()
 	}
 	if(m_show_current_directory) {
 		statusBar()->showMessage(tr("In directory:  %1")
-			.arg(m_tagger.currentDir()));
+			.arg(QDir::toNativeSeparators(m_tagger.currentDir())));
 	}
 	const auto current = m_tagger.queue().currentIndex() + 1u;
 	const auto qsize   = m_tagger.queue().size();

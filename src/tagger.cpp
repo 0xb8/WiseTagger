@@ -45,16 +45,15 @@ Tagger::Tagger(QWidget *_parent) :
 	setAcceptDrops(true);
 
 	setObjectName(QStringLiteral("Tagger"));
-	m_picture.setObjectName(QStringLiteral("Picture"));
 	m_input.setObjectName(QStringLiteral("Input"));
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
 	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
 	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
 	connect(this,     &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);
-	connect(this,     &Tagger::fileOpened, [this](const auto& f)
+	connect(this,     &Tagger::fileOpened, [this](const auto& file)
 	{
-		m_statistics.fileOpened(f, m_picture.imageSize());
+		m_statistics.fileOpened(file, m_picture.mediaSize());
 	});
 }
 
@@ -88,7 +87,7 @@ bool Tagger::openDir(const QString &dir)
 	m_file_queue.clear();
 	m_file_queue.push(dir);
 	m_file_queue.sort();
-	m_file_queue.select(0u);	
+	m_file_queue.select(0u);
 	return loadCurrentFile();
 }
 
@@ -96,7 +95,7 @@ bool Tagger::openSession(const QString& sfile)
 {
 	// NOTE: to prevent error message when opening normal file or directory
 	if(!sfile.endsWith(FileQueue::sessionFileSuffix)) return false;
-	
+
 	if(!m_file_queue.loadFromFile(sfile)) {
 		QMessageBox::critical(this,
 			tr("Load Session Failed"),
@@ -123,9 +122,9 @@ void Tagger::deleteCurrentFile()
 		   "<p><em>This action cannot be undone!</em></p>").arg(
 			currentFileName(),
 			currentFileType(),
-			util::size::printable(pictureSize()),
-			QString::number(pictureDimensions().width()),
-			QString::number(pictureDimensions().height()),
+			util::size::printable(mediaFileSize()),
+			QString::number(mediaDimensions().width()),
+			QString::number(mediaDimensions().height()),
 			QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss", "modified date"))),
 		QMessageBox::Save|QMessageBox::Cancel);
 	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
@@ -225,13 +224,12 @@ bool Tagger::isEmpty() const
 	return m_file_queue.empty();
 }
 
-QSize Tagger::pictureDimensions() const
+QSize Tagger::mediaDimensions() const
 {
-	return m_picture.imageSize();
+	return m_picture.mediaSize();
 }
 
-
-qint64 Tagger::pictureSize() const
+size_t Tagger::mediaFileSize() const
 {
 	return QFileInfo(m_file_queue.current()).size();
 }
@@ -261,6 +259,7 @@ void Tagger::reloadTags()
 
 void Tagger::updateSettings()
 {
+	pdbg << "";
 	m_input.updateSettings();
 }
 
@@ -355,8 +354,8 @@ void Tagger::findTagsFiles()
 			QMessageBox mbox;
 			mbox.setText(tr("<h3>Could not locate suitable tag file</h3>"));
 			mbox.setInformativeText(tr(
-				"<p>You can still browse and rename images, but tag autocomplete will not work.</p>"
-				"<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened image "
+				"<p>You can still browse and rename files, but tag autocomplete will not work.</p>"
+				"<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened file "
 				"and in directories directly above it."
 
 				"<p>Tag files we looked for:"
@@ -414,9 +413,9 @@ bool Tagger::loadFile(size_t index, bool silent)
 		return false;
 	}
 
-	if(!m_picture.loadPicture(f.absoluteFilePath())) {
+	if(!m_picture.loadMedia(f.absoluteFilePath())) {
 		QMessageBox::critical(this,
-			tr("Error opening image"),
+			tr("Error opening media"),
 			tr("<p>Could not open <b>%1</b></p>"
 			   "<p>File format is not supported or file corrupted.</p>")
 				.arg(f.fileName()));

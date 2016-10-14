@@ -14,19 +14,31 @@
 #include <QApplication>
 #include <QLoggingCategory>
 
-namespace logging_category {
-	Q_LOGGING_CATEGORY(picture, "Picture")
-}
+namespace logging_category {Q_LOGGING_CATEGORY(picture, "Picture")}
 #define pdbg qCDebug(logging_category::picture)
 #define pwarn qCWarning(logging_category::picture)
+
+static auto make_movie(QIODevice *d)
+{
+	return std::make_unique<QMovie>(d);
+}
+
+static const int resize_timeout = 100; //ms
 
 Picture::Picture(QWidget *parent) : QLabel(parent), m_movie(nullptr) {
 	setFocusPolicy(Qt::ClickFocus);
 	setMinimumSize(1,1);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-	setBackgroundStyle();
-	connect(&m_resize_timer, &QTimer::timeout, this, &Picture::resizeTimeout);
+	setObjectName(QStringLiteral("Picture"));
+	
+	connect(&m_resize_timer, &QTimer::timeout, [this]()
+	{
+		if(!m_pixmap.isNull() || (m_movie && m_movie->isValid()))
+			resizeMedia();
+	});
 	m_resize_timer.setSingleShot(true);
+	
+	updateStyle();
 	clear();
 }
 
@@ -35,9 +47,9 @@ void Picture::dragEnterEvent(QDragEnterEvent*) {}
 void Picture::dragMoveEvent(QDragMoveEvent*)   {}
 void Picture::dropEvent(QDropEvent*)           {}
 
-bool Picture::loadPicture(const QString &filename)
+bool Picture::loadMedia(const QString &filename)
 {
-	clearData();
+	clearState();
 	
 	QFile file(filename);
 	bool open = file.open(QIODevice::ReadOnly);	
@@ -54,10 +66,12 @@ bool Picture::loadPicture(const QString &filename)
 		reader.jumpToImage(0);
 		const auto first_frame = reader.read();
 		
-		m_initial_size = first_frame.size();
-		m_type = first_frame.hasAlphaChannel() ? Type::MovieWithAlpha : Type::Movie;
+		m_media_size = first_frame.size();
+		m_has_alpha  = first_frame.hasAlphaChannel();
+		m_type       = Type::AnimatedImage;
+		
 		m_file_buf.reset();
-		m_movie = std::make_unique<QMovie>(&m_file_buf);
+		m_movie = make_movie(&m_file_buf);
 		
 		if(!m_movie->isValid()) {
 			pwarn << "invalid movie";
@@ -68,98 +82,93 @@ bool Picture::loadPicture(const QString &filename)
 		this->setMovie(m_movie.get());
 	} else {
 		m_pixmap = QPixmap::fromImage(reader.read());
-		m_file_buf.close();
 		if(m_pixmap.isNull()) {
 			pwarn << "invalid pixmap";
 			clear();
 			return false;
-		}
-		m_initial_size = m_pixmap.size();
-		m_type = m_pixmap.hasAlpha() ? Type::ImageWithAlpha : Type::Image;
+		}		
+		
+		m_media_size = m_pixmap.size();
+		m_has_alpha  = m_pixmap.hasAlpha();
+		m_type       = Type::Image;
 	}
-	setBackgroundStyle();
-	resizeAndSetPixmap();
+	
+	updateStyle();
+	resizeMedia();
 	return true;
 }
 
 QSize Picture::sizeHint() const
 {
-	return m_current_size;
+	return m_widget_size;
 }
 
-QSize Picture::imageSize() const
+QSize Picture::mediaSize() const
 {
-	return m_initial_size;
+	return m_media_size;
 }
 
-void Picture::resizeAndSetPixmap()
+bool Picture::hasAlpha() const
 {
-	m_current_size.setWidth( std::min(size().width(),  m_initial_size.width()));
-	m_current_size.setHeight(std::min(size().height(), m_initial_size.height()));
-	float ratio = std::min(m_current_size.width()  / static_cast<float>(m_initial_size.width()),
-			       m_current_size.height() / static_cast<float>(m_initial_size.height()));
-	m_current_size = QSize(m_initial_size.width() * ratio, m_initial_size.height() * ratio);
+	return m_has_alpha;
+}
+
+void Picture::resizeMedia()
+{
+	m_widget_size.setWidth( std::min(size().width(),  m_media_size.width()));
+	m_widget_size.setHeight(std::min(size().height(), m_media_size.height()));
+	float ratio = std::min(m_widget_size.width()  / static_cast<float>(m_media_size.width()),
+	                       m_widget_size.height() / static_cast<float>(m_media_size.height()));
+	m_widget_size = QSize(m_media_size.width() * ratio, m_media_size.height() * ratio);
 
 	switch(m_type) {
 		case Type::Image:
-		case Type::ImageWithAlpha:
-			QLabel::setPixmap(m_pixmap.scaled(m_current_size,
+			QLabel::setPixmap(m_pixmap.scaled(m_widget_size,
 				Qt::IgnoreAspectRatio,
 				Qt::SmoothTransformation));
 			break;
-		case Type::Movie:
-		case Type::MovieWithAlpha:
+		case Type::AnimatedImage:
 			m_movie->stop();
 			m_movie->setCacheMode(QMovie::CacheNone);
-			m_movie->setScaledSize(m_current_size);
+			m_movie->setScaledSize(m_widget_size);
 			m_movie->setCacheMode(QMovie::CacheAll);
 			m_movie->jumpToFrame(0);
 			m_movie->start();
 			break;
-		default:
-			pwarn << "unknown type";
+		default: break;
 	}
 }
 
-/* Apply checkerboard background if pixmap has alpha channel */
-void Picture::setBackgroundStyle()
+/** Applies checkerboard background if media has alpha channel. */
+void Picture::updateStyle()
 {
-	switch(m_type) {
-		case Type::ImageWithAlpha:
-		case Type::MovieWithAlpha:
-			setStyleSheet(QStringLiteral("background-image: url(://transparency.png);"));
-			break;
-		default:
-			setStyleSheet(QStringLiteral("background-image: none;"));
+	if(hasAlpha()) {
+		setStyleSheet(QStringLiteral("background-image: url(://transparency.png);"));
+	} else {
+		setStyleSheet(QStringLiteral("background-image: none;"));
 	}
 }
 
-void Picture::clearData()
+/** Sets data members to default values. */
+void Picture::clearState()
 {
 	m_pixmap.loadFromData(nullptr);
 	m_movie.reset(nullptr);
 	m_file_buf.close();
-	m_current_size = m_initial_size = QSize(0,0);
-	m_type = Type::None;
+	m_widget_size = m_media_size = QSize(0,0);
+	m_type = Type::WelcomeText;
+	m_has_alpha = false;
 }
 
 void Picture::clear()
 {
-	clearData();
-	setBackgroundStyle();
+	clearState();
+	updateStyle();
 	setText(util::read_resource_html("welcome.html"));
 }
 
 /* Restart timer on resize */
 void Picture::resizeEvent(QResizeEvent*)
 {
-	m_resize_timer.start(Picture::m_resize_timeout);
-}
-
-/* Perform actual pixmap resize on time out */
-void Picture::resizeTimeout()
-{
-	if(!m_pixmap.isNull() || (m_movie && m_movie->isValid())) {
-		resizeAndSetPixmap();
-	}
+	m_resize_timer.start(resize_timeout);
 }
