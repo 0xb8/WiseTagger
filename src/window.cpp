@@ -448,6 +448,7 @@ void Window::updateSettings()
 	}
 	menu_commands.clear();
 	createCommands();
+	updateMenus();
 }
 
 void Window::updateStyle()
