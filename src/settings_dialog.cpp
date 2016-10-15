@@ -6,6 +6,7 @@
 #include <QDataWidgetMapper>
 #include <QDirIterator>
 #include <QFileDialog>
+#include <QKeyEvent>
 #include <QLoggingCategory>
 #include <QMenu>
 #include <QMessageBox>
@@ -183,7 +184,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 	menu_ph->addAction(ui->p_filedir);
 	menu_ph->addAction(ui->p_filename);
 	menu_ph->addAction(ui->p_basename);
-	
+
 	// Attach menus
 	ui->newCmd->setMenu(menu_acts);
 	ui->cmdArgsPlaceholderShow->setMenu(menu_ph);
@@ -236,10 +237,10 @@ void SettingsDialog::reset()
 	m_dmpr->addMapping(ui->cmdArgsEdit, 3);
 	m_dmpr->toFirst();
 
-	auto fmd = new HideColumnsFilter(this);
+	auto fmd = new HideColumnsFilter(m_cmdl);
 	fmd->setSourceModel(m_cmdl);
 	ui->cmdView->setModel(fmd);
-	ui->cmdView->setItemDelegate(new SeparatorDelegate(this));
+	ui->cmdView->setItemDelegate(new SeparatorDelegate(m_cmdl));
 	ui->cmdView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
 
 	auto disable_widgets = [this](bool val)
@@ -401,6 +402,10 @@ QWidget* SeparatorDelegate::createEditor(QWidget *parent, const QStyleOptionView
 	if(index.sibling(index.row(), 0).data() == CMD_SEPARATOR) {
 		return nullptr;
 	}
+	if(index.column() == 1) {
+		auto editor = new HotkeyEdit(parent);
+		return editor;
+	}
 	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
@@ -410,4 +415,50 @@ QString SeparatorDelegate::displayText(const QVariant &value, const QLocale &loc
 		return QString(100, QChar(0x23AF)); // unicode horizontal line
 	}
 	return QStyledItemDelegate::displayText(value, locale);
+}
+
+void HotkeyEdit::keyPressEvent(QKeyEvent *e)
+{
+	if(!e) return;
+
+	if(e->key() == Qt::Key_Escape || e->key() == Qt::Key_Enter) {
+		return;
+	}
+
+	int keys = 0;
+	bool has_modifier = false;
+	auto addkey = [&keys, &has_modifier](int key) {
+		has_modifier = true;
+		keys += key;
+	};
+	if(e->modifiers() & Qt::AltModifier) {
+		addkey(Qt::ALT);
+	}
+	if(e->modifiers() & Qt::ControlModifier) {
+		addkey(Qt::CTRL);
+	}
+	if(e->modifiers() & Qt::ShiftModifier) {
+		addkey(Qt::SHIFT);
+	}
+
+	auto key = e->key();
+
+	if(key != Qt::Key_Control && key != Qt::Key_Shift && key != Qt::Key_Alt)
+	{
+		if(has_modifier) addkey(e->key());
+	}
+
+	m_sequence = QKeySequence(keys);
+
+	QLineEdit::setText(m_sequence.toString());
+}
+
+HotkeyEdit::HotkeyEdit(QWidget *parent)
+        : QLineEdit(parent)
+{
+}
+
+HotkeyEdit::~HotkeyEdit()
+{
+
 }

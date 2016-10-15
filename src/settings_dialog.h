@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 #include <QSortFilterProxyModel>
+#include <QLineEdit>
 
 namespace Ui {
 	class SettingsDialog;
@@ -11,6 +12,7 @@ namespace Ui {
 
 class QStandardItemModel;
 class QDataWidgetMapper;
+class QKeyEvent;
 
 class SettingsDialog : public QDialog
 {
@@ -54,6 +56,18 @@ public:
 	QString displayText(const QVariant &value, const QLocale &locale) const override;
 };
 
+class HotkeyEdit : public QLineEdit
+{
+	Q_OBJECT
+public:
+	HotkeyEdit(QWidget *parent = 0);
+	~HotkeyEdit();
 
+protected:
+	void keyPressEvent(QKeyEvent *);
+
+private:
+	QKeySequence m_sequence;
+};
 
 #endif

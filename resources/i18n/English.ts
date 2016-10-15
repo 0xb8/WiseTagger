@@ -92,22 +92,22 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="123"/>
+        <location filename="../../src/reverse_search.cpp" line="122"/>
         <source>File is too large</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="124"/>
+        <location filename="../../src/reverse_search.cpp" line="123"/>
         <source>&lt;p&gt;File is too large.&lt;/p&gt;&lt;p&gt;Maximum file size is &lt;b&gt;8Mb&lt;/b&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="132"/>
+        <location filename="../../src/reverse_search.cpp" line="131"/>
         <source>Cannot open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="133"/>
+        <location filename="../../src/reverse_search.cpp" line="132"/>
         <source>&lt;p&gt;Cannot open file &lt;b&gt;%1&lt;/b&gt; for uploading.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -278,7 +278,7 @@
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="573"/>
-        <source>Placeholder</source>
+        <source>Placeholders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -352,48 +352,48 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="78"/>
+        <location filename="../../src/settings_dialog.cpp" line="79"/>
         <source>Select Executable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="150"/>
+        <location filename="../../src/settings_dialog.cpp" line="151"/>
         <source>Unknown command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="152"/>
+        <location filename="../../src/settings_dialog.cpp" line="153"/>
         <source>Remove Command?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="153"/>
+        <location filename="../../src/settings_dialog.cpp" line="154"/>
         <source>Remove command &lt;b&gt;%1&lt;/b&gt;?
 This action cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="285"/>
+        <location filename="../../src/settings_dialog.cpp" line="286"/>
         <source>Command Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="286"/>
+        <location filename="../../src/settings_dialog.cpp" line="287"/>
         <source>Hotkey</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="313"/>
+        <location filename="../../src/settings_dialog.cpp" line="314"/>
         <source>Language Changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="314"/>
+        <location filename="../../src/settings_dialog.cpp" line="315"/>
         <source>&lt;p&gt;Please restart %1 to apply language change.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="363"/>
+        <location filename="../../src/settings_dialog.cpp" line="364"/>
         <source>Unknown command %1</source>
         <translation type="unfinished"></translation>
     </message>

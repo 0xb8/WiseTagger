@@ -98,22 +98,22 @@
         <translation>&lt;p&gt;URL прокси&lt;em&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/em&gt; некорректен. Прокси &lt;b&gt;не будет использована!&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="123"/>
+        <location filename="../../src/reverse_search.cpp" line="122"/>
         <source>File is too large</source>
         <translation>Файл слишком велик</translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="124"/>
+        <location filename="../../src/reverse_search.cpp" line="123"/>
         <source>&lt;p&gt;File is too large.&lt;/p&gt;&lt;p&gt;Maximum file size is &lt;b&gt;8Mb&lt;/b&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Файл слишком велик.&lt;/p&gt;&lt;p&gt;Максимальный размер файла: &lt;b&gt;8 Мб&lt;/b&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="132"/>
+        <location filename="../../src/reverse_search.cpp" line="131"/>
         <source>Cannot open file</source>
         <translation>Не удалось открыть файл</translation>
     </message>
     <message>
-        <location filename="../../src/reverse_search.cpp" line="133"/>
+        <location filename="../../src/reverse_search.cpp" line="132"/>
         <source>&lt;p&gt;Cannot open file &lt;b&gt;%1&lt;/b&gt; for uploading.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть файл &lt;b&gt;%1&lt;/b&gt; для загрузки.&lt;/p&gt;</translation>
     </message>
@@ -124,10 +124,6 @@
         <location filename="../../ui/settings.ui" line="14"/>
         <source>Preferences</source>
         <translation>Настройки</translation>
-    </message>
-    <message>
-        <source>General</source>
-        <translation type="vanished">Общие</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="36"/>
@@ -288,8 +284,8 @@
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="573"/>
-        <source>Placeholder</source>
-        <translation type="unfinished"></translation>
+        <source>Placeholders</source>
+        <translation>Шаблоны</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="605"/>
@@ -352,14 +348,6 @@
         <translation>Вставляет имя файла без расширения</translation>
     </message>
     <message>
-        <source>Toggles statistics gathering</source>
-        <translation type="vanished">Включить или выключить сбор статистики</translation>
-    </message>
-    <message>
-        <source>&amp;Statistics</source>
-        <translation type="vanished">&amp;Статистика</translation>
-    </message>
-    <message>
         <location filename="../../ui/settings.ui" line="188"/>
         <source>Toggle checking for new version on startup</source>
         <translation>Проверять наличия новой версии при запуске приложения</translation>
@@ -370,53 +358,49 @@
         <translation>Проверять &amp;обновления</translation>
     </message>
     <message>
-        <source>Commands</source>
-        <translation type="vanished">Команды</translation>
-    </message>
-    <message>
-        <location filename="../../src/settings_dialog.cpp" line="78"/>
+        <location filename="../../src/settings_dialog.cpp" line="79"/>
         <source>Select Executable</source>
         <translation>Выбрать программу</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="150"/>
+        <location filename="../../src/settings_dialog.cpp" line="151"/>
         <source>Unknown command</source>
         <translation>Неизвестная команда</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="152"/>
+        <location filename="../../src/settings_dialog.cpp" line="153"/>
         <source>Remove Command?</source>
         <translation>Удалить команду?</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="153"/>
+        <location filename="../../src/settings_dialog.cpp" line="154"/>
         <source>Remove command &lt;b&gt;%1&lt;/b&gt;?
 This action cannot be undone!</source>
         <translation>Удалить команду &lt;b&gt;%1&lt;/b&gt;?
 Это действие не может быть отменено!</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="285"/>
+        <location filename="../../src/settings_dialog.cpp" line="286"/>
         <source>Command Name</source>
         <translation>Название команды</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="286"/>
+        <location filename="../../src/settings_dialog.cpp" line="287"/>
         <source>Hotkey</source>
         <translation>Хоткей</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="313"/>
+        <location filename="../../src/settings_dialog.cpp" line="314"/>
         <source>Language Changed</source>
         <translation>Язык изменен</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="314"/>
+        <location filename="../../src/settings_dialog.cpp" line="315"/>
         <source>&lt;p&gt;Please restart %1 to apply language change.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Перезапустите %1 чтобы применить изменение языка.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="363"/>
+        <location filename="../../src/settings_dialog.cpp" line="364"/>
         <source>Unknown command %1</source>
         <translation>Неизвестная команда %1</translation>
     </message>
@@ -493,10 +477,6 @@ This action cannot be undone!</source>
         <translation>Не удалось открыть медиафайл</translation>
     </message>
     <message>
-        <source>&lt;p&gt;You can still browse and rename images, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened image and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://bitbucket.org/catgirl/wisetagger/overview&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p&gt;Вы сможете просматривать и переименовывать изображения, однако автодополнение тегов не будет работать.&lt;/p&gt;&lt;hr&gt;WiseTagger ищет &lt;em&gt;файлы тегов&lt;/em&gt; в папке открытого изображения, и во всех родительских папках.&lt;p&gt;Названия файлов тегов:&lt;dd&gt;&lt;dl&gt;Добавляемый файл: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Переопределяемый файл: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Папки, в которых производился поиск, по порядку:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://bitbucket.org/catgirl/wisetagger/overview&quot;&gt;Документация по добавляемым и переопределяемым файлам тегов&lt;/a&gt;&lt;/p&gt;</translation>
-    </message>
-    <message>
         <location filename="../../src/tagger.cpp" line="397"/>
         <location filename="../../src/tagger.cpp" line="408"/>
         <source>Error opening file</source>
@@ -508,17 +488,9 @@ This action cannot be undone!</source>
         <translation>&lt;p&gt;Папка &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;&lt;p&gt;Будет открыт файл из другой директории.&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>&lt;p&gt;Directory &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p&gt;Папка &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;</translation>
-    </message>
-    <message>
         <location filename="../../src/tagger.cpp" line="409"/>
         <source>&lt;p&gt;File &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Файл &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;&lt;p&gt;Будет открыт следующий файл.&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>Error opening image</source>
-        <translation type="vanished">Не удалось открыть изображение</translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="419"/>
@@ -752,10 +724,6 @@ This action cannot be undone!</source>
         <location filename="../../src/window.cpp" line="132"/>
         <source>Open File</source>
         <translation>Открыть файл</translation>
-    </message>
-    <message>
-        <source>Image files (*.gif *.jpg *.jpeg *.jpg *.png *.bmp)</source>
-        <translation type="vanished">Файлы изображений (*.gif *.jpg *.jpeg *.jpg *.png *.bmp)</translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="531"/>

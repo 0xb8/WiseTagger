@@ -570,7 +570,7 @@
             </size>
            </property>
            <property name="text">
-            <string>Placeholder</string>
+            <string>Placeholders</string>
            </property>
            <property name="popupMode">
             <enum>QToolButton::InstantPopup</enum>
