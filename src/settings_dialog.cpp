@@ -3,6 +3,7 @@
 #include "util/misc.h"
 #include "util/project_info.h"
 #include "util/command_placeholders.h"
+#include <QApplication>
 #include <QDataWidgetMapper>
 #include <QDirIterator>
 #include <QFileDialog>
@@ -39,10 +40,8 @@
 #define D_PROXY_PORT    9050
 #define D_PROXY_PROTO   QStringLiteral("SOCKS5")
 
-#define CMD_NAME        QStringLiteral("display_name")
-#define CMD_SEPARATOR   QStringLiteral("__separator__")
-#define CMD_HKEY        QStringLiteral("hotkey")
-#define CMD_PATH        QStringLiteral("command")
+
+
 
 #ifdef Q_OS_WIN
 	#define EXECUTABLE_EXTENSION tr("Executable Files (*.exe)")
@@ -73,6 +72,46 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 		if(qobject_cast<QPushButton*>(btn) == ui->dialogButtonBox->button(QDialogButtonBox::RestoreDefaults)) {
 			restoreDefaults();
 		}
+	});
+	connect(ui->exportSettingsBtn, &QPushButton::clicked, [this](){
+		QSettings settings;
+		auto portable = settings.value(QStringLiteral("settings-portable"), false).toBool();
+		auto path = QFileDialog::getSaveFileName(this,
+			tr("Export settings to file"),
+			portable
+				? qApp->applicationDirPath()+QStringLiteral("/settings/catgirl/WiseTagger.ini")
+				: QDir::homePath()+QStringLiteral("/WiseTagger.ini"),
+			tr("Settings Files (*.ini)"));
+
+		if(path.isEmpty()) {
+			return;
+		}
+
+		if(util::backup_settings_to_file(path)) {
+			QMessageBox::information(this, tr("Export success"),
+				tr("Successfully exported settings!"));
+		} else {
+			QMessageBox::critical(this, tr("Export failed"),
+				tr("Could not export settings to file <b>%1</b>. Check directory permissions and try again.").arg(path));
+		}
+
+	});
+	connect(ui->importSettingsBtn, &QPushButton::clicked, [this](){
+		auto path = QFileDialog::getOpenFileName(this,
+			tr("Import settings from file"), QDir::homePath()+QStringLiteral("/WiseTagger.ini"),
+			tr("Settings Files (*.ini)"));
+		if(path.isEmpty()) {
+			return;
+		}
+
+		if(util::restore_settings_from_file(path)) {
+			QMessageBox::information(this, tr("Import success"),
+				tr("Successfully imported settings!"));
+		} else {
+			QMessageBox::critical(this, tr("Export failed"),
+				tr("Could not import settings from file <b>%1</b>. File may be corrupt or no read permissions.").arg(path));
+		}
+
 	});
 	connect(ui->cmdExecutableBrowse, &QPushButton::clicked, [this](){
 		auto dir = QFileInfo(ui->cmdExecutableEdit->text()).absolutePath();
@@ -278,7 +317,7 @@ void SettingsDialog::resetModel()
 	};
 
 	QSettings st;
-	auto size = st.beginReadArray(QStringLiteral("window/commands"));
+	auto size = st.beginReadArray(SETT_COMMANDS_KEY);
 
 	delete m_cmdl;
 	m_cmdl = new QStandardItemModel(size, 4, this);
@@ -288,10 +327,10 @@ void SettingsDialog::resetModel()
 
 	for(int i = 0; i < size; ++i) {
 		st.setArrayIndex(i);
-		auto path = st.value(CMD_PATH).toStringList();
+		auto path = st.value(SETT_COMMAND_CMD).toStringList();
 
-		m_cmdl->setItem(i, 0, new QStandardItem(st.value(CMD_NAME).toString()));
-		m_cmdl->setItem(i, 1, new QStandardItem(st.value(CMD_HKEY).toString()));
+		m_cmdl->setItem(i, 0, new QStandardItem(st.value(SETT_COMMAND_NAME).toString()));
+		m_cmdl->setItem(i, 1, new QStandardItem(st.value(SETT_COMMAND_HOTKEY).toString()));
 		if(!path.isEmpty())
 			m_cmdl->setItem(i,2, new QStandardItem(path.first()));
 
@@ -355,7 +394,7 @@ void SettingsDialog::apply()
 	};
 
 	int invalid_num = 0;
-	settings.beginWriteArray(QStringLiteral("window/commands"));
+	settings.beginWriteArray(SETT_COMMANDS_KEY);
 
 	for(int i = 0; i < m_cmdl->rowCount(); ++i) {
 		settings.setArrayIndex(i);
@@ -368,9 +407,9 @@ void SettingsDialog::apply()
 		auto args = parse_arguments(m_cmdl->data(m_cmdl->index(i,3)).toString());
 		args.prepend(exec_path);
 
-		settings.setValue(CMD_NAME, name);
-		settings.setValue(CMD_HKEY, hotkey);
-		settings.setValue(CMD_PATH, args);
+		settings.setValue(SETT_COMMAND_NAME, name);
+		settings.setValue(SETT_COMMAND_HOTKEY, hotkey);
+		settings.setValue(SETT_COMMAND_CMD, args);
 	}
 	settings.endArray();
 	emit updated();

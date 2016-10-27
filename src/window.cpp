@@ -51,11 +51,6 @@ namespace logging_category {
 #define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
 #define SETT_STYLE              QStringLiteral("window/style")
 
-#define SETT_COMMANDS_KEY       QStringLiteral("window/commands")
-#define SETT_COMMAND_NAME       QStringLiteral("display_name")
-#define SETT_COMMAND_CMD        QStringLiteral("command")
-#define SETT_COMMAND_HOTKEY     QStringLiteral("hotkey")
-
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
 
@@ -556,7 +551,7 @@ void Window::createCommands()
 		auto cmd  = settings.value(SETT_COMMAND_CMD).toStringList();
 		auto hkey = settings.value(SETT_COMMAND_HOTKEY).toString();
 
-		if(name == QStringLiteral("__separator__")) {
+		if(name == CMD_SEPARATOR) {
 			menu_commands.addSeparator();
 			continue;
 		}

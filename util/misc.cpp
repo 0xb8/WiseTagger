@@ -101,7 +101,7 @@ QLocale::Language util::language_from_settings()
 	return static_cast<QLocale::Language>(code.toInt());
 }
 
-void util::backup_settings_to_file(const QString& path)
+bool util::backup_settings_to_file(const QString& path)
 {
 	QSettings new_settings(path, QSettings::IniFormat);
 	new_settings.setIniCodec("UTF-8");
@@ -110,18 +110,24 @@ void util::backup_settings_to_file(const QString& path)
 	for(const auto& key : old_settings.allKeys()) {
 		new_settings.setValue(key, old_settings.value(key));
 	}
+	new_settings.sync();
+	return new_settings.status() == QSettings::NoError;
 }
 
-void util::restore_settings_from_file(const QString & path)
+bool util::restore_settings_from_file(const QString & path)
 {
 	QSettings settings;
 	QSettings file_settings(path, QSettings::IniFormat);
 	file_settings.setIniCodec("UTF-8");
+	file_settings.sync();
+	if(file_settings.status() != QSettings::NoError)
+		return false;
 
 	settings.clear();
 	for(const auto& key : file_settings.allKeys()) {
 		settings.setValue(key, file_settings.value(key));
 	}
+	return true;
 }
 
 QStringList util::supported_image_formats_namefilter()
