@@ -35,10 +35,10 @@ public:
 	 * \retval false Failed to load media.
 	 */
 	bool loadMedia(const QString& filename);
-	
+
 	/// Returns whether loaded media has alpha channel.
 	bool hasAlpha() const;
-	
+
 	/// Returns dimensions of loaded media.
 	QSize mediaSize() const;
 
@@ -63,6 +63,8 @@ private:
 	};
 
 	using MoviePtr = std::unique_ptr<QMovie>;
+
+	static const int resize_timeout = 100; //ms
 
 	void resizeMedia();
 	void updateStyle();

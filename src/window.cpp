@@ -117,8 +117,8 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	createActions();
 	createMenus();
 	createCommands();
-	parseCommandLineArguments();
 	initSettings();
+	QTimer::singleShot(50, this, &Window::parseCommandLineArguments); // NOTE: should be called later to avoid unnecessary media resize after process launch.
 
 #ifdef Q_OS_WIN32
 	QTimer::singleShot(1500, this, &Window::checkNewVersion);

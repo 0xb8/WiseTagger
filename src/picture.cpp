@@ -23,23 +23,25 @@ static auto make_movie(QIODevice *d)
 	return std::make_unique<QMovie>(d);
 }
 
-static const int resize_timeout = 100; //ms
-
-Picture::Picture(QWidget *parent) : QLabel(parent), m_movie(nullptr) {
+Picture::Picture(QWidget *parent) :
+	QLabel{parent},
+	m_widget_size{0,0},
+	m_media_size{0,0},
+	m_movie(nullptr),
+	m_type{Type::WelcomeText},
+	m_has_alpha{false}
+{
 	setFocusPolicy(Qt::ClickFocus);
 	setMinimumSize(1,1);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setObjectName(QStringLiteral("Picture"));
-	
+
 	connect(&m_resize_timer, &QTimer::timeout, [this]()
 	{
 		if(!m_pixmap.isNull() || (m_movie && m_movie->isValid()))
 			resizeMedia();
 	});
 	m_resize_timer.setSingleShot(true);
-	
-	updateStyle();
-	clear();
 }
 
 // Implement empty event handlers to allow filtering by MainWindow
@@ -50,35 +52,36 @@ void Picture::dropEvent(QDropEvent*)           {}
 bool Picture::loadMedia(const QString &filename)
 {
 	clearState();
-	
+
 	QFile file(filename);
-	bool open = file.open(QIODevice::ReadOnly);	
+	bool open = file.open(QIODevice::ReadOnly);
 	if(!open) {
 		pwarn << "failed to open file for reading";
 		return false;
 	}
 	m_file_buf.setData(file.readAll());
 	file.close();
-	
+
 	QImageReader reader(&m_file_buf);
-	
+
 	if(reader.imageCount() > 1) {
 		reader.jumpToImage(0);
 		const auto first_frame = reader.read();
-		
+
 		m_media_size = first_frame.size();
 		m_has_alpha  = first_frame.hasAlphaChannel();
 		m_type       = Type::AnimatedImage;
-		
+
 		m_file_buf.reset();
 		m_movie = make_movie(&m_file_buf);
-		
+
 		if(!m_movie->isValid()) {
 			pwarn << "invalid movie";
 			clear();
 			return false;
 		}
 
+		m_movie->setCacheMode(QMovie::CacheNone);
 		this->setMovie(m_movie.get());
 	} else {
 		m_pixmap = QPixmap::fromImage(reader.read());
@@ -86,13 +89,13 @@ bool Picture::loadMedia(const QString &filename)
 			pwarn << "invalid pixmap";
 			clear();
 			return false;
-		}		
-		
+		}
+
 		m_media_size = m_pixmap.size();
 		m_has_alpha  = m_pixmap.hasAlpha();
 		m_type       = Type::Image;
 	}
-	
+
 	updateStyle();
 	resizeMedia();
 	return true;
@@ -128,10 +131,9 @@ void Picture::resizeMedia()
 				Qt::SmoothTransformation));
 			break;
 		case Type::AnimatedImage:
+			Q_ASSERT(m_movie != nullptr);
 			m_movie->stop();
-			m_movie->setCacheMode(QMovie::CacheNone);
 			m_movie->setScaledSize(m_widget_size);
-			m_movie->setCacheMode(QMovie::CacheAll);
 			m_movie->jumpToFrame(0);
 			m_movie->start();
 			break;
