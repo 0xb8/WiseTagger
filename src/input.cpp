@@ -210,19 +210,16 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 	auto allowed_in_tag = [](QChar c)
 	{
-		return c.isLetterOrNumber() || c == '_' || c == ';' || c == '@' || c == '(' || c == ')';
+		static const QString valid_chars{"`~!@#$%^&*()_;."};
+		return c.isLetterOrNumber() || valid_chars.indexOf(c) >= 0;
 	};
 
 	auto allowed_in_file = [&allowed_in_tag](QChar c)
 	{
+		static const QString valid_chars{" \t-=:,"};
 		return	c.isLetterOrNumber() ||
 			allowed_in_tag(c)    ||
-			c == '-' ||
-			c == ':' ||
-			c == ',' ||
-			c == '=' ||
-			c == ' ' ||
-			c == '\t';
+			valid_chars.indexOf(c) >= 0;
 	};
 
 	while(!input->atEnd()) {
