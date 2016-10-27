@@ -99,7 +99,10 @@ private:
 	};
 
 	static constexpr const char * const iqdb_url = "https://iqdb.org/";
+	static constexpr const char * const iqdb_supported_formats = "JPEG, PNG, GIF";
 	static constexpr size_t iqdb_max_file_size = 8 * 1024 * 1024;
+	static constexpr int iqdb_max_image_width  = 7500;
+	static constexpr int iqdb_max_image_height = 7500;
 
 	void upload_file();
 

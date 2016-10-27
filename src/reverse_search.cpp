@@ -12,11 +12,13 @@
 #include <QStandardPaths>
 #include <QNetworkReply>
 #include <QMimeDatabase>
+#include <QImageReader>
 #include <QMessageBox>
 #include <QSettings>
 #include <QFileInfo>
 #include <stdexcept>
 #include <memory>
+#include "util/size.h"
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(revsearch, "ReverseSearch")
@@ -119,8 +121,9 @@ void ReverseSearch::upload_file()
 	if(static_cast<size_t>(file_info.size()) > iqdb_max_file_size) {
 		QMessageBox::warning(
 			nullptr,
-			tr("File is too large"),
-			tr("<p>File is too large.</p><p>Maximum file size is <b>8Mb</b></p>"));
+			tr("Reverse search"),
+			tr("<p>Reverse search failed: File <b>%1</b> is too large.</p><p>Maximum file size is <b>8</b> MiB.</p>")
+				.arg(file_info.fileName()));
 		return;
 	}
 
@@ -129,10 +132,38 @@ void ReverseSearch::upload_file()
 		QMessageBox::critical(
 			nullptr,
 			tr("Cannot open file"),
-			tr("<p>Cannot open file <b>%1</b> for uploading.</p>")
+			tr("<p>Reverse search failed: Cannot open file <b>%1</b> for uploading.</p>")
 				.arg(m_current_file_name));
 		return;
 	}
+
+	{ // new scope since we don't need those afterwards
+		QImageReader reader(&m_image_file);
+		auto format = reader.format().toUpper();
+		QByteArray formats{iqdb_supported_formats};
+		if(!formats.contains(format)) {
+			QMessageBox::critical(nullptr,
+				tr("Reverse search"),
+				tr("<p>Reverse search of <b>%1</b> failed: Unsupported file format.</p><p>Supported formats are: <b>%2</b>.</p>")
+					.arg(file_info.fileName())
+					.arg(iqdb_supported_formats));
+			return;
+		}
+
+		auto dimensions = reader.size();
+		if(!dimensions.isValid() || dimensions.width() > iqdb_max_image_width
+			|| dimensions.height() > iqdb_max_image_height)
+		{
+			const auto max_w = QString::number(iqdb_max_image_width);
+			const auto max_h = QString::number(iqdb_max_image_height);
+			QMessageBox::critical(nullptr,
+				tr("Reverse search"),
+				tr("<p>Reverse search of <b>%1</b> failed: Image dimensions are too large.</p><p>Maximum dimensions: <b>%2x%3</b> px.</p>")
+					.arg(file_info.fileName(), max_w, max_h));
+			return;
+		}
+	}
+	m_image_file.reset(); // NOTE: avoid breaking file upload
 
 	QNetworkRequest post_request(QUrl{iqdb_url});
 
