@@ -99,14 +99,20 @@ private:
 	QAction a_view_fullscreen;
 	QAction a_view_menu;
 	QAction a_view_input;
+	QAction a_view_sort_name;
+	QAction a_view_sort_type;
+	QAction a_view_sort_date;
+	QAction a_view_sort_size;
 	QAction a_about;
 	QAction a_about_qt;
 	QAction a_help;
 	QAction a_stats;
+	QActionGroup ag_sort_criteria;
 
 	QMenu menu_file;
 	QMenu menu_navigation;
 	QMenu menu_view;
+	QMenu menu_sort;
 	QMenu menu_options;
 	QMenu menu_commands;
 	QMenu menu_help;

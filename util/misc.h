@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QIcon>
 #include <QLocale>
+#include <type_traits>
 
 namespace util {
 
@@ -32,4 +33,16 @@ auto supported_image_formats_namefilter() -> QStringList;
 
 auto join(const QStringList&, QChar separator = QChar(' ')) -> QString;
 
+template<typename T>
+auto enum_to_number(T e)
+{
+	return static_cast<std::underlying_type_t<T>>(e);
 }
+template<typename T, typename I>
+T number_to_enum(I num)
+{
+	static_assert(std::is_same<I,std::underlying_type_t<T>>::value, "");
+	return static_cast<T>(num);
+}
+
+} // namespace util

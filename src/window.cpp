@@ -94,13 +94,19 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
 	, a_view_menu(       tr("&Menu"), nullptr)
 	, a_view_input(      tr("Tag &Input"), nullptr)
+	, a_view_sort_name(  tr("By File &Name"), nullptr)
+	, a_view_sort_type(  tr("By File &Type"), nullptr)
+	, a_view_sort_date(  tr("By Modification &Date"), nullptr)
+	, a_view_sort_size(  tr("By File &Size"), nullptr)
 	, a_about(           tr("&About..."), nullptr)
 	, a_about_qt(        tr("About &Qt..."), nullptr)
 	, a_help(            tr("&Help..."), nullptr)
 	, a_stats(           tr("&Statistics..."), nullptr)
+	, ag_sort_criteria(  nullptr)
 	, menu_file(         tr("&File"))
 	, menu_navigation(   tr("&Navigation"))
 	, menu_view(         tr("&View"))
+	, menu_sort(         tr("&Sort Queue"))
 	, menu_options(      tr("&Options"))
 	, menu_commands(     tr("&Commands"))
 	, menu_help(	     tr("&Help"))
@@ -814,9 +820,11 @@ void Window::createActions()
 		});
 		sd->open();
 	});
-
+	connect(&ag_sort_criteria, &QActionGroup::triggered,[this](QAction* a){
+		m_tagger.queue().setSortBy(util::number_to_enum<FileQueue::SortBy>(a->data().toInt()));
+		m_tagger.queue().sort();
+	});
 }
-
 
 
 void Window::createMenus()
@@ -874,6 +882,27 @@ void Window::createMenus()
 	add_action(menu_view, a_view_menu);
 	add_action(menu_view, a_view_input);
 	add_action(menu_view, a_view_statusbar);
+	add_separator(menu_view);
+	menu_view.addMenu(&menu_sort);
+
+	// Sort menu actions
+	add_action(menu_sort, a_view_sort_name);
+	add_action(menu_sort, a_view_sort_type);
+	add_action(menu_sort, a_view_sort_size);
+	add_action(menu_sort, a_view_sort_date);
+	a_view_sort_name.setCheckable(true);
+	a_view_sort_name.setChecked(true);
+	a_view_sort_type.setCheckable(true);
+	a_view_sort_size.setCheckable(true);
+	a_view_sort_date.setCheckable(true);
+	a_view_sort_name.setActionGroup(&ag_sort_criteria);
+	a_view_sort_type.setActionGroup(&ag_sort_criteria);
+	a_view_sort_size.setActionGroup(&ag_sort_criteria);
+	a_view_sort_date.setActionGroup(&ag_sort_criteria);
+	a_view_sort_name.setData(util::enum_to_number(FileQueue::SortBy::FileName));
+	a_view_sort_type.setData(util::enum_to_number(FileQueue::SortBy::FileType));
+	a_view_sort_size.setData(util::enum_to_number(FileQueue::SortBy::FileSize));
+	a_view_sort_date.setData(util::enum_to_number(FileQueue::SortBy::ModificationDate));
 
 	// Options menu actions
 	add_action(menu_options, a_ib_replace);

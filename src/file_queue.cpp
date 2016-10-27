@@ -11,6 +11,7 @@
 #include <QDirIterator>
 #include <QTextStream>
 #include <QCollator>
+#include <QDateTime>
 #include <QFile>
 
 namespace logging_category {
@@ -27,6 +28,11 @@ const QString FileQueue::sessionNameFilter = QStringLiteral("*.wt-session");
 void FileQueue::setNameFilter(const QStringList &f)
 {
 	m_name_filters = f;
+}
+
+void FileQueue::setSortBy(FileQueue::SortBy criteria)
+{
+	m_sort_by = criteria;
 }
 
 bool FileQueue::checkExtension(const QString &ext) noexcept
@@ -80,13 +86,64 @@ void FileQueue::sort() noexcept
 	QCollator collator;
 	collator.setNumericMode(true);
 
-	std::sort(m_files.begin(), m_files.end(),
-		[&collator](const auto& a, const auto& b)
-		{
+	auto compare_names = [&collator](const auto& a, const auto& b)
+	{
+		return collator.compare(a,b) < 0;
+	};
+
+	auto compare_types = [&collator](const auto&a, const auto& b)
+	{
+		const auto suff_a = a.midRef(a.lastIndexOf('.'));
+		const auto suff_b = b.midRef(b.lastIndexOf('.'));
+		const auto res = suff_a.compare(suff_b, Qt::CaseInsensitive);
+		if(res == 0 )
 			return collator.compare(a,b) < 0;
-		});
+		return res < 0;
+	};
+
+	auto compare_sizes = [&collator](const auto& a, const auto& b)
+	{
+		if(a.size() == b.size())
+			return collator.compare(a.filePath(), b.filePath()) < 0;
+		return a.size() < b.size();
+	};
+
+	auto compare_dates = [&collator](const auto& a, const auto& b)
+	{
+		const auto amod = a.lastModified();
+		const auto bmod = b.lastModified();
+		if(amod == bmod)
+			return collator.compare(a.filePath(), b.filePath()) < 0;
+		return amod < bmod;
+	};
+
+	auto curr_file = QString(current());
+
+	if(m_sort_by == SortBy::FileName)
+		std::sort(m_files.begin(), m_files.end(), compare_names);
+
+	if(m_sort_by == SortBy::FileType)
+		std::sort(m_files.begin(), m_files.end(), compare_types);
+
+	if(m_sort_by == SortBy::FileSize || m_sort_by == SortBy::ModificationDate) {
+		std::deque<QFileInfo> infos;
+		for(const auto& f : m_files) {
+			infos.push_back(QFileInfo{f});
+		}
+		if(m_sort_by == SortBy::FileSize) {
+			std::sort(std::begin(infos), std::end(infos), compare_sizes);
+		}
+		if(m_sort_by == SortBy::ModificationDate) {
+			std::sort(std::begin(infos), std::end(infos), compare_dates);
+		}
+		Q_ASSERT(m_files.size() == infos.size());
+		for(size_t i = 0u; i < infos.size(); ++i) {
+			m_files[i] = infos[i].filePath();
+		}
+	}
 
 	m_files.erase(std::unique(m_files.begin(), m_files.end()), m_files.end());
+	select(find(curr_file));
 	if(m_current >= m_files.size()) // in case duplicates were actually erased
 		m_current = 0;
 }
@@ -282,4 +339,3 @@ void FileQueue::clear() noexcept
 	m_files.clear();
 	m_current = 0u;
 }
-

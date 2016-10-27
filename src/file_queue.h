@@ -24,12 +24,24 @@ public:
 
 	/// Value used as invalid index.
 	static constexpr size_t npos = std::numeric_limits<size_t>::max();
-	
+
 	/// Suffix of session files.
 	static const QString sessionFileSuffix;
-	
+
 	/// Name Filter for session files.
 	static const QString sessionNameFilter;
+
+	/// Sorting criterias.
+	enum class SortBy
+	{
+		FileName,          ///< Sort by file name only.
+		FileType,          ///< Sort by file type, then by file name.
+		FileSize,          ///< Sort by file size, then by file name.
+		ModificationDate   ///< Sort by modification date, then by file name.
+	};
+
+	/// Set sorting criteria to be used by default.
+	void setSortBy(SortBy criteria);
 
 
 	/*!
@@ -182,6 +194,7 @@ private:
 	std::deque<QString>  m_files;
 	QStringList          m_name_filters;
 	size_t               m_current = std::numeric_limits<size_t>::max();
+	SortBy               m_sort_by = SortBy::FileName;
 };
 
 #endif
