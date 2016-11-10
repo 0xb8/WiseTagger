@@ -5,6 +5,9 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+#ifndef UTIL_MISC_H
+#define UTIL_MISC_H
+
 #include <QByteArray>
 #include <QStringList>
 #include <QIcon>
@@ -13,36 +16,17 @@
 
 namespace util {
 
-auto read_resource_html(const char* filename) -> QString;
-
-auto language_from_settings() -> QLocale::Language;
-
-auto language_code(const QString& name) -> QLocale::Language;
-
-auto language_name(QLocale::Language) -> QString;
-
-auto duration(std::uint64_t ms) -> QString;
-
-auto get_icon_from_executable(const QString& path) -> QIcon;
-
-auto backup_settings_to_file(const QString& path) -> bool;
-
-auto restore_settings_from_file(const QString& path) -> bool;
-
-auto supported_image_formats_namefilter() -> QStringList;
-
-auto join(const QStringList&, QChar separator = QChar(' ')) -> QString;
-
-template<typename T>
-auto enum_to_number(T e)
-{
-	return static_cast<std::underlying_type_t<T>>(e);
-}
-template<typename T, typename I>
-T number_to_enum(I num)
-{
-	static_assert(std::is_same<I,std::underlying_type_t<T>>::value, "");
-	return static_cast<T>(num);
-}
+QString                 read_resource_html(const char* filename);
+QLocale::Language       language_from_settings();
+QLocale::Language       language_code(const QString& name);
+QString                 language_name(QLocale::Language);
+QString                 duration(std::uint64_t ms);
+QIcon                   get_icon_from_executable(const QString& path);
+QStringList             supported_image_formats_namefilter();
+QString                 join(const QStringList&, QChar separator = QChar(' '));
+bool                    backup_settings_to_file(const QString& path);
+bool                    restore_settings_from_file(const QString& path);
 
 } // namespace util
+
+#endif // UTIL_MISC_H

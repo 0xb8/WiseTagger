@@ -1,3 +1,10 @@
+/* Copyright © 2016 cat <cat@wolfgirl.org>
+ * This program is free software. It comes without any warranty, to the extent
+ * permitted by applicable law. You can redistribute it and/or modify it under
+ * the terms of the Do What The Fuck You Want To Public License, Version 2, as
+ * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
+ */
+
 #ifndef PROJECT_INFO_H
 #define PROJECT_INFO_H
 
@@ -5,19 +12,13 @@
 	#define APP_VERSION "@APP_VERSION@"
 #endif // APP_VERSION
 
-
-
 #ifndef TARGET_PRODUCT
 	#define TARGET_PRODUCT "@TARGET_PRODUCT@"
 #endif // TARGET_PRODUCT
 
-
-
 #ifndef TARGET_COMPANY
 	#define TARGET_COMPANY "@TARGET_COMPANY@"
 #endif // TARGET_COMPANY
-
-
 
 #ifdef USE_REVISION_INFO
 	#cmakedefine TARGET_REVISION "@TARGET_REVISION@"
@@ -26,7 +27,5 @@
 #else
 	#define BUILD_FROM __DATE__ ", " __TIME__
 #endif // USE_REVISION_INFO
-
-
 
 #endif // PROJECT_INFO_H 

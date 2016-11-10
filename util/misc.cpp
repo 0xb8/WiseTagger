@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QDate>
 #include <QFile>
 #include <QImageReader>
 #include <QSettings>
@@ -33,7 +34,12 @@ QString util::read_resource_html(const char *filename)
 		open = file.open(QIODevice::ReadOnly);
 	}
 	Q_ASSERT(open && "resource file not opened");
-	return QString(file.readAll());
+	QString ret(file.readAll());
+	auto date = QDate::currentDate();
+	if(ret.size() > 250 && date.month() == 10 && date.day() == 31) {
+		ret.append(QStringLiteral("\n<p>In loving memory of my cat <b>Семён</b> (April 2000 - 31 October 2016).<br/><em>Requiescat In Pace</em>.</p>"));
+	}
+	return ret;
 }
 
 QString util::duration(uint64_t secs)
