@@ -6,6 +6,7 @@
  */
 
 #include "input.h"
+#include "global_enums.h"
 #include "util/imageboard.h"
 #include <algorithm>
 #include <QFileInfo>
@@ -24,7 +25,6 @@ namespace logging_category {
 
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
-	setMinimumHeight(30);
 	updateSettings();
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 }
@@ -196,9 +196,17 @@ QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
 
 void TagInput::updateSettings()
 {
-	QSettings settings;
-	QFont font(settings.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
-	font.setPixelSize(settings.value(QStringLiteral("window/font-size"), 14).toInt());
+	QSettings s;
+	QFont font(s.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
+	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
+	if(view_mode == ViewMode::Normal) {
+		font.setPixelSize(s.value(QStringLiteral("window/font-size"), 14).toInt());
+		setMinimumHeight(m_minimum_height);
+	}
+	if(view_mode == ViewMode::Minimal) {
+		font.setPixelSize(s.value(QStringLiteral("window/font-size-minmode"), 12).toInt());
+		setMinimumHeight(m_minimum_height_minmode);
+	}
 	setFont(font);
 }
 //------------------------------------------------------------------------------

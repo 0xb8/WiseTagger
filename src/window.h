@@ -95,6 +95,7 @@ private:
 	QAction a_ib_replace;
 	QAction a_ib_restore;
 	QAction a_show_settings;
+	QAction a_view_minimal;
 	QAction a_view_statusbar;
 	QAction a_view_fullscreen;
 	QAction a_view_menu;
@@ -123,8 +124,10 @@ private:
 	QLabel     m_statusbar_label;
 	QTimer     m_notification_display_timer;
 	QSystemTrayIcon m_tray_icon;
+	ViewMode   m_view_mode;
 	int        m_notification_count = 0;
-	bool       m_show_current_directory;
+	bool       m_show_current_directory = false;
+	bool       m_view_maximized = false;
 
 #ifdef Q_OS_WIN32
 	QWinTaskbarButton m_win_taskbar_button;

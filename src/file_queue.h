@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QObject>
 #include <deque>
+#include "global_enums.h"
 
 /*!
  * File Queue class allows to select certain file as current and perform typical
@@ -31,18 +32,8 @@ public:
 	/// Name Filter for session files.
 	static const QString sessionNameFilter;
 
-	/// Sorting criterias.
-	enum class SortBy
-	{
-		FileName,          ///< Sort by file name only.
-		FileType,          ///< Sort by file type, then by file name.
-		FileSize,          ///< Sort by file size, then by file name.
-		ModificationDate   ///< Sort by modification date, then by file name.
-	};
-
 	/// Set sorting criteria to be used by default.
-	void setSortBy(SortBy criteria);
-
+	void setSortBy(SortQueueBy criteria);
 
 	/*!
 	 * \brief Sets file extensions filter used by FileQueue::push
@@ -194,7 +185,7 @@ private:
 	std::deque<QString>  m_files;
 	QStringList          m_name_filters;
 	size_t               m_current = std::numeric_limits<size_t>::max();
-	SortBy               m_sort_by = SortBy::FileName;
+	SortQueueBy          m_sort_by = SortQueueBy::FileName;
 };
 
 #endif

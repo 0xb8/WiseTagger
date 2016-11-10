@@ -70,6 +70,10 @@ protected:
 	void keyPressEvent(QKeyEvent* event) override;
 
 private:
+	static constexpr int m_minimum_height         = 30;
+	static constexpr int m_minimum_height_minmode = 25;
+
+
 	bool        next_completer();
 
 	/**

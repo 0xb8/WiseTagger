@@ -21,6 +21,7 @@ set(TARGET_COMPANY "catgirl")
 
 set(wt_srcs
 	src/main.cpp
+	src/global_enums.cpp
 	src/file_queue.cpp
 	src/input.cpp
 	src/multicompleter.cpp

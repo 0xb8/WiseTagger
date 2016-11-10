@@ -14,6 +14,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <algorithm>
+#include "global_enums.h"
 #include "util/size.h"
 #include "util/misc.h"
 #include "window.h"
@@ -34,7 +35,6 @@ Tagger::Tagger(QWidget *_parent) :
 	m_main_layout.setMargin(0);
 	m_main_layout.setSpacing(0);
 
-	m_tag_input_layout.setMargin(10);
 	m_tag_input_layout.addWidget(&m_input);
 
 	m_separator.setFrameStyle(QFrame::HLine | QFrame::Sunken);
@@ -55,6 +55,7 @@ Tagger::Tagger(QWidget *_parent) :
 	{
 		m_statistics.fileOpened(file, m_picture.mediaSize());
 	});
+	updateSettings();
 }
 
 bool Tagger::open(const QString& filename)
@@ -243,9 +244,16 @@ QString Tagger::postURL() const
 void Tagger::setInputVisible(bool visible)
 {
 	m_input.setVisible(visible);
+
+	QSettings s;
+	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
+	if(view_mode == ViewMode::Minimal)
+		return;
+
 	m_separator.setVisible(visible);
+
 	if(visible) {
-		m_tag_input_layout.setMargin(10);
+		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
 	} else {
 		m_tag_input_layout.setMargin(0);
 	}
@@ -259,7 +267,16 @@ void Tagger::reloadTags()
 
 void Tagger::updateSettings()
 {
-	pdbg << "";
+	QSettings s;
+	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
+	if(view_mode == ViewMode::Minimal) {
+		m_tag_input_layout.setMargin(0);
+		m_separator.hide();
+	}
+	if(view_mode == ViewMode::Normal) {
+		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
+		m_separator.show();
+	}
 	m_input.updateSettings();
 }
 

@@ -30,7 +30,7 @@ void FileQueue::setNameFilter(const QStringList &f)
 	m_name_filters = f;
 }
 
-void FileQueue::setSortBy(FileQueue::SortBy criteria)
+void FileQueue::setSortBy(SortQueueBy criteria)
 {
 	m_sort_by = criteria;
 }
@@ -119,21 +119,21 @@ void FileQueue::sort() noexcept
 
 	auto curr_file = QString(current());
 
-	if(m_sort_by == SortBy::FileName)
+	if(m_sort_by == SortQueueBy::FileName)
 		std::sort(m_files.begin(), m_files.end(), compare_names);
 
-	if(m_sort_by == SortBy::FileType)
+	if(m_sort_by == SortQueueBy::FileType)
 		std::sort(m_files.begin(), m_files.end(), compare_types);
 
-	if(m_sort_by == SortBy::FileSize || m_sort_by == SortBy::ModificationDate) {
+	if(m_sort_by == SortQueueBy::FileSize || m_sort_by == SortQueueBy::ModificationDate) {
 		std::deque<QFileInfo> infos;
 		for(const auto& f : m_files) {
 			infos.push_back(QFileInfo{f});
 		}
-		if(m_sort_by == SortBy::FileSize) {
+		if(m_sort_by == SortQueueBy::FileSize) {
 			std::sort(std::begin(infos), std::end(infos), compare_sizes);
 		}
-		if(m_sort_by == SortBy::ModificationDate) {
+		if(m_sort_by == SortQueueBy::ModificationDate) {
 			std::sort(std::begin(infos), std::end(infos), compare_dates);
 		}
 		Q_ASSERT(m_files.size() == infos.size());

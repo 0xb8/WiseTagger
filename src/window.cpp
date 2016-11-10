@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "window.h"
+#include "global_enums.h"
 #include "util/open_graphical_shell.h"
 #include "util/command_placeholders.h"
 #include "util/size.h"
@@ -50,6 +51,7 @@ namespace logging_category {
 #define SETT_SHOW_CURRENT_DIR   QStringLiteral("window/show-current-directory")
 #define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
 #define SETT_STYLE              QStringLiteral("window/style")
+#define SETT_VIEW_MODE          QStringLiteral("window/view-mode")
 
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
@@ -85,6 +87,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_show_settings(   tr("P&references..."), nullptr)
+	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
 	, a_view_statusbar(  tr("&Statusbar"), nullptr)
 	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
 	, a_view_menu(       tr("&Menu"), nullptr)
@@ -398,6 +401,7 @@ void Window::initSettings()
 	QSettings sett;
 
 	m_last_directory = sett.value(SETT_LAST_DIR).toString();
+	m_view_mode      = sett.value(SETT_VIEW_MODE).value<ViewMode>();
 	bool show_status = sett.value(SETT_SHOW_STATUS, false).toBool();
 	bool show_menu   = sett.value(SETT_SHOW_MENU,   true).toBool();
 	bool show_input  = sett.value(SETT_SHOW_INPUT,  true).toBool();
@@ -413,9 +417,10 @@ void Window::initSettings()
 
 	menuBar()->setVisible(show_menu);
 	m_tagger.setInputVisible(show_input);
-	m_statusbar.setVisible(show_status);
+	m_statusbar.setVisible(show_status && m_view_mode != ViewMode::Minimal);
 
 	a_view_fullscreen.setChecked(isFullScreen());
+	a_view_minimal.setChecked(m_view_mode == ViewMode::Minimal);
 	a_view_statusbar.setChecked(show_status);
 	a_view_menu.setChecked(show_menu);
 	a_view_input.setChecked(show_input);
@@ -443,6 +448,11 @@ void Window::updateSettings()
 {
 	QSettings settings;
 	m_show_current_directory = settings.value(SETT_SHOW_CURRENT_DIR, true).toBool();
+	if(m_view_mode == ViewMode::Minimal) {
+		m_statusbar.hide();
+	} else {
+		m_statusbar.setVisible(a_view_statusbar.isChecked());
+	}
 	updateStyle();
 	for(auto action : menu_commands.actions()) {
 		this->removeAction(action); // NOTE: to prevent hotkey conflicts
@@ -662,6 +672,7 @@ void Window::createActions()
 	a_ib_restore.setCheckable(true);
 	a_view_statusbar.setCheckable(true);
 	a_view_fullscreen.setCheckable(true);
+	a_view_minimal.setCheckable(true);
 	a_view_menu.setCheckable(true);
 	a_view_input.setCheckable(true);
 
@@ -733,21 +744,27 @@ void Window::createActions()
 	connect(&a_view_statusbar, &QAction::triggered, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
-		m_statusbar.setVisible(checked);
+		m_statusbar.setVisible(checked && m_view_mode != ViewMode::Minimal);
 	});
 	connect(&a_view_fullscreen, &QAction::triggered, [this](bool checked)
 	{
-		static bool isMax = false;
 		if(checked) {
-			isMax = isMaximized();
+			m_view_maximized = isMaximized();
 			showFullScreen();
 		} else {
-			if(isMax) {
+			if(m_view_maximized) {
 				showMaximized();
 			} else {
 				showNormal();
 			}
 		}
+	});
+	connect(&a_view_minimal, &QAction::triggered, [this](bool checked)
+	{
+		m_view_mode = checked ? ViewMode::Minimal : ViewMode::Normal;
+		QSettings s; s.setValue(SETT_VIEW_MODE, QVariant::fromValue(m_view_mode));
+		updateSettings();
+		m_tagger.updateSettings();
 	});
 	connect(&a_view_menu, &QAction::triggered, [this](bool checked)
 	{
@@ -816,7 +833,7 @@ void Window::createActions()
 		sd->open();
 	});
 	connect(&ag_sort_criteria, &QActionGroup::triggered,[this](QAction* a){
-		m_tagger.queue().setSortBy(util::number_to_enum<FileQueue::SortBy>(a->data().toInt()));
+		m_tagger.queue().setSortBy(a->data().value<SortQueueBy>());
 		m_tagger.queue().sort();
 	});
 }
@@ -873,6 +890,7 @@ void Window::createMenus()
 
 	// View menu actions
 	add_action(menu_view, a_view_fullscreen);
+	add_action(menu_view, a_view_minimal);
 	add_separator(menu_view);
 	add_action(menu_view, a_view_menu);
 	add_action(menu_view, a_view_input);
@@ -894,10 +912,10 @@ void Window::createMenus()
 	a_view_sort_type.setActionGroup(&ag_sort_criteria);
 	a_view_sort_size.setActionGroup(&ag_sort_criteria);
 	a_view_sort_date.setActionGroup(&ag_sort_criteria);
-	a_view_sort_name.setData(util::enum_to_number(FileQueue::SortBy::FileName));
-	a_view_sort_type.setData(util::enum_to_number(FileQueue::SortBy::FileType));
-	a_view_sort_size.setData(util::enum_to_number(FileQueue::SortBy::FileSize));
-	a_view_sort_date.setData(util::enum_to_number(FileQueue::SortBy::ModificationDate));
+	a_view_sort_name.setData(QVariant::fromValue(SortQueueBy::FileName));
+	a_view_sort_type.setData(QVariant::fromValue(SortQueueBy::FileType));
+	a_view_sort_size.setData(QVariant::fromValue(SortQueueBy::FileSize));
+	a_view_sort_date.setData(QVariant::fromValue(SortQueueBy::ModificationDate));
 
 	// Options menu actions
 	add_action(menu_options, a_ib_replace);

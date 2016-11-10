@@ -53,6 +53,7 @@ public:
 		Failed = 0,     ///< Rename failed.
 		Renamed = 1     ///< Renamed successfully
 	};
+	Q_ENUM(RenameStatus)
 
 	/// Options controlling UI behavior when renaming file.
 	enum class RenameOption
@@ -62,6 +63,7 @@ public:
 		HideCancelButton = 0x2,  ///< Remove Cancel button.
 	};
 	using RenameOptions = QFlags<RenameOption>;
+	Q_FLAG(RenameOptions)
 
 	/**
 	 * \brief Renames current file
@@ -168,6 +170,8 @@ private:
 	void updateNewTagsCounts();
 	void clear();
 
+	static constexpr int m_tag_input_layout_margin = 10;
+
 	QVBoxLayout m_main_layout;
 	QVBoxLayout m_tag_input_layout;
 
@@ -183,5 +187,4 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Tagger::RenameOptions)
-
 #endif // WISETAGGER_H
