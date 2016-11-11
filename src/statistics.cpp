@@ -96,14 +96,14 @@ void TaggerStatistics::fileRenamed(const QString &new_name)
 		return;
 	}
 	auto files_renamed = m_settings.value(NUM_FILES_RENAMED, 0ll).toLongLong();
-	auto tags_max      = m_settings.value(NUM_TAGS_MAX, 0ll).toInt();
+	auto tags_max      = m_settings.value(NUM_TAGS_MAX, 0ll).toLongLong();
 	auto tag_count     = std::count(new_name.cbegin(), new_name.cend(),' ');
 	auto tags_total    = m_settings.value(NUM_TAGS_TOTAL, 0ll).toLongLong();
 	tags_total += tag_count + 1;
 
 	m_settings.setValue(NUM_TAGS_TOTAL, tags_total);
 	if(tag_count > tags_max) {
-		m_settings.setValue(NUM_TAGS_MAX, tag_count);
+		m_settings.setValue(NUM_TAGS_MAX, static_cast<decltype(tags_max)>(tag_count));
 	}
 	m_settings.setValue(NUM_FILES_RENAMED, files_renamed + 1);
 	m_settings.setValue(NUM_TAGS_AVG, tags_total / files_renamed);
@@ -114,7 +114,7 @@ void TaggerStatistics::reverseSearched()
 	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		return;
 	}
-	auto num = m_settings.value(NUM_REVERSE_SEARCHED, 0).toInt();
+	auto num = m_settings.value(NUM_REVERSE_SEARCHED, 0).toLongLong();
 	m_settings.setValue(NUM_REVERSE_SEARCHED, num + 1);
 }
 
