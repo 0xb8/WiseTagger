@@ -6,14 +6,16 @@
  */
 
 #include "tagger.h"
+#include <QApplication>
+#include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
+#include <QLoggingCategory>
 #include <QMessageBox>
-#include <QApplication>
-#include <QDesktopServices>
 #include <QSettings>
-#include <QDebug>
 #include <algorithm>
+#include <cmath>
 #include "global_enums.h"
 #include "util/size.h"
 #include "util/misc.h"

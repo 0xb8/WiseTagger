@@ -7,6 +7,7 @@
 
 #include <QApplication>
 #include <QCollator>
+#include <QDebug>
 #include <QDesktopServices>
 #include <QDirIterator>
 #include <QDragEnterEvent>
@@ -17,6 +18,7 @@
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QKeySequence>
+#include <QLoggingCategory>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
