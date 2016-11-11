@@ -5,7 +5,6 @@ os:
 
 env:
   matrix:
-    - CONFIG=release
     include:
       - compiler: gcc
         addons:
@@ -26,4 +25,5 @@ script:
   - QTDIR="/opt/qt56"
   - PATH="$QTDIR/bin:$PATH"
   - qt56-env.sh
-  - qmake && make 
+  - qmake
+  - make release
