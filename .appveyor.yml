@@ -8,21 +8,12 @@ shallow_clone: true
 clone_depth: 1
 
 environment:
-  matrix:
-  - CMAKE_GENERATOR: "MinGW Makefiles"
-    QT5: C:\Qt\5.7\mingw53_32
-    MINGW_PATH: C:\Qt\Tools\mingw530_32\bin
+  QTDIR: C:\Qt\5.7\mingw53_32
 
-
-before_build:
-  - set Path=%QT5%\bin;%Path%
-  - if "%CMAKE_GENERATOR%" == "MinGW Makefiles" set PATH=%MINGW_PATH%\bin;%PATH:C:\Program Files\Git\usr\bin;=%
-
-build:
+install:
+  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw530_32\bin;%PATH%
 
 build_script:
-  - if "%CMAKE_GENERATOR%" == "MinGW Makefiles" echo "Using MinGW at %MINGW_PATH%"
-  - md build
-  - cd build
-  - cmake .. -G "%CMAKE_GENERATOR%" "-DCMAKE_PREFIX_PATH=%QT5%"
-  - cmake --build . --config Release
+  - qmake CONFIG+=release Wisetagger.pro
+  - mingw32-make
+
