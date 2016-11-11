@@ -3,18 +3,12 @@ language: cpp
 os:
   - linux
 
-matrix:
-  include:
-    - compiler: gcc
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-      env: 
-        - COMPILER=g++-6
-        - CONFIG=release
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-6
 
 install:
   - lsb_release -a
@@ -26,7 +20,5 @@ script:
   - QTDIR="/opt/qt56"
   - PATH="$QTDIR/bin:$PATH"
   - qt56-env.sh
-  - export CXX="$COMPILER"
-  - $CXX --version
-  - qmake
-  - make
+  - qmake CONFIG+=release
+  - make CXX="g++-6"
