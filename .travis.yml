@@ -1,0 +1,29 @@
+language: cpp
+
+os:
+  - linux
+
+env:
+  matrix:
+    - CONFIG=release
+
+addons:
+  apt:
+    packages:
+      - g++-6
+    sources: &sources
+      - ubuntu-toolchain-r-test
+
+install:
+  - lsb_release -a
+  - sudo apt-add-repository -y ppa:beineri/opt-qt562
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install qt56tools qt56base qt56svg qt56imageformats qt56translations
+  - export CXX="g++-6.2"
+  - export CC="gcc-6.2"
+
+script:
+  - QTDIR="/opt/qt56"
+  - PATH="$QTDIR/bin:$PATH"
+  - qt56-env.sh
+  - qmake && make 
