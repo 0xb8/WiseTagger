@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QObject>
 #include <QElapsedTimer>
+#include <QSize>
 
 class TaggerStatistics : public QObject {
 	Q_OBJECT

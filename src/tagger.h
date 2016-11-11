@@ -13,6 +13,7 @@
 #include <QLabel>
 #include <QFrame>
 #include <QWidget>
+#include <QStringList>
 
 #include "util/unordered_map_qt.h"
 #include "picture.h"

@@ -75,6 +75,7 @@ QIcon util::get_icon_from_executable(const QString &path)
 	::DestroyIcon(hicon);
 	return ricon;
 #else
+	Q_UNUSED(path)
 	return QIcon(); // TODO: load icon from .desktop file on linux
 #endif
 }
