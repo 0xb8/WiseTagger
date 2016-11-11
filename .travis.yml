@@ -3,6 +3,9 @@ language: cpp
 os:
   - linux
 
+git:
+  depth: 3
+
 addons:
   apt:
     sources:
