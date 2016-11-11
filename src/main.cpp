@@ -10,6 +10,7 @@
 #include "window.h"
 #include <QApplication>
 #include <QFile>
+#include <QLibraryInfo>
 #include <QLocale>
 #include <QLoggingCategory>
 #include <QSettings>
