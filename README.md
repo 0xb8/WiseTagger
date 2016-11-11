@@ -1,6 +1,8 @@
 # WiseTagger #
 Simple picture tagging tool
 
+[![Build Status](https://travis-ci.org/0xb8/WiseTagger.svg?branch=master)](https://travis-ci.org/0xb8/WiseTagger)
+
 ## Features ##
 * tag autocomplete
 * tag implication
@@ -8,22 +10,23 @@ Simple picture tagging tool
 * filesystem-based tag file selection
 * picture drag-and-drop support
 * image reverse-search (using iqdb.org) with proxy support
+* custom commands support
 * crossplatform, using Qt5 Framework
 
-### Tag File Format ###
-Each tag is placed on its own line and  must contain only numbers, letters, «_», «;» (not including quotes).
+### Tag File Syntax ###
+Each tag is placed on its own line and must contain only numbers, letters, and limited punctuation (not including quotes and commas).
 All whitespace is ignored.
 
-If disallowed character is found, it will be ignored with the rest of the line. This behaviour can be used to make comments, e.g. `// comment`, or `# comment`, etc.
+If disallowed character is found, it will be ignored with the rest of the line. This behaviour can be used to make comments, e.g. `// comment`.
 
 ```
 # 'unneeded' will be automatically removed
 -unneeded
 
-# 'school_uniform' will be automatically replaced with 'seifuku'
+# tag replacement: 'school_uniform' will be automatically replaced with 'seifuku'
 seifuku = school_uniform
 
-# 'nekomimi' will be automatically added when 'catgirl' is added
+# tag implication: 'nekomimi' will be automatically added when 'catgirl' is added
 catgirl : nekomimi
 
 # replace and add tags simultaneously
@@ -57,7 +60,6 @@ In both cases prefix can be omitted, leaving only corresponding suffix as file n
 To use tag autocompletion place *Normal Tag File* or *Override Tag File* in a directory with your pictures. 
 
 Pictures in subdirectories will pick up tag file in parent directory. 
-You can place more *Normal Tag Files* in subdirectories, in this case contents of subdirectory files will be added to contents of parent tag file.
+You can place more *Normal Tag Files* in subdirectories, in this case contents of subdirectory files will be appended to contents of parent tag file.
 
 To override tag files for subdirectory, place *Override Tag File* in that directory.
-
