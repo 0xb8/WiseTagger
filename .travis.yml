@@ -21,4 +21,4 @@ script:
   - PATH="$QTDIR/bin:$PATH"
   - qt56-env.sh
   - qmake CONFIG+=release
-  - make CXX="g++-6"
+  - make CXX="g++-6" LINKER="g++-6"

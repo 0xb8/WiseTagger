@@ -24,6 +24,7 @@
 #include <QMimeData>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QProcess>
 #include <QProxyStyle>
 #include <QSettings>
 #include <QStyle>
