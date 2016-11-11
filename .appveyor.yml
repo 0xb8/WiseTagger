@@ -5,7 +5,7 @@ only:
 - master
 
 init:
-- git config --global core.autocrlf input
+- git config --global core.autocrlf true
 
 skip_tags: true
 shallow_clone: true
