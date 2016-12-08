@@ -29,9 +29,8 @@ QStatusBar {
 }
 QLineEdit#Input {
     border: 1px outset black;
-    border-radius: 2px;
     padding: 0 8px;
-    background: #111;
+    background: #181818;
     selection-background-color: darkgray;
     color: #eee;
 }

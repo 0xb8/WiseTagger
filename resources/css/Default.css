@@ -11,6 +11,10 @@ QLabel#Picture {
     background-color: white;
 }
 
+QLineEdit#Input {
+    border-top-color: grey;
+}
+
 QLabel#StatusbarInfo {
     background-color: transparent;
     border: none;

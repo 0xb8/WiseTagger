@@ -202,10 +202,14 @@ void TagInput::updateSettings()
 	if(view_mode == ViewMode::Normal) {
 		font.setPixelSize(s.value(QStringLiteral("window/font-size"), 14).toInt());
 		setMinimumHeight(m_minimum_height);
+		setFrame(true);
+		setStyleSheet(QStringLiteral(""));
 	}
 	if(view_mode == ViewMode::Minimal) {
 		font.setPixelSize(s.value(QStringLiteral("window/font-size-minmode"), 12).toInt());
 		setMinimumHeight(m_minimum_height_minmode);
+		setFrame(false);
+		setStyleSheet(QStringLiteral("border-top-width: 1px; border-top-style: outset;"));
 	}
 	setFont(font);
 }
