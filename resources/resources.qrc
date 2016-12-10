@@ -13,7 +13,7 @@
 	<file>html/Russian/welcome.html</file>
 	<file>i18n/English.qm</file>
 	<file>i18n/Russian.qm</file>
-	<file>icon.png</file>
+	<file>wisetagger.svg</file>
 	<file>transparency.png</file>
     </qresource>
 </RCC>

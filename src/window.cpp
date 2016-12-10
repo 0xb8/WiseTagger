@@ -473,7 +473,7 @@ void Window::updateStyle()
 	bool open = styles_file.open(QIODevice::ReadOnly);
 	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
-	qApp->setWindowIcon(QIcon(QStringLiteral(":/icon.png")));
+	qApp->setWindowIcon(QIcon(QStringLiteral(":/wisetagger.svg")));
 	m_tray_icon.setIcon(this->windowIcon());
 }
 
