@@ -92,6 +92,8 @@ private:
 	QAction a_save_session;
 	QAction a_open_loc;
 	QAction a_reload_tags;
+	QAction a_open_tags;
+	QAction a_edit_tags;
 	QAction a_ib_replace;
 	QAction a_ib_restore;
 	QAction a_show_settings;

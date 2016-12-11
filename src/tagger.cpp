@@ -14,11 +14,13 @@
 #include <QLoggingCategory>
 #include <QMessageBox>
 #include <QSettings>
+#include <QUrl>
 #include <algorithm>
 #include <cmath>
 #include "global_enums.h"
 #include "util/size.h"
 #include "util/misc.h"
+#include "util/open_graphical_shell.h"
 #include "window.h"
 
 namespace logging_category {
@@ -51,13 +53,19 @@ Tagger::Tagger(QWidget *_parent) :
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
 	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
-	connect(this,     &Tagger::fileOpened,       this, &Tagger::findTagsFiles);
 	connect(this,     &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);
 	connect(this,     &Tagger::fileOpened, [this](const auto& file)
 	{
 		m_statistics.fileOpened(file, m_picture.mediaSize());
 	});
 	updateSettings();
+}
+
+void Tagger::clear()
+{
+	m_file_queue.clear();
+	m_picture.clear();
+	m_input.clear();
 }
 
 bool Tagger::open(const QString& filename)
@@ -108,6 +116,22 @@ bool Tagger::openSession(const QString& sfile)
 	return loadCurrentFile();
 }
 
+void Tagger::nextFile(RenameOptions options)
+{
+	if(fileModified() && (rename(options) == RenameStatus::Cancelled))
+		return;
+	m_file_queue.forward();
+	loadCurrentFile();
+}
+
+void Tagger::prevFile(RenameOptions options)
+{
+	if(fileModified() && (rename(options) == RenameStatus::Cancelled))
+		return;
+	m_file_queue.backward();
+	loadCurrentFile();
+}
+
 bool Tagger::openFileInQueue(size_t index)
 {
 	m_file_queue.select(index);
@@ -147,50 +171,6 @@ void Tagger::deleteCurrentFile()
 	}
 }
 
-FileQueue& Tagger::queue()
-{
-	return m_file_queue;
-}
-
-TaggerStatistics &Tagger::statistics()
-{
-	return m_statistics;
-}
-
-void Tagger::nextFile(RenameOptions options)
-{
-	if(fileModified() && (rename(options) == RenameStatus::Cancelled))
-		return;
-	m_file_queue.forward();
-	loadCurrentFile();
-}
-
-void Tagger::prevFile(RenameOptions options)
-{
-	if(fileModified() && (rename(options) == RenameStatus::Cancelled))
-		return;
-	m_file_queue.backward();
-	loadCurrentFile();
-}
-
-
-/* just load picture into tagger */
-bool Tagger::loadCurrentFile()
-{
-	bool silent = false;
-	while(!loadFile(m_file_queue.currentIndex(), silent) && !m_file_queue.empty()) {
-		pdbg << "erasing invalid file from queue:" << m_file_queue.current();
-		m_file_queue.eraseCurrent();
-		silent = true;
-	}
-
-	if(m_file_queue.empty()) {
-		clear();
-		return false;
-	}
-	emit fileOpened(m_file_queue.current());
-	return true;
-}
 //------------------------------------------------------------------------------
 
 QString Tagger::currentFile() const
@@ -242,7 +222,33 @@ QString Tagger::postURL() const
 	return m_input.postURL();
 }
 
+FileQueue& Tagger::queue()
+{
+	return m_file_queue;
+}
+
+TaggerStatistics &Tagger::statistics()
+{
+	return m_statistics;
+}
+
 //------------------------------------------------------------------------------
+
+void Tagger::updateSettings()
+{
+	QSettings s;
+	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
+	if(view_mode == ViewMode::Minimal) {
+		m_tag_input_layout.setMargin(0);
+		m_separator.hide();
+	}
+	if(view_mode == ViewMode::Normal) {
+		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
+		m_separator.show();
+	}
+	m_input.updateSettings();
+}
+
 void Tagger::setInputVisible(bool visible)
 {
 	m_input.setVisible(visible);
@@ -261,34 +267,41 @@ void Tagger::setInputVisible(bool visible)
 	}
 }
 
+//------------------------------------------------------------------------------
+
 void Tagger::reloadTags()
+{
+	findTagsFiles(true);
+}
+
+
+void Tagger::reloadTagsContents()
 {
 	m_input.loadTagFiles(m_current_tag_files);
 	m_input.clearTagState();
 }
 
-void Tagger::updateSettings()
+void Tagger::openTagFilesInEditor()
 {
-	QSettings s;
-	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
-	if(view_mode == ViewMode::Minimal) {
-		m_tag_input_layout.setMargin(0);
-		m_separator.hide();
+	for(const auto& file : m_current_tag_files) {
+		QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 	}
-	if(view_mode == ViewMode::Normal) {
-		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
-		m_separator.show();
-	}
-	m_input.updateSettings();
 }
 
-void Tagger::findTagsFiles()
+void Tagger::openTagFilesInShell()
+{
+	for(const auto& file : m_current_tag_files) {
+		util::open_file_in_gui_shell(file);
+	}
+}
+
+void Tagger::findTagsFiles(bool force)
 {
 	if(m_file_queue.empty())
 		return;
 
 	const auto c = currentDir();
-	if(c == m_previous_dir)
+	if(c == m_previous_dir && !force)
 		return;
 
 	m_previous_dir = c;
@@ -391,15 +404,60 @@ void Tagger::findTagsFiles()
 	}
 
 	std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
-	reloadTags();
+	m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
+	m_fs_watcher->addPaths(m_current_tag_files);
+	connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, [this](const auto& f)
+	{
+		if(!QFile::exists(f)) {
+			pdbg << "removing deleted file" << f <<  "from tag file set";
+			this->m_current_tag_files.removeOne(f);
+		}
+		this->reloadTagsContents();
+		pdbg << "reloaded tags due to changed file:" << f;
+		emit this->tagFileChanged();
+	});
+	reloadTagsContents();
 }
 
-void Tagger::clear()
-{
-	m_file_queue.clear();
-	m_picture.clear();
-	m_input.clear();
+void Tagger::updateNewTagsCounts() {
+	const auto new_tags = m_input.getAddedTags(true);
+	bool emitting = false;
+
+	for(const auto& t : new_tags) {
+		auto it = m_new_tag_counts.find(t);
+		if(it != m_new_tag_counts.end()) {
+			++it->second;
+			if(it->second == 5)
+				emitting = true;
+
+		} else {
+			m_new_tag_counts.insert(std::make_pair(t, 1u));
+		}
+		++m_overall_new_tag_counts;
+	}
+
+	if(m_overall_new_tag_counts >= std::min(8.0, 2*std::log2(m_file_queue.size()))) {
+		emitting = true;
+	}
+
+	if(emitting) {
+		QStringList tags;
+		for(const auto& t : m_new_tag_counts) {
+			tags.push_back(t.first);
+		}
+		std::sort(tags.begin(), tags.end(), [this](const QString&a, const QString&b) {
+			const unsigned numa = m_new_tag_counts[a];
+			const unsigned numb = m_new_tag_counts[b];
+			if(numa == numb)
+				return a < b;
+			return numa > numb;
+		});
+		emit newTagsAdded(tags);
+		m_overall_new_tag_counts = 0;
+	}
 }
+
+//------------------------------------------------------------------------------
 
 bool Tagger::loadFile(size_t index, bool silent)
 {
@@ -442,48 +500,28 @@ bool Tagger::loadFile(size_t index, bool silent)
 	}
 
 	m_input.setText(f.completeBaseName());
-	findTagsFiles();
+	findTagsFiles(false);
 	m_picture.setFocus();
 	return true;
 }
 
-void Tagger::updateNewTagsCounts() {
-	const auto new_tags = m_input.getAddedTags(true);
-	static int overall_count = 0;
-	bool emitting = false;
-
-	for(const auto& t : new_tags) {
-		auto it = m_new_tag_counts.find(t);
-		if(it != m_new_tag_counts.end()) {
-			++it->second;
-			if(it->second == 5)
-				emitting = true;
-
-		} else {
-			m_new_tag_counts.insert(std::make_pair(t, 1u));
-		}
-		++overall_count;
+/* just load picture into tagger */
+bool Tagger::loadCurrentFile()
+{
+	bool silent = false;
+	while(!loadFile(m_file_queue.currentIndex(), silent) && !m_file_queue.empty()) {
+		pdbg << "erasing invalid file from queue:" << m_file_queue.current();
+		m_file_queue.eraseCurrent();
+		silent = true;
 	}
 
-	if(overall_count >= std::min(8.0, 2*std::log2(m_file_queue.size()))) {
-		emitting = true;
+	if(m_file_queue.empty()) {
+		clear();
+		return false;
 	}
-
-	if(emitting) {
-		QStringList tags;
-		for(const auto& t : m_new_tag_counts) {
-			tags.push_back(t.first);
-		}
-		std::sort(tags.begin(), tags.end(), [this](const QString&a, const QString&b) {
-			const unsigned numa = m_new_tag_counts[a];
-			const unsigned numb = m_new_tag_counts[b];
-			if(numa == numb)
-				return a < b;
-			return numa > numb;
-		});
-		emit newTagsAdded(tags);
-		overall_count = 0;
-	}
+	emit fileOpened(m_file_queue.current());
+	findTagsFiles();
+	return true;
 }
 
 Tagger::RenameStatus Tagger::rename(RenameOptions options)

@@ -82,11 +82,13 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_save_file(       tr("&Save"), nullptr)
 	, a_save_next(       tr("Save and Open Next Image"), nullptr)
 	, a_save_prev(       tr("Save and Open Previous Image"), nullptr)
-	, a_go_to_number(    tr("Go To File Number"), nullptr)
+	, a_go_to_number(    tr("&Go To File Number..."), nullptr)
 	, a_open_session(    tr("Open Session"), nullptr)
 	, a_save_session(    tr("Save Session"), nullptr)
 	, a_open_loc(        tr("Open &Containing Folder"), nullptr)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
+	, a_open_tags(       tr("Open Tag File &Location"), nullptr)
+	, a_edit_tags(       tr("&Edit Tag File"), nullptr)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_show_settings(   tr("P&references..."), nullptr)
@@ -640,7 +642,6 @@ void Window::createActions()
 	a_save_next.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Left));
 	a_delete_file.setShortcut(  QKeySequence::Delete);
-	a_reload_tags.setShortcut(  QKeySequence(tr("Ctrl+R", "Reload Tags")));
 	a_open_post.setShortcut(    QKeySequence(tr("Ctrl+P", "Open post")));
 	a_iqdb_search.setShortcut(  QKeySequence(tr("Ctrl+F", "Reverse search")));
 	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
@@ -661,13 +662,17 @@ void Window::createActions()
 	a_iqdb_search.setEnabled(false);
 	a_open_loc.setEnabled(false);
 	a_reload_tags.setEnabled(false);
+	a_open_tags.setEnabled(false);
+	a_edit_tags.setEnabled(false);
 	a_save_session.setEnabled(false);
 	a_go_to_number.setEnabled(false);
 
 	a_open_post.setStatusTip(  tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(tr("Upload this image to iqdb.org and open search results page in default browser."));
 	a_open_loc.setStatusTip(   tr("Open folder where this image is located."));
-	a_reload_tags.setStatusTip(tr("Reload changes in tag files."));
+	a_open_tags.setStatusTip(  tr("Open folder where current tag file is located."));
+	a_reload_tags.setStatusTip(tr("Reload changes in tag files and search for newly added tag files."));
+	a_edit_tags.setStatusTip(  tr("Open current tag file in default text editor."));
 	a_ib_replace.setStatusTip( tr("Toggle replacing certain imageboard tags with their shorter version."));
 	a_ib_restore.setStatusTip( tr("Toggle restoring imageboard tags back to their original version."));
 
@@ -682,7 +687,8 @@ void Window::createActions()
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       &m_tagger.statistics(), &TaggerStatistics::reverseSearched);
-	connect(&m_reverse_search, &ReverseSearch::finished, [this](){
+	connect(&m_reverse_search, &ReverseSearch::finished, [this]()
+	{
 		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
 	});
 
@@ -694,12 +700,21 @@ void Window::createActions()
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
 	connect(&a_delete_file, &QAction::triggered, &m_tagger, &Tagger::deleteCurrentFile);
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
+	connect(&a_open_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInShell);
+	connect(&a_edit_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInEditor);
 	connect(&a_stats,       &QAction::triggered, &m_tagger.statistics(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
 
+	connect(&m_tagger,      &Tagger::tagFileChanged, [this]()
+	{
+		addNotification(tr("Tag file changed"),
+		                tr("Tag file has been edited or removed.\n"
+		                   "All changes successfully applied."),
+		                QStringLiteral(""));
+	});
 	connect(&m_tagger,      &Tagger::fileOpened, [this]()
 	{
 		updateImageboardPostURL(m_tagger.postURL());
@@ -779,7 +794,8 @@ void Window::createActions()
 		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
 		this->m_tagger.setInputVisible(checked);
 	});
-	connect(&a_save_session, &QAction::triggered, [this](){
+	connect(&a_save_session, &QAction::triggered, [this]()
+	{
 		auto filename = QFileDialog::getSaveFileName(this,
 			tr("Save Session"),
 			m_last_directory,
@@ -793,14 +809,16 @@ void Window::createActions()
 				tr("<p>Could not save session to <b>%1</b>.</p><p>Check file permissions.</p>").arg(filename));
 		}
 	});
-	connect(&a_open_session, &QAction::triggered, [this](){
+	connect(&a_open_session, &QAction::triggered, [this]()
+	{
 		auto filename = QFileDialog::getOpenFileName(this,
 			tr("Open Session"),
 			m_last_directory,
 			QStringLiteral("Session Files (%1)").arg(FileQueue::sessionNameFilter));
 		m_tagger.openSession(filename);
 	});
-	connect(&a_go_to_number, &QAction::triggered, [this](){
+	connect(&a_go_to_number, &QAction::triggered, [this]()
+	{
 		auto number = QInputDialog::getInt(this,
 			tr("Enter Number"),
 			tr("Enter file number to open:"),
@@ -808,14 +826,16 @@ void Window::createActions()
 		m_tagger.openFileInQueue(number-1);
 	});
 
-	connect(&m_notification_display_timer, &QTimer::timeout, [this](){
+	connect(&m_notification_display_timer, &QTimer::timeout, [this]()
+	{
 		static bool which = false;
 		auto title = which ? tr("Notifications  ") : tr("Notifications: %1").arg(m_notification_count);
 		this->menu_notifications.setTitle(title);
 		which = !which;
 	});
 
-	connect(&m_tagger, &Tagger::newTagsAdded, [this](const QStringList& l) {
+	connect(&m_tagger, &Tagger::newTagsAdded, [this](const QStringList& l)
+	{
 		QString msg = tr("<p>New tags were found, ordered by number of times used:</p>");
 		msg.append(QStringLiteral("<ul><li>"));
 		for(const auto& e : l) {
@@ -825,7 +845,8 @@ void Window::createActions()
 		msg.append(QStringLiteral("</li></ul>"));
 		addNotification(tr("New Tags Added"), tr("Check Notifications menu for list of added tags."), msg);
 	});
-	connect(&a_show_settings, &QAction::triggered, [this](){
+	connect(&a_show_settings, &QAction::triggered, [this]()
+	{
 		auto sd = new SettingsDialog(this);
 		connect(sd, &SettingsDialog::updated, this, &Window::updateSettings);
 		connect(sd, &SettingsDialog::updated, &m_reverse_search, &ReverseSearch::updateSettings);
@@ -835,7 +856,8 @@ void Window::createActions()
 		});
 		sd->open();
 	});
-	connect(&ag_sort_criteria, &QActionGroup::triggered,[this](QAction* a){
+	connect(&ag_sort_criteria, &QActionGroup::triggered,[this](QAction* a)
+	{
 		m_tagger.queue().setSortBy(a->data().value<SortQueueBy>());
 		m_tagger.queue().sort();
 	});
@@ -871,6 +893,8 @@ void Window::createMenus()
 
 	// Tray context menu actions
 	add_action(menu_tray, a_view_fullscreen);
+	add_action(menu_tray, a_view_minimal);
+	add_separator(menu_tray);
 	add_action(menu_tray, a_view_menu);
 	add_action(menu_tray, a_view_input);
 	add_action(menu_tray, a_view_statusbar);
@@ -878,6 +902,7 @@ void Window::createMenus()
 	add_action(menu_tray, a_ib_replace);
 	add_action(menu_tray, a_ib_restore);
 	add_separator(menu_tray);
+	add_action(menu_tray, a_show_settings);
 	add_action(menu_tray, a_exit);
 
 	// Navigation menu actions
@@ -889,7 +914,10 @@ void Window::createMenus()
 	add_action(menu_navigation, a_save_prev);
 	add_separator(menu_navigation);
 	add_action(menu_navigation, a_open_loc);
+	add_action(menu_navigation, a_open_tags);
+	add_separator(menu_navigation);
 	add_action(menu_navigation, a_reload_tags);
+	add_action(menu_navigation, a_edit_tags);
 
 	// View menu actions
 	add_action(menu_view, a_view_fullscreen);
@@ -983,6 +1011,8 @@ void Window::updateMenus()
 	a_save_prev.setDisabled(val);
 	a_delete_file.setDisabled(val);
 	a_reload_tags.setDisabled(val);
+	a_open_tags.setDisabled(val);
+	a_edit_tags.setDisabled(val);
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);

@@ -14,6 +14,8 @@
 #include <QFrame>
 #include <QWidget>
 #include <QStringList>
+#include <QFileSystemWatcher>
+#include <memory>
 
 #include "util/unordered_map_qt.h"
 #include "picture.h"
@@ -129,8 +131,14 @@ public slots:
 	/// Asks to delete currently selected file.
 	void deleteCurrentFile();
 
-	/// Reloads tag files used for autocomplete.
+	/// Finds new set of tag files used for autocomplete.
 	void reloadTags();
+
+	/// Opens current tag files set in default editor.
+	void openTagFilesInEditor();
+
+	/// Opens current tag files set in default file browser.
+	void openTagFilesInShell();
 
 	/// Updates configuration from QSettings.
 	void updateSettings();
@@ -164,10 +172,17 @@ signals:
 	 */
 	void newTagsAdded(const QStringList&);
 
+
+	/**
+	 * @brief Tag file contents changed by user.
+	 */
+	void tagFileChanged();
+
 private:
+	void findTagsFiles(bool force = false);
+	void reloadTagsContents();
 	bool loadCurrentFile();
 	bool loadFile(size_t index, bool silent = false);
-	void findTagsFiles();
 	void updateNewTagsCounts();
 	void clear();
 
@@ -179,12 +194,14 @@ private:
 	QFrame      m_separator;
 	Picture     m_picture;
 	TagInput    m_input;
+	TaggerStatistics m_statistics;
 
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
-	TaggerStatistics m_statistics;
+	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
+	unsigned    m_overall_new_tag_counts = 0u;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Tagger::RenameOptions)
