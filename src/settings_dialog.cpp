@@ -30,6 +30,7 @@
 #define S_SHOW_DIR      QStringLiteral("window/show-current-directory")
 #define S_STATISTICS    QStringLiteral("stats/enabled")
 #define S_VERCHECK      QStringLiteral("version-check-enabled")
+#define S_TRACK_TAGS    QStringLiteral("track-added-tags")
 #define S_PROXY_ENABLED QStringLiteral("proxy/enabled")
 #define S_PROXY_HOST    QStringLiteral("proxy/host")
 #define S_PROXY_PORT    QStringLiteral("proxy/port")
@@ -42,6 +43,7 @@
 #define D_SHOW_DIR      true
 #define D_STATISTICS    true
 #define D_VERCHECK      true
+#define D_TRACK_TAGS    true
 #define D_PROXY_ENABLED false
 #define D_PROXY_HOST    QStringLiteral("")
 #define D_PROXY_PORT    9050
@@ -269,6 +271,7 @@ void SettingsDialog::reset()
 	ui->showCurrentDir->setChecked(   settings.value(S_SHOW_DIR,      D_SHOW_DIR).toBool());
 	ui->statsEnabled-> setChecked(    settings.value(S_STATISTICS,    D_STATISTICS).toBool());
 	ui->vercheckEnabled->setChecked(  settings.value(S_VERCHECK,      D_VERCHECK).toBool());
+	ui->trackAddedTags->setChecked(   settings.value(S_TRACK_TAGS,    D_TRACK_TAGS).toBool());
 	ui->proxyGroup->   setChecked(    settings.value(S_PROXY_ENABLED, D_PROXY_ENABLED).toBool());
 	ui->fontSize->     setValue(      settings.value(S_FONT_SIZE,     D_FONT_SIZE).toUInt());
 	ui->proxyPort->    setValue(      settings.value(S_PROXY_PORT,    D_PROXY_PORT).toUInt());
@@ -369,6 +372,7 @@ void SettingsDialog::apply()
 	settings.setValue(S_SHOW_DIR,      ui->showCurrentDir->isChecked());
 	settings.setValue(S_STATISTICS,    ui->statsEnabled->isChecked());
 	settings.setValue(S_VERCHECK,      ui->vercheckEnabled->isChecked());
+	settings.setValue(S_TRACK_TAGS,    ui->trackAddedTags->isChecked());
 	settings.setValue(S_PROXY_PROTO,   ui->proxyProtocol->currentText());
 	settings.setValue(S_PROXY_PORT,    ui->proxyPort->text());
 	settings.setValue(S_PROXY_HOST,    ui->proxyHost->text());
@@ -431,6 +435,7 @@ void SettingsDialog::restoreDefaults()
 	ui->showCurrentDir->setChecked(   D_SHOW_DIR);
 	ui->statsEnabled-> setChecked(    D_STATISTICS);
 	ui->vercheckEnabled->setChecked(  D_VERCHECK);
+	ui->trackAddedTags->setChecked(   D_TRACK_TAGS);
 	ui->proxyGroup->   setChecked(    D_PROXY_ENABLED);
 	ui->proxyPort->    setValue(      D_PROXY_PORT);
 	ui->fontSize->     setValue(      D_FONT_SIZE);

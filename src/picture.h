@@ -64,7 +64,7 @@ private:
 
 	using MoviePtr = std::unique_ptr<QMovie>;
 
-	static const int resize_timeout = 100; //ms
+	static constexpr int resize_timeout = 100; //ms
 
 	void resizeMedia();
 	void updateStyle();

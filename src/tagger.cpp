@@ -250,7 +250,7 @@ void Tagger::setInputVisible(bool visible)
 	QSettings s;
 	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
 	if(view_mode == ViewMode::Minimal)
-		return;
+		return; // NOTE: no need to update following properties because they've been taken care of already
 
 	m_separator.setVisible(visible);
 
@@ -535,7 +535,10 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 				   "<p>File may have been renamed or removed by another application.</p>").arg(file.fileName()));
 			return RenameStatus::Failed;
 		}
-		updateNewTagsCounts();
+		QSettings settings;
+		if(settings.value(QStringLiteral("track-added-tags"), true).toBool()) {
+			updateNewTagsCounts();
+		}
 		emit fileRenamed(m_input.text());
 		return RenameStatus::Renamed;
 	}

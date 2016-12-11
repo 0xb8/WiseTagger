@@ -45,7 +45,7 @@ struct MetaTypeRegistrator
 		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
 	}
 };
-static MetaTypeRegistrator _;
+static const MetaTypeRegistrator _;
 
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::ViewMode)
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::SortQueueBy)

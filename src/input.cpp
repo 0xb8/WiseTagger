@@ -119,7 +119,7 @@ void TagInput::loadTagFiles(const QStringList &files)
 		if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
 			QMessageBox::warning(this,
 				tr("Error opening tag file"),
-				tr("</p>Could not open <b>%1</b></p>"
+				tr("<p>Could not open <b>%1</b></p>"
 				   "<p>File may have been renamed or removed by another application.</p>").arg(file));
 			continue;
 		}
@@ -222,16 +222,21 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 	auto allowed_in_tag = [](QChar c)
 	{
-		static const QString valid_chars{"`~!@#$%^&*()_;."};
-		return c.isLetterOrNumber() || valid_chars.indexOf(c) >= 0;
+		const char valid_chars[] = "`~!@#$%^&*()_;.";
+		return c.isLetterOrNumber() ||
+			std::find(std::begin(valid_chars),
+			          std::end(valid_chars),
+			          c.toLatin1()) != std::end(valid_chars);
 	};
 
 	auto allowed_in_file = [&allowed_in_tag](QChar c)
 	{
-		static const QString valid_chars{" \t-=:,"};
+		const char valid_chars[] = " \t-=:,";
 		return	c.isLetterOrNumber() ||
 			allowed_in_tag(c)    ||
-			valid_chars.indexOf(c) >= 0;
+			std::find(std::begin(valid_chars),
+		                  std::end(valid_chars),
+		                  c.toLatin1()) != std::end(valid_chars);
 	};
 
 	while(!input->atEnd()) {
