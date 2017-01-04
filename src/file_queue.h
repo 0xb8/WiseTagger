@@ -9,6 +9,7 @@
 #define FILE_QUEUE_H
 
 #include <QStringList>
+#include <QFileInfo>
 #include <QObject>
 #include <deque>
 #include "global_enums.h"
@@ -24,10 +25,10 @@ class FileQueue {
 public:
 
 	/// Value used as invalid index.
-	static constexpr size_t npos = std::numeric_limits<size_t>::max();
+	static const size_t npos;
 
-	/// Suffix of session files.
-	static const QString sessionFileSuffix;
+	/// Checks suffix of session files.
+	static bool checkSessionFileSuffix(const QFileInfo&);
 
 	/// Name Filter for session files.
 	static const QString sessionNameFilter;
@@ -44,10 +45,10 @@ public:
 
 
 	/*!
-	 * \brief Checks if extension is allowed by currently set name filter.
-	 * \param path File path or extension.
+	 * \brief Checks if file's suffix is allowed by currently set name filter.
+	 * \param fi QFileInfo object to check
 	 */
-	bool checkExtension(const QString& path) noexcept;
+	bool checkExtension(const QFileInfo& fi) noexcept;
 
 
 	/*!

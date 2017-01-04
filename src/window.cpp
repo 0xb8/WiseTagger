@@ -48,6 +48,7 @@ namespace logging_category {
 #define SETT_WINDOW_GEOMETRY    QStringLiteral("window/geometry")
 #define SETT_WINDOW_STATE       QStringLiteral("window/state")
 #define SETT_LAST_DIR           QStringLiteral("window/last-directory")
+#define SETT_LAST_SESSION_DIR   QStringLiteral("window/last-session-directory")
 
 #define SETT_SHOW_MENU          QStringLiteral("window/show-menu")
 #define SETT_SHOW_STATUS        QStringLiteral("window/show-statusbar")
@@ -63,7 +64,7 @@ namespace logging_category {
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
 #define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
 #define VER_CHECK_URL           QUrl(QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt"))
-#define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0")
+#define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:45.5) Gecko/20100101 Firefox/45.5")
 #endif
 
 //------------------------------------------------------------------------------
@@ -165,7 +166,6 @@ void Window::updateWindowTitle()
 			.arg(qApp->applicationVersion()));
 		return;
 	}
-	m_last_directory = m_tagger.currentDir();
 	setWindowTitle(tr(Window::MainWindowTitle).arg(
 		m_tagger.currentFileName(),
 		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
@@ -318,8 +318,8 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		if(urls.size() == 1) {
 			QFileInfo dropfile(urls.first().toLocalFile());
 			if(!(dropfile.isDir()
-				|| m_tagger.queue().checkExtension(dropfile.suffix())
-				|| dropfile.suffix() == FileQueue::sessionFileSuffix))
+				|| m_tagger.queue().checkExtension(dropfile)
+				|| FileQueue::checkSessionFileSuffix(dropfile)))
 			{
 				return true;
 			}
@@ -441,7 +441,6 @@ void Window::saveSettings()
 
 	settings.setValue(SETT_WINDOW_GEOMETRY, saveGeometry());
 	settings.setValue(SETT_WINDOW_STATE,    saveState());
-	settings.setValue(SETT_LAST_DIR,        m_last_directory);
 	// NOTE: remove these after a couple of releases
 	settings.remove(QStringLiteral("window/size"));
 	settings.remove(QStringLiteral("window/position"));
@@ -807,13 +806,18 @@ void Window::createActions()
 			QMessageBox::critical(this,
 				tr("Save Session Error"),
 				tr("<p>Could not save session to <b>%1</b>.</p><p>Check file permissions.</p>").arg(filename));
+			return;
 		}
+		QSettings s;
+		s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(filename).absolutePath());
 	});
 	connect(&a_open_session, &QAction::triggered, [this]()
 	{
+		QSettings s;
+		auto lastdir = s.value(SETT_LAST_SESSION_DIR, m_last_directory).toString();
 		auto filename = QFileDialog::getOpenFileName(this,
 			tr("Open Session"),
-			m_last_directory,
+			lastdir,
 			QStringLiteral("Session Files (%1)").arg(FileQueue::sessionNameFilter));
 		m_tagger.openSession(filename);
 	});
@@ -825,7 +829,6 @@ void Window::createActions()
 			m_tagger.queue().currentIndex()+1, 1, m_tagger.queue().size());
 		m_tagger.openFileInQueue(number-1);
 	});
-
 	connect(&m_notification_display_timer, &QTimer::timeout, [this]()
 	{
 		static bool which = false;
@@ -833,7 +836,15 @@ void Window::createActions()
 		this->menu_notifications.setTitle(title);
 		which = !which;
 	});
-
+	connect(&m_tagger, &Tagger::sessionOpened, [](const QString& path)
+	{
+		QSettings s; s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(path).absolutePath());
+	});
+	connect(&m_tagger, &Tagger::fileOpened, [this](const QString& path)
+	{
+		m_last_directory = QFileInfo(path).absolutePath();
+		QSettings s; s.setValue(SETT_LAST_DIR, m_last_directory);
+	});
 	connect(&m_tagger, &Tagger::newTagsAdded, [this](const QStringList& l)
 	{
 		QString msg = tr("<p>New tags were found, ordered by number of times used:</p>");

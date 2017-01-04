@@ -13,6 +13,7 @@
 #include <QCollator>
 #include <QDateTime>
 #include <QFile>
+#include <QBuffer>
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(filequeue, "FileQueue")
@@ -22,7 +23,7 @@ namespace logging_category {
 
 /* static data */
 const QString FileQueue::m_empty{nullptr,0};
-const QString FileQueue::sessionFileSuffix = QStringLiteral("wt-session");
+const size_t  FileQueue::npos = std::numeric_limits<size_t>::max();
 const QString FileQueue::sessionNameFilter = QStringLiteral("*.wt-session");
 
 void FileQueue::setNameFilter(const QStringList &f)
@@ -30,13 +31,19 @@ void FileQueue::setNameFilter(const QStringList &f)
 	m_name_filters = f;
 }
 
+bool FileQueue::checkSessionFileSuffix(const QFileInfo &fi)
+{
+	return fi.suffix() == QStringLiteral("wt-session") || fi.filePath() == QStringLiteral("-");
+}
+
 void FileQueue::setSortBy(SortQueueBy criteria)
 {
 	m_sort_by = criteria;
 }
 
-bool FileQueue::checkExtension(const QString &ext) noexcept
+bool FileQueue::checkExtension(const QFileInfo & fi) noexcept
 {
+	const auto ext = fi.suffix();
 	for(const auto & f : m_name_filters) {
 		if(f.endsWith(ext, Qt::CaseInsensitive)) return true;
 	}
@@ -51,7 +58,7 @@ void FileQueue::push(const QString &f)
 		return;
 	}
 
-	if(fi.isFile() && checkExtension(fi.suffix())) {
+	if(fi.isFile() && checkExtension(fi)) {
 		m_files.push_back(fi.absoluteFilePath());
 
 	} else if(fi.isDir()) {
@@ -193,7 +200,7 @@ void FileQueue::eraseCurrent()
 
 size_t FileQueue::saveToFile(const QString &path) const
 {
-	if(empty() || !path.endsWith(FileQueue::sessionFileSuffix))
+	if(empty() || !checkSessionFileSuffix(path))
 		return 0;
 
 	QFile f(path);
@@ -210,7 +217,6 @@ size_t FileQueue::saveToFile(const QString &path) const
 
 	stream << m_files.size() << '\n' << m_current << '\n';
 
-
 	for(const auto& e : m_files) {
 		stream << e << '\n';
 		if(stream.status() != QTextStream::Ok) {
@@ -223,42 +229,62 @@ size_t FileQueue::saveToFile(const QString &path) const
 	return f.size();
 }
 
+
+
 size_t FileQueue::loadFromFile(const QString &path)
 {
-	if(!path.endsWith(FileQueue::sessionFileSuffix)) {
+	QFile f;
+	QFileInfo fi(path);
+	QTextStream stream;
+	QBuffer data_buf;
+	int curr = 0, size = -1;
+	if(checkSessionFileSuffix(fi) && fi.exists()) {
+		f.setFileName(path);
+		bool opened = f.open(QIODevice::ReadOnly);
+		if(!opened) {
+			pwarn << "loadFromFile(): could not open" << path << "for reading";
+			return 0;
+		}
+
+		data_buf.setData(qUncompress(f.readAll()));
+		data_buf.open(QIODevice::ReadOnly);
+		stream.setDevice(&data_buf);
+
+		stream >> size >> curr;
+		if(size <= 0 || curr < 0 || curr >= size) {
+			pwarn << "Invalid size / current index:" << curr << size;
+			return 0;
+		}
+
+	} else if(path == QStringLiteral("-")) {
+		bool opened = f.open(stdin, QIODevice::ReadOnly|QIODevice::Text, QFileDevice::AutoCloseHandle);
+		if(!opened) {
+			pwarn << "loadFromFile(): could not open stdin for reading";
+			return 0;
+		}
+		stream.setDevice(&f);
+	} else {
 		return 0;
 	}
-
-	QFile f(path);
-	bool opened = f.open(QIODevice::ReadOnly);
-	if(!opened) {
-		pwarn << "loadFromFile(): could not open" << path << "for reading";
-		return 0;
-	}
-
-	QTextStream stream(qUncompress(f.readAll()), QIODevice::ReadOnly);
 	stream.setCodec("UTF-8");
 
+	std::deque<QString> res;
 	QString line;
 	line.reserve(256);
-	clear();
-
-	int curr = -1, size = -1;
-	stream >> size >> curr;
-
-	if(size <= 0 || curr < 0 || curr >= size) {
-		pwarn << "Invalid size / current index:" << curr << size;
-		return 0;
-	}
 
 	while (stream.readLineInto(&line)) {
 		if(!line.isEmpty()) {
-			m_files.push_back(line);
+			fi.setFile(line);
+			if(checkExtension(fi))
+				res.push_back(fi.canonicalFilePath());
 		}
 	}
 
-	if(!m_files.empty()) {
+	if(!res.empty() && (size_t)curr < res.size()) {
+		m_files = std::move(res);
 		m_current = curr;
+	} else {
+		pwarn << "loadFromFile(): file list is empty or smaller than current file index";
 	}
 
 	return m_files.size();

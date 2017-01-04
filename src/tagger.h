@@ -145,37 +145,32 @@ public slots:
 
 signals:
 
-	/**
-	 * \brief File successfully opened.
-	 * \retval File path.
-	 */
-	void fileOpened(const QString&);
 
+	/// This signal is emitted when specified media file has been successfully opened.
+	void fileOpened(const QString& file);
+
+	/// This signal is emitted when specified session file has been sucessfully opened.
+	void sessionOpened(const QString& sfile);
 
 	/**
-	 * \brief File name modified by user.
+	 * \brief This signal is emitted when file name has been modified by user.
 	 * \retval New file name.
 	 */
-	void tagsEdited(const QString&);
-
+	void tagsEdited(const QString& newname);
 
 	/**
-	 * \brief File renamed by user.
+	 * \brief This signal is emitted when file has been renamed by user.
 	 * \retval New file name.
 	 */
-	void fileRenamed(const QString&);
-
+	void fileRenamed(const QString& newname);
 
 	/**
-	 * \brief New Tags were added by user.
+	 * \brief This signal is emitted when new tags have been added by user.
 	 * \retval List of tags not in tag file added for current file.
 	 */
-	void newTagsAdded(const QStringList&);
+	void newTagsAdded(const QStringList& newtags);
 
-
-	/**
-	 * @brief Tag file contents changed by user.
-	 */
+	/// This signal is emitted when tag file contents have been changed externally.
 	void tagFileChanged();
 
 private:

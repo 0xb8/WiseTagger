@@ -105,7 +105,7 @@ bool Tagger::openDir(const QString &dir)
 bool Tagger::openSession(const QString& sfile)
 {
 	// NOTE: to prevent error message when opening normal file or directory
-	if(!sfile.endsWith(FileQueue::sessionFileSuffix)) return false;
+	if(!FileQueue::checkSessionFileSuffix(sfile)) return false;
 
 	if(!m_file_queue.loadFromFile(sfile)) {
 		QMessageBox::critical(this,
@@ -113,7 +113,12 @@ bool Tagger::openSession(const QString& sfile)
 			tr("<p>Could not load session from <b>%1</b></p>").arg(sfile));
 		return false;
 	}
-	return loadCurrentFile();
+
+	bool res = loadCurrentFile();
+	if(res) {
+		emit sessionOpened(sfile);
+	}
+	return res;
 }
 
 void Tagger::nextFile(RenameOptions options)
@@ -141,7 +146,7 @@ bool Tagger::openFileInQueue(size_t index)
 void Tagger::deleteCurrentFile()
 {
 	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
-		tr("<p>Are you sure you want to delete <b>%1</b> permanently?</p>"
+		tr("<h3 style=\"font-weight: normal;\">Are you sure you want to delete <u>%1</u> permanently?</h3>"
 		   "<dd><dl>File type: %2</dl>"
 		   "<dl>File size: %3</dl>"
 		   "<dl>Dimensions: %4 x %5</dl>"
