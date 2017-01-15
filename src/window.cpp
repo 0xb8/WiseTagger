@@ -590,8 +590,9 @@ void Window::createCommands()
 		}
 
 		connect(action, &QAction::triggered,
-			[this,name,binary,cmd] () mutable
+			[this,name,binary,cmd] ()
 		{
+			auto cmd_tmp = cmd; // NOTE: separate copy is needed instead of mutable lambda
 			auto to_native = [](const auto& path)
 			{
 				return QDir::toNativeSeparators(path);
@@ -603,7 +604,7 @@ void Window::createCommands()
 				return filename.left(lastdot);
 			};
 
-			for(QString& arg : cmd) {
+			for(QString& arg : cmd_tmp) {
 				arg.replace(QStringLiteral(CMD_PLDR_PATH),
 					to_native(m_tagger.currentFile()));
 
@@ -617,7 +618,8 @@ void Window::createCommands()
 					to_native(remove_ext(m_tagger.currentFileName())));
 
 			}
-			auto success = QProcess::startDetached(binary,cmd);
+			auto success = QProcess::startDetached(binary, cmd_tmp);
+			pdbg <<       "QProcess::startDetached(" << binary << "," << cmd_tmp << ") =>" << success;
 			if(!success) {
 				QMessageBox::critical(this,
 					tr("Failed to start command"),
