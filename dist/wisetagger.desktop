@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=WiseTagger
+Exec=WiseTagger %F
+Icon=wisetagger
+Type=Application
+Terminal=false
+Categories=Graphics;Viewer;
+MimeType=image/bmp;image/x-bmp;image/x-ms-bmp;image/dds;image/x-dds;image/gif;image/tiff;image/jp2;image/jpx;image/jpeg;image/x-mng;image/png;image/x-portable-anymap;image/x-portable-graymap;image/x-xbitmap;image/x-portable-bitmap;image/pbm;image/x-xpixmap;image/x-portable-pixmap;image/svg+xml;image/svg-xml;image/svg;text/xml-svg;image/vnd.wap.wbmp;image/wbm;
