@@ -34,21 +34,21 @@ public:
 	static const QString sessionNameFilter;
 
 	/// Set sorting criteria to be used by default.
-	void setSortBy(SortQueueBy criteria);
+	void setSortBy(SortQueueBy criteria) noexcept;
 
 	/*!
 	 * \brief Sets file extensions filter used by FileQueue::push
 	 *        and FileQueue::checkExtension
 	 * \param filters List of extension wildcards, e.g. \a *.jpg
 	 */
-	void setNameFilter(const QStringList& filters);
+	void setNameFilter(const QStringList& filters) noexcept(false);
 
 
 	/*!
 	 * \brief Checks if file's suffix is allowed by currently set name filter.
 	 * \param fi QFileInfo object to check
 	 */
-	bool checkExtension(const QFileInfo& fi) noexcept;
+	bool checkExtension(const QFileInfo& fi) const noexcept;
 
 
 	/*!
@@ -58,8 +58,19 @@ public:
 	 * If \p path is a file, enqueues it. If \p path is a directory,
 	 * enqueues files inside \p path, according to to filters set by
 	 * FileQueue::setNameFilter
+	 *
+	 * This function provides basic exception safety guarantee.
 	 */
 	void push(const QString& path);
+
+
+
+	/*!
+	 * \brief Assigns list of files to internal storage.
+	 *
+	 * This function provides strong exception safety guarantee.
+	 */
+	void assign(const QStringList& paths);
 
 
 	/*!
@@ -82,7 +93,7 @@ public:
 	 * \return Next file.
 	 * \retval EmptyString - Queue is empty.
 	 */
-	const QString& forward();
+	const QString& forward() noexcept;
 
 
 	/*!
@@ -90,7 +101,7 @@ public:
 	 * \return Previous file.
 	 * \retval EmptyString - Queue is empty.
 	 */
-	const QString& backward();
+	const QString& backward() noexcept;
 
 
 	/*!
@@ -99,7 +110,7 @@ public:
 	 * \return Selected file.
 	 * \retval EmptyString - Index is out of bounds or queue is empty.
 	 */
-	const QString& select(size_t index);
+	const QString& select(size_t index) noexcept;
 
 
 	/*!
@@ -107,7 +118,7 @@ public:
 	 * \return Current file.
 	 * \retval EmptyString - Queue is empty.
 	 */
-	const QString& current() const;
+	const QString& current() const noexcept;
 
 
 	/*!

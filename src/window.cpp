@@ -341,12 +341,15 @@ bool Window::eventFilter(QObject*, QEvent *e)
 			return true;
 		}
 
-		m_tagger.queue().clear();
-		for(auto&& fileurl : fileurls) {
-			dropfile.setFile(fileurl.toLocalFile());
-			m_tagger.queue().push(dropfile.absoluteFilePath());
-		}
+		// NOTE: allow user to choose to rename or cancel.
+		if(m_tagger.rename() == Tagger::RenameStatus::Cancelled)
+			return true;
 
+		QStringList filelist;
+		for(const auto& fileurl : fileurls) {
+			filelist.push_back(fileurl.toLocalFile());
+		}
+		m_tagger.queue().assign(filelist);
 		m_tagger.openFileInQueue();
 		return true;
 	}

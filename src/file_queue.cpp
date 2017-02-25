@@ -26,7 +26,7 @@ const QString FileQueue::m_empty{nullptr,0};
 const size_t  FileQueue::npos = std::numeric_limits<size_t>::max();
 const QString FileQueue::sessionNameFilter = QStringLiteral("*.wt-session");
 
-void FileQueue::setNameFilter(const QStringList &f)
+void FileQueue::setNameFilter(const QStringList &f) noexcept(false)
 {
 	m_name_filters = f;
 }
@@ -36,12 +36,12 @@ bool FileQueue::checkSessionFileSuffix(const QFileInfo &fi)
 	return fi.suffix() == QStringLiteral("wt-session") || fi.filePath() == QStringLiteral("-");
 }
 
-void FileQueue::setSortBy(SortQueueBy criteria)
+void FileQueue::setSortBy(SortQueueBy criteria) noexcept
 {
 	m_sort_by = criteria;
 }
 
-bool FileQueue::checkExtension(const QFileInfo & fi) noexcept
+bool FileQueue::checkExtension(const QFileInfo & fi) const noexcept
 {
 	const auto ext = fi.suffix();
 	for(const auto & f : m_name_filters) {
@@ -62,7 +62,7 @@ void FileQueue::push(const QString &f)
 		m_files.push_back(fi.absoluteFilePath());
 
 	} else if(fi.isDir()) {
-		QDirIterator it(f, m_name_filters, QDir::Files | QDir::Readable);
+		QDirIterator it(f, m_name_filters, QDir::Files);
 		while(it.hasNext() && !it.next().isNull()) {
 			m_files.push_back(it.fileInfo().absoluteFilePath());
 		}
@@ -71,8 +71,33 @@ void FileQueue::push(const QString &f)
 	}
 }
 
-const QString& FileQueue::select(size_t index)
+void FileQueue::assign(const QStringList& paths)
 {
+	using cont_t = decltype(m_files);
+	static_assert(util::traits::is_nothrow_swappable_all_v<decltype(m_files)>, "Member container should be nothrow swappable");
+	cont_t tmp;
+	QFileInfo fi;
+	for(const auto & p : paths) {
+		fi = p;
+		if(fi.isFile()) {
+			tmp.push_back(fi.absoluteFilePath());
+		}
+		if(fi.isDir()) {
+			QDirIterator it(p, m_name_filters, QDir::Files);
+			while(it.hasNext() && !it.next().isNull()) {
+				tmp.push_back(it.fileInfo().absoluteFilePath());
+			}
+		}
+	}
+
+	std::swap(tmp, m_files);
+	m_current = FileQueue::npos;
+}
+
+const QString& FileQueue::select(size_t index) noexcept
+{
+	static_assert(noexcept(m_files[index]), "");
+
 	if(index >= m_files.size()) {
 		pwarn << "select() index out of bounds";
 		return m_empty;
@@ -290,8 +315,10 @@ size_t FileQueue::loadFromFile(const QString &path)
 	return m_files.size();
 }
 
-const QString& FileQueue::forward()
+const QString& FileQueue::forward() noexcept
 {
+	static_assert(noexcept(m_files[m_current]), "");
+
 	if(m_current >= m_files.size()) {
 		pwarn << "forward(): queue empty or index is out of bounds";
 		return m_empty;
@@ -302,8 +329,10 @@ const QString& FileQueue::forward()
 	return m_files[m_current];
 }
 
-const QString& FileQueue::backward()
+const QString& FileQueue::backward() noexcept
 {
+	static_assert(noexcept(m_files[m_current]), "");
+
 	if(m_current >= m_files.size()) {
 		pwarn << "backward(): queue empty or index is out of bounds";
 		return m_empty;
@@ -328,8 +357,10 @@ size_t FileQueue::find(const QString &file) noexcept
 	return m_current;
 }
 
-const QString &FileQueue::current() const
+const QString &FileQueue::current() const noexcept
 {
+	static_assert(noexcept(m_files[m_current]), "");
+
 	if(m_current >= m_files.size()) {
 		pwarn << "current(): queue empty or index is out of bounds";
 		return m_empty;
