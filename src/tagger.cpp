@@ -14,6 +14,7 @@
 #include <QLoggingCategory>
 #include <QMessageBox>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QUrl>
 #include <algorithm>
 #include <cmath>
@@ -52,9 +53,9 @@ Tagger::Tagger(QWidget *_parent) :
 	m_input.setObjectName(QStringLiteral("Input"));
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
-	connect(&m_input, &TagInput::textEdited,     this, &Tagger::tagsEdited);
-	connect(this,     &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);
-	connect(this,     &Tagger::fileOpened, [this](const auto& file)
+	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
+	connect(this, &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);
+	connect(this, &Tagger::fileOpened, this, [this](const auto& file)
 	{
 		m_statistics.fileOpened(file, m_picture.mediaSize());
 	});
@@ -333,105 +334,97 @@ void Tagger::findTagsFiles(bool force)
 	const auto override = settings.value(QStringLiteral("tags/override"),
 					     QStringLiteral("*.tags!.txt")).toString();
 
-	QString parent_dir, errordirs;
+	QList<QDir> search_dirs;
+	QDir current_dir = fi.absoluteDir();
 
-	const int path_capacity = 256;
-	const int errors_capacity = 4 * path_capacity;
 
-	parent_dir.reserve(path_capacity);
-	errordirs.reserve(errors_capacity);
+	int max_height = 100; // NOTE: to avoid infinite loop with symlinks etc.
+	do {
+		search_dirs.append(current_dir);
+	} while(max_height --> 0 && current_dir.cdUp());
 
-	errordirs += QStringLiteral("<li>");
 
-	int max_height = 10;
-	while(max_height --> 0) {
-		parent_dir = fi.absolutePath();
-		errordirs += parent_dir;
-		errordirs += QStringLiteral("</li><li>");
+	for(const auto& loc : QStandardPaths::standardLocations(QStandardPaths::AppDataLocation))
+	{
+		search_dirs.append(QDir{loc});
+	}
 
-		auto cd = fi.dir();
-		auto list_override = cd.entryInfoList({override});
-		if(!list_override.isEmpty()) {
-			for(const auto& f : list_override) {
-				m_current_tag_files.push_back(f.absoluteFilePath());
-				pdbg << "found override:" << f.fileName();
-			}
-			break;
-		}
 
-		auto list_tags = cd.entryInfoList({tagsfile});
-		for(const auto& f : list_tags) {
+	auto add_tag_files = [this](const QFileInfoList& list)
+	{
+		for(const auto& f : list) {
 			m_current_tag_files.push_back(f.absoluteFilePath());
-			pdbg << "found tag file:" << f.fileName();
 		}
+	};
+
+	m_current_tag_files.clear();
+
+	QString search_paths_list;
+	search_paths_list.reserve(search_dirs.size() * 96);
+
+	for(const auto dir : search_dirs) {
+		search_paths_list.push_back(QStringLiteral("<li>"));
+		search_paths_list.push_back(dir.path());
+		search_paths_list.push_back(QStringLiteral("</li>"));
+
+		if(!dir.exists()) continue;
+
+		auto list_override = dir.entryInfoList({override});
+		auto list_normal   = dir.entryInfoList({tagsfile});
+
+		add_tag_files(list_override);
+
+		if(!list_override.isEmpty())
+			break;
+
+		add_tag_files(list_normal);
 
 		// support old files
-		if(list_override.isEmpty() && list_tags.isEmpty()) {
-			auto legacy_override = parent_dir, legacy_tags = parent_dir;
-			legacy_override += QChar('/');
-			legacy_tags += QChar('/');
-			std::copy(override.begin() + 2, override.end(), std::back_inserter(legacy_override));
-			std::copy(tagsfile.begin() + 2, tagsfile.end(), std::back_inserter(legacy_tags));
+		if(list_override.isEmpty() && list_normal.isEmpty()) {
 
-			if(QFile::exists(legacy_override)) {
-				m_current_tag_files.push_back(legacy_override);
-				pdbg << "found legacy override:" << legacy_override;
+			auto legacy_override_list = dir.entryInfoList({override.mid(2)});
+			auto legacy_normal_list   = dir.entryInfoList({tagsfile.mid(2)});
+
+			add_tag_files(legacy_override_list);
+			if(!legacy_override_list.isEmpty())
 				break;
-			}
-			if(QFile::exists(legacy_tags)) {
-				m_current_tag_files.push_back(legacy_tags);
-				pdbg << "found legacy tags:" << legacy_tags;
-			}
+
+			add_tag_files(legacy_normal_list);
+			if(!legacy_normal_list.isEmpty())
+				break;
 		}
-
-		if(fi.absoluteDir().isRoot())
-			break;
-
-		fi.setFile(parent_dir);
 	}
 
 	m_current_tag_files.removeDuplicates();
 
+	pdbg << m_current_tag_files;
+
 	if(m_current_tag_files.isEmpty()) {
-		auto last_resort = qApp->applicationDirPath();
-		last_resort += QStringLiteral("/tags.txt");
+		QMessageBox mbox;
+		mbox.setText(tr("<h3>Could not locate suitable tag file</h3>"));
+		mbox.setInformativeText(tr(
+			"<p>You can still browse and rename files, but tag autocomplete will not work.</p>"
+			"<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened file "
+			"and in directories directly above it."
 
-		errordirs += qApp->applicationDirPath();
-		errordirs += QStringLiteral("</li>");
-
-		if(QFile::exists(last_resort)) {
-			m_current_tag_files.push_back(last_resort);
-		} else {
-			QMessageBox mbox;
-			mbox.setText(tr("<h3>Could not locate suitable tag file</h3>"));
-			mbox.setInformativeText(tr(
-				"<p>You can still browse and rename files, but tag autocomplete will not work.</p>"
-				"<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened file "
-				"and in directories directly above it."
-
-				"<p>Tag files we looked for:"
-				"<dd><dl>Appending tag file: <b>%1</b></dl>"
-				"<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
-				"<p>Directories where we looked for them, in search order:"
-				"<ol>%3</ol></p>"
-				"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/overview\">"
-				"Appending and overriding tag files documentation"
-				"</a></p>").arg(tagsfile, override, errordirs));
-			mbox.setIcon(QMessageBox::Warning);
-			mbox.exec();
-		}
+			"<p>Tag files we looked for:"
+			"<dd><dl>Appending tag file: <b>%1</b></dl>"
+			"<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
+			"<p>Directories where we looked for them, in search order:"
+			"<ol>%3</ol></p>"
+			"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/overview\">"
+			"Appending and overriding tag files documentation"
+			"</a></p>").arg(tagsfile, override, search_paths_list));
+		mbox.setIcon(QMessageBox::Warning);
+		mbox.exec();
 	}
 
 	std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
 	m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
 	m_fs_watcher->addPaths(m_current_tag_files);
-	connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, [this](const auto& f)
+	connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, this, [this](const auto& f)
 	{
-		if(!QFile::exists(f)) {
-			pdbg << "removing deleted file" << f <<  "from tag file set";
-			this->m_current_tag_files.removeOne(f);
-		}
-		this->reloadTagsContents();
+		this->reloadTags();
 		pdbg << "reloaded tags due to changed file:" << f;
 		emit this->tagFileChanged();
 	});
@@ -520,7 +513,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 	}
 
 	m_input.setText(f.completeBaseName());
-	findTagsFiles(false);
+	findTagsFiles();
 	m_picture.setFocus();
 	return true;
 }
