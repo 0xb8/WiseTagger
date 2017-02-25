@@ -54,7 +54,8 @@ public:
 	{
 		Cancelled = -1, ///< Rename was cancelled by user.
 		Failed = 0,     ///< Rename failed.
-		Renamed = 1     ///< Renamed successfully
+		Renamed = 1,    ///< Renamed successfully.
+		NotModified = 2 ///< File name was not modified.
 	};
 	Q_ENUM(RenameStatus)
 
@@ -62,8 +63,7 @@ public:
 	enum class RenameOption
 	{
 		NoOption = 0x0,          ///< Default UI behavior.
-		ForceRename = 0x1,       ///< Force rename - do not show rename dialog.
-		HideCancelButton = 0x2,  ///< Remove Cancel button.
+		ForceRename = 0x1        ///< Force rename - do not show rename dialog.
 	};
 	using RenameOptions = QFlags<RenameOption>;
 	Q_FLAG(RenameOptions)
@@ -76,7 +76,6 @@ public:
 	 * \retval RenameStatus::Failed Failed to rename.
 	 */
 	RenameStatus rename(RenameOptions options = RenameOption::NoOption);
-
 
 	/**
 	 * \brief Asks to rename current file and opens next.

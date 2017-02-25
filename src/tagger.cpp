@@ -70,6 +70,9 @@ void Tagger::clear()
 
 bool Tagger::open(const QString& filename)
 {
+	if(rename() == RenameStatus::Cancelled)
+		return false;
+
 	bool res     = openDir(filename);
 	if(!res) res = openSession(filename);
 	if(!res) res = openFile(filename);
@@ -78,6 +81,9 @@ bool Tagger::open(const QString& filename)
 
 bool Tagger::openFile(const QString &filename)
 {
+	if(rename() == RenameStatus::Cancelled)
+		return false;
+
 	const QFileInfo fi(filename);
 	if(!fi.isReadable() || !fi.isFile() || !fi.isAbsolute()) {
 		return false;
@@ -91,6 +97,9 @@ bool Tagger::openFile(const QString &filename)
 
 bool Tagger::openDir(const QString &dir)
 {
+	if(rename() == RenameStatus::Cancelled)
+		return false;
+
 	const QFileInfo fi(dir);
 	if(!fi.isReadable() || !fi.isDir() || !fi.isAbsolute()) {
 		return false;
@@ -104,6 +113,9 @@ bool Tagger::openDir(const QString &dir)
 
 bool Tagger::openSession(const QString& sfile)
 {
+	if(rename() == RenameStatus::Cancelled)
+		return false;
+
 	// NOTE: to prevent error message when opening normal file or directory
 	if(!FileQueue::checkSessionFileSuffix(sfile)) return false;
 
@@ -123,16 +135,18 @@ bool Tagger::openSession(const QString& sfile)
 
 void Tagger::nextFile(RenameOptions options)
 {
-	if(fileModified() && (rename(options) == RenameStatus::Cancelled))
+	if(rename(options) == RenameStatus::Cancelled)
 		return;
+
 	m_file_queue.forward();
 	loadCurrentFile();
 }
 
 void Tagger::prevFile(RenameOptions options)
 {
-	if(fileModified() && (rename(options) == RenameStatus::Cancelled))
+	if(rename(options) == RenameStatus::Cancelled)
 		return;
+
 	m_file_queue.backward();
 	loadCurrentFile();
 }
@@ -424,7 +438,8 @@ void Tagger::findTagsFiles(bool force)
 	reloadTagsContents();
 }
 
-void Tagger::updateNewTagsCounts() {
+void Tagger::updateNewTagsCounts()
+{
 	const auto new_tags = m_input.getAddedTags(true);
 	bool emitting = false;
 
@@ -531,6 +546,9 @@ bool Tagger::loadCurrentFile()
 
 Tagger::RenameStatus Tagger::rename(RenameOptions options)
 {
+	if(!fileModified())
+		return RenameStatus::NotModified;
+
 	const QFileInfo file(m_file_queue.current());
 	QString new_file_path;
 
@@ -562,11 +580,8 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 		tr("Rename <b>%1</b>?").arg(file.completeBaseName()),
 		QMessageBox::Save|QMessageBox::Discard);
 
+	renameMessageBox.addButton(QMessageBox::Cancel);
 	renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
-
-	if(!options.testFlag(RenameOption::HideCancelButton)) { // FIXME: is this even needed?
-		renameMessageBox.addButton(QMessageBox::Cancel);
-	}
 	renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
 
 	int reply;
@@ -588,6 +603,12 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 
 	if(reply == QMessageBox::Cancel) {
 		return RenameStatus::Cancelled;
+	}
+
+	if(reply == QMessageBox::Discard) {
+		// NOTE: restore to initial state to prevent multiple rename dialogs
+		m_input.setText(file.completeBaseName());
+		return RenameStatus::NotModified;
 	}
 
 	return RenameStatus::Failed;
