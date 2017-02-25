@@ -691,7 +691,7 @@ void Window::createActions()
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       &m_tagger.statistics(), &TaggerStatistics::reverseSearched);
-	connect(&m_reverse_search, &ReverseSearch::finished, [this]()
+	connect(&m_reverse_search, &ReverseSearch::finished,       this, [this]()
 	{
 		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
 	});
@@ -712,7 +712,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
 
-	connect(&m_tagger,      &Tagger::tagFileChanged, [this]()
+	connect(&m_tagger,      &Tagger::tagFileChanged, this, [this]()
 	{
 		addNotification(tr("Tag file changed"),
 		                tr("Tag file has been edited or removed.\n"
@@ -834,7 +834,7 @@ void Window::createActions()
 			m_tagger.queue().currentIndex()+1, 1, m_tagger.queue().size());
 		m_tagger.openFileInQueue(number-1);
 	});
-	connect(&m_notification_display_timer, &QTimer::timeout, [this]()
+	connect(&m_notification_display_timer, &QTimer::timeout, this, [this]()
 	{
 		static bool which = false;
 		auto title = which ? tr("Notifications  ") : tr("Notifications: %1").arg(m_notification_count);

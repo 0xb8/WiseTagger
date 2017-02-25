@@ -36,7 +36,7 @@ Picture::Picture(QWidget *parent) :
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setObjectName(QStringLiteral("Picture"));
 
-	connect(&m_resize_timer, &QTimer::timeout, [this]()
+	connect(&m_resize_timer, &QTimer::timeout, this, [this]()
 	{
 		if(!m_pixmap.isNull() || (m_movie && m_movie->isValid()))
 			resizeMedia();

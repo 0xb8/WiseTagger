@@ -74,7 +74,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 
 	connect(ui->dialogButtonBox, &QDialogButtonBox::accepted, this, &SettingsDialog::apply);
 	connect(ui->dialogButtonBox, &QDialogButtonBox::rejected, this, &SettingsDialog::reset);
-	connect(ui->dialogButtonBox, &QDialogButtonBox::clicked, [this](QAbstractButton* btn){
+	connect(ui->dialogButtonBox, &QDialogButtonBox::clicked, this, [this](QAbstractButton* btn){
 		if(qobject_cast<QPushButton*>(btn) == ui->dialogButtonBox->button(QDialogButtonBox::Apply)) {
 			apply();
 		}
