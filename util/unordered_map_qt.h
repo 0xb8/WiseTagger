@@ -10,7 +10,6 @@
 
 #include <unordered_map>
 #include <QString>
-#include <QHash>
 
 namespace std {
 	template<>
@@ -18,8 +17,12 @@ namespace std {
 		typedef QString      argument_type;
 		typedef std::size_t  result_type;
 		result_type operator()(const argument_type &s) const {
-			// NOTE: qHash() returns uint, we can't use it directly
-			return std::hash<unsigned int>()(qHash(s));
+			using value_t = ushort;
+			result_type res{};
+			for(auto c : s) {
+				res ^= std::hash<value_t>()(c.unicode());
+			}
+			return std::hash<value_t>()(res);
 		}
 	};
 }
