@@ -1,0 +1,44 @@
+# Maintainer: cat <cat@wolfgirl.org>
+
+_realname='wisetagger'
+pkgname="${_realname}-git"
+pkgver=r145.fa1b2a3
+pkgrel=1
+pkgdesc='A simple picture tagger'
+arch=('i686' 'x86_64')
+url='https://bitbicket.org/catgirl/wisetagger/'
+license=('custom:wtfpl')
+depends=('qt5-base'
+         'hicolor-icon-theme')
+
+optdepends=('qt5-svg: SVG image format support')
+
+makedepends=("qt5-tools"
+             "gcc"
+	     "cmake"
+             "make"
+             "git")
+
+source=('git+https://catgirl@bitbucket.org/catgirl/wisetagger.git'
+        'wtfpl.txt::http://www.wtfpl.net/txt/copying/')
+sha256sums=('SKIP'
+            '0356258391e190dc1d44ea01565cfe627fe44e27dad693a0a54c2483a7b223e5')
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+	cd "${srcdir}/${_realname}"
+	mkdir build && cd build
+	msg "Installing into ${pkgdir}..."
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${pkgdir}/usr/" ..
+	make
+}
+
+package() {
+	cd ${srcdir}/${_realname}/build
+	make install
+	install -D -m 644 "${srcdir}/wtfpl.txt" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
