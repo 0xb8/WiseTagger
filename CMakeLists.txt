@@ -45,14 +45,14 @@ find_package(Qt5 REQUIRED COMPONENTS Core Gui Network Widgets ${WINEXTRAS_PKG})
 qt5_wrap_ui(wisetagger_ui_hdrs
 	ui/settings.ui
 )
-add_executable(wisetagger ${SUBSYSTEM} ${wt_srcs} ${wisetagger_ui_hdrs} ${wisetagger_rc_srcs})
-target_link_libraries(wisetagger Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets ${WINEXTRAS})
+add_executable(WiseTagger ${SUBSYSTEM} ${wt_srcs} ${wisetagger_ui_hdrs} ${wisetagger_rc_srcs})
+target_link_libraries(WiseTagger Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets ${WINEXTRAS})
 
 find_package(Git)
 if(GIT_FOUND)
 	execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE TARGET_REVISION  OUTPUT_STRIP_TRAILING_WHITESPACE)
 	execute_process(COMMAND ${GIT_EXECUTABLE} diff --quiet HEAD WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} RESULT_VARIABLE TARGET_DEVBUILD)
-	target_compile_definitions(wisetagger PRIVATE USE_REVISION_INFO)
+	target_compile_definitions(WiseTagger PRIVATE USE_REVISION_INFO)
 	string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
 	set(TGT_REV_LINK "<a href=\\\"https://bitbucket.org/catgirl/wisetagger/commits/${TARGET_REVISION}\\\">${TARGET_REVISION}</a>")
 	if(TARGET_DEVBUILD)
@@ -63,22 +63,27 @@ endif()
 configure_file("util/project_info.h.in" "util/project_info.h")
 
 if(WIN32)
-	target_compile_definitions(wisetagger PRIVATE UNICODE)
+	target_compile_definitions(WiseTagger PRIVATE UNICODE)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-	target_compile_options(wisetagger PRIVATE -Wall -Wextra)
+	target_compile_options(WiseTagger PRIVATE -Wall -Wextra)
 endif()
 
-set_target_properties(wisetagger PROPERTIES 
-	RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
+set_target_properties(WiseTagger PROPERTIES 
 	CXX_STANDARD 14
 	CXX_STANDARD_REQUIRED ON
 	CXX_EXTENSIONS OFF
 )
 
-install(TARGETS wisetagger 
-	ARCHIVE DESTINATION lib 
-	LIBRARY DESTINATION lib 
+install(TARGETS WiseTagger 
 	RUNTIME DESTINATION bin
+)
+
+install(FILES resources/wisetagger.svg
+	DESTINATION share/icons/hicolor/scalable/apps/
+)
+
+install(FILES dist/wisetagger.desktop
+	DESTINATION share/applications/
 )
