@@ -138,14 +138,19 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 //------------------------------------------------------------------------------
 void Window::fileOpenDialog()
 {
-	auto fileName = QFileDialog::getOpenFileName(this,
+	auto fileNames = QFileDialog::getOpenFileNames(this,
 		tr("Open File"),
 		m_last_directory,
-		tr("Image Files (%1);;Session Files (%2)")
-			.arg(util::join(util::supported_image_formats_namefilter()))
-			.arg(FileQueue::sessionNameFilter));
-	m_tagger.open(fileName);
+		tr("Image Files (%1)")
+			.arg(util::join(util::supported_image_formats_namefilter())));
 
+	if(fileNames.size() == 1) {
+		m_tagger.open(fileNames.first());
+	}
+	if(fileNames.size() > 1) {
+		m_tagger.queue().assign(fileNames);
+		m_tagger.openFileInQueue();
+	}
 }
 
 void Window::directoryOpenDialog()
@@ -214,7 +219,7 @@ void Window::updateImageboardPostURL(QString url)
 	m_post_url = url;
 }
 
-void Window::addNotification(const QString &title, const QString& description, const QString &body)
+void Window::addNotification(QString title, QString description, QString body)
 {
 	// remove other notifications of the same type
 	removeNotification(title);
@@ -240,7 +245,7 @@ void Window::addNotification(const QString &title, const QString& description, c
 	m_tray_icon.showMessage(title, description);
 }
 
-void Window::removeNotification(const QString& title) {
+void Window::removeNotification(QString title) {
 	const auto actions = menu_notifications.actions();
 	for(const auto a : actions) {
 		if(a && a->text() == title) {
@@ -250,7 +255,6 @@ void Window::removeNotification(const QString& title) {
 	}
 	if(m_notification_count <= 0) {
 		hideNotificationsMenu();
-
 	}
 	m_tray_icon.setVisible(false);
 }
@@ -265,7 +269,7 @@ void Window::showNotificationsMenu()
 void Window::hideNotificationsMenu()
 {
 	m_notification_display_timer.stop();
-	menu_notifications.setTitle("");
+	menu_notifications.setTitle(QStringLiteral(""));
 }
 
 void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)

@@ -37,14 +37,14 @@ public slots:
 	void updateWindowTitleProgress(int progress);
 	void updateStatusBarText();
 	void updateImageboardPostURL(QString url);
-	void addNotification(const QString& title, const QString &description, const QString& body);
-	void removeNotification(const QString &title);
+	void addNotification(QString title, QString description, QString body);
+	void removeNotification(QString title);
 	void updateSettings();
 
 protected:
-	bool eventFilter(QObject*, QEvent *e) override;
-	void closeEvent(QCloseEvent *e) override;
-	void showEvent(QShowEvent* e) override;
+	bool eventFilter(QObject*, QEvent *) override;
+	void closeEvent(QCloseEvent*) override;
+	void showEvent(QShowEvent*) override;
 
 private slots:
 	void fileOpenDialog();
@@ -132,8 +132,8 @@ private:
 	bool       m_view_maximized = false;
 
 #ifdef Q_OS_WIN32
-	QWinTaskbarButton m_win_taskbar_button;
-	QNetworkAccessManager m_vernam;
+	QWinTaskbarButton       m_win_taskbar_button;
+	QNetworkAccessManager   m_vernam;
 	void checkNewVersion();
 	void processNewVersion(QNetworkReply*);
 #endif
