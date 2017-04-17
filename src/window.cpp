@@ -690,8 +690,8 @@ void Window::createActions()
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
-	connect(&m_reverse_search, &ReverseSearch::finished,       &m_tagger.statistics(), &TaggerStatistics::reverseSearched);
-	connect(&m_reverse_search, &ReverseSearch::finished,       this, [this]()
+	connect(&m_reverse_search, &ReverseSearch::reverseSearched,&m_tagger.statistics(), &TaggerStatistics::reverseSearched);
+	connect(&m_reverse_search, &ReverseSearch::reverseSearched,this, [this]()
 	{
 		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
 	});

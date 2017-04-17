@@ -12,6 +12,7 @@
 #include <QTextStream>
 #include <QCollator>
 #include <QDateTime>
+#include <QSaveFile>
 #include <QFile>
 #include <QBuffer>
 
@@ -228,7 +229,7 @@ size_t FileQueue::saveToFile(const QString &path) const
 	if(empty() || !checkSessionFileSuffix(path))
 		return 0;
 
-	QFile f(path);
+	QSaveFile f(path);
 	bool opened = f.open(QIODevice::WriteOnly);
 	if(!opened) {
 		pwarn << "saveToFile(): could not open" << path << "for writing";
@@ -251,7 +252,9 @@ size_t FileQueue::saveToFile(const QString &path) const
 	}
 	stream.flush();
 	f.write(qCompress(raw_data, 8));
-	return f.size();
+	const auto ret = f.size();
+	f.commit();
+	return ret;
 }
 
 

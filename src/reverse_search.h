@@ -79,6 +79,8 @@ signals:
 	/// Upload finished.
 	void finished();
 
+	/// Reverse search finished sucessfully.
+	void reverseSearched();
 
 	/*!
 	 * \param[out] bytesSent Number of bytes sent.

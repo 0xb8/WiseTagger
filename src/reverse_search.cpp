@@ -14,6 +14,7 @@
 #include <QMimeDatabase>
 #include <QImageReader>
 #include <QMessageBox>
+#include <QSaveFile>
 #include <QSettings>
 #include <QFileInfo>
 #include <stdexcept>
@@ -223,15 +224,19 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 		response_filename.append(QStringLiteral(".html"));
 		m_response_files.push_back(response_filename);
 
-		QFile rf(response_filename);
+		QSaveFile rf(response_filename);
+		rf.setDirectWriteFallback(true);
 		rf.open(QIODevice::WriteOnly);
 		rf.write(response);
-		QDesktopServices::openUrl(QUrl::fromLocalFile(response_filename));
-		emit finished();
+		if(rf.commit()) {
+			QDesktopServices::openUrl(QUrl::fromLocalFile(response_filename));
+			emit reverseSearched();
+		}
 	} else {
 		pwarn << "open_reply(): incorrect reply:" << reply;
 	}
 	reply->deleteLater();
+	emit finished();
 }
 
 ReverseSearch::IqdbHttpParts::IqdbHttpParts()
