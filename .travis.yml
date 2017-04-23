@@ -3,6 +3,8 @@ language: cpp
 os:
   - linux
 
+dist: trusty
+
 git:
   depth: 3
 
@@ -15,13 +17,14 @@ addons:
 
 install:
   - lsb_release -a
-  - sudo apt-add-repository -y ppa:beineri/opt-qt562
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 60
+  - sudo apt-add-repository -y ppa:beineri/opt-qt58-trusty
   - sudo apt-get -qq update
-  - sudo apt-get -qq install qt56tools qt56base qt56svg qt56imageformats qt56translations
+  - sudo apt-get -qq install qt58tools qt58base qt58svg qt58imageformats qt58translations
 
 script:
-  - QTDIR="/opt/qt56"
+  - QTDIR="/opt/qt58"
   - PATH="$QTDIR/bin:$PATH"
-  - qt56-env.sh
+  - qt58-env.sh
   - qmake CONFIG+=release
-  - make CXX="g++-6" LINKER="g++-6"
+  - make
