@@ -69,6 +69,22 @@ void TagInput::fixTags(bool sort)
 	}
 
 	newname.remove(newname.length()-1, 1); // remove trailing space
+
+#ifdef Q_OS_WIN
+
+	for(auto& c : newname) switch (c.unicode())
+	{
+		case '"':
+		case ':':
+		case '*':
+		case '<':
+		case '>':
+		case '?':
+		case '|':
+			c = '-';
+	}
+
+#endif
 	updateText(newname);
 }
 

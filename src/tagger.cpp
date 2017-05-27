@@ -551,6 +551,18 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	new_file_path += m_input.text();
 	new_file_path += QChar('.');
 	new_file_path += file.suffix();
+
+#ifdef Q_OS_WIN
+	auto tpos = std::remove_if(new_file_path.begin(), new_file_path.end(), [](QChar c)
+	{
+		return c < 31;
+	});
+	if(tpos != new_file_path.end()) {
+		pdbg << "Removing reserved characters from filename...";
+		new_file_path.truncate(std::distance(new_file_path.begin(), tpos));
+	}
+#endif
+
 	new_file_path = QFileInfo(QDir(file.canonicalPath()), new_file_path).filePath();
 
 	if(new_file_path == m_file_queue.current() || m_input.text().isEmpty())
