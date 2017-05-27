@@ -303,14 +303,14 @@ void Tagger::reloadTagsContents()
 
 void Tagger::openTagFilesInEditor()
 {
-	for(const auto& file : m_current_tag_files) {
+	for(const auto& file : qAsConst(m_current_tag_files)) {
 		QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 	}
 }
 
 void Tagger::openTagFilesInShell()
 {
-	for(const auto& file : m_current_tag_files) {
+	for(const auto& file : qAsConst(m_current_tag_files)) {
 		util::open_file_in_gui_shell(file);
 	}
 }
@@ -352,7 +352,7 @@ void Tagger::findTagsFiles(bool force)
 
 	auto add_tag_files = [this](const QFileInfoList& list)
 	{
-		for(const auto& f : list) {
+		for(const auto& f : qAsConst(list)) {
 			m_current_tag_files.push_back(f.absoluteFilePath());
 		}
 	};
@@ -362,7 +362,7 @@ void Tagger::findTagsFiles(bool force)
 	QString search_paths_list;
 	search_paths_list.reserve(search_dirs.size() * 96);
 
-	for(const auto dir : search_dirs) {
+	for(const auto dir : qAsConst(search_dirs)) {
 		search_paths_list.push_back(QStringLiteral("<li>"));
 		search_paths_list.push_back(dir.path());
 		search_paths_list.push_back(QStringLiteral("</li>"));

@@ -36,7 +36,7 @@ ReverseSearch::ReverseSearch(QWidget *_parent) : QObject(_parent), m_proxy(QNetw
 
 ReverseSearch::~ReverseSearch()
 {
-	for(const auto& f : m_response_files) {
+	for(auto f : qAsConst(m_response_files)) {
 		QFile::remove(f);
 	}
 }

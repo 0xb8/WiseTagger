@@ -315,7 +315,7 @@ void SettingsDialog::resetModel()
 {
 	auto join_args = [](const QStringList& args) {
 		QString r;
-		for(auto arg: args) {
+		for(auto arg : args) {
 			if(arg.indexOf(' ') != -1) {
 				arg.prepend('"');
 				arg.append('"');
@@ -384,7 +384,7 @@ void SettingsDialog::apply()
 		QString curr_arg;
 
 		bool open_quote = false;
-		for(auto c : args) {
+		for(auto c : qAsConst(args)) {
 			if(c == '"') {
 				open_quote = !open_quote;
 				continue;

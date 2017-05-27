@@ -63,7 +63,7 @@ void TagInput::fixTags(bool sort)
 	}
 
 	QString newname;
-	for(const auto& tag : m_text_list) {
+	for(const auto& tag : qAsConst(m_text_list)) {
 		newname.append(tag);
 		newname.append(QChar(' '));
 	}
@@ -130,7 +130,7 @@ void TagInput::loadTagFiles(const QStringList &files)
 	m_removed_tags.clear();
 
 	QStringList tags;
-	for(const auto& file: files) {
+	for(const auto& file : qAsConst(files)) {
 		QFile f(file);
 		if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
 			QMessageBox::warning(this,
@@ -360,15 +360,15 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 			main_tags_list.push_back(main_tag);
 		}
 
-		for(auto && remtag : removed_tags_list) {
+		for(const auto& remtag : qAsConst(removed_tags_list)) {
 			m_removed_tags.insert(std::pair<QString, bool> (remtag, false));
 		}
 
-		for (auto && repltag : replaced_tags_list) {
+		for (const auto& repltag : qAsConst(replaced_tags_list)) {
 			m_replaced_tags.insert(std::pair<QString,QString>(repltag, main_tag));
 		}
 
-		for(auto && maptag : mapped_tags_list) {
+		for(const auto& maptag : qAsConst(mapped_tags_list)) {
 			m_related_tags.insert(std::pair<QString,QString>(main_tag,maptag));
 		}
 	}

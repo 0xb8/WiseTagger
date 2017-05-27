@@ -156,7 +156,7 @@ void TaggerStatistics::showStatsDialog()
 
 	const auto exts_html = util::read_resource_html("statistics_extensions.html");
 	QString exts_str;
-	for(auto&& key : ext_list) {
+	for(auto& key : qAsConst(ext_list)) {
 		const auto num_exts = m_settings.value(key, 0).toInt();
 		const auto percent_ext = QString::number(util::size::percent(num_exts, files_opened));
 		exts_str += exts_html.arg(key.toUpper(), QString::number(num_exts), percent_ext);

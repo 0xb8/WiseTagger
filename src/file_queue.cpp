@@ -45,7 +45,7 @@ void FileQueue::setSortBy(SortQueueBy criteria) noexcept
 bool FileQueue::checkExtension(const QFileInfo & fi) const noexcept
 {
 	const auto ext = fi.suffix();
-	for(const auto & f : m_name_filters) {
+	for(const auto & f : qAsConst(m_name_filters)) {
 		if(f.endsWith(ext, Qt::CaseInsensitive)) return true;
 	}
 	return false;
@@ -78,7 +78,7 @@ void FileQueue::assign(const QStringList& paths)
 	static_assert(util::traits::is_nothrow_swappable_all_v<decltype(m_files)>, "Member container should be nothrow swappable");
 	cont_t tmp;
 	QFileInfo fi;
-	for(const auto & p : paths) {
+	for(const auto & p : qAsConst(paths)) {
 		fi = p;
 		if(fi.isFile()) {
 			tmp.push_back(fi.absoluteFilePath());

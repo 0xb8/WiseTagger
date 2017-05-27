@@ -247,7 +247,7 @@ void Window::addNotification(QString title, QString description, QString body)
 
 void Window::removeNotification(QString title) {
 	const auto actions = menu_notifications.actions();
-	for(const auto a : actions) {
+	for(const auto a : qAsConst(actions)) {
 		if(a && a->text() == title) {
 			menu_notifications.removeAction(a);
 			if(m_notification_count > 0) --m_notification_count;
@@ -350,7 +350,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 			return true;
 
 		QStringList filelist;
-		for(const auto& fileurl : fileurls) {
+		for(const auto& fileurl : qAsConst(fileurls)) {
 			filelist.push_back(fileurl.toLocalFile());
 		}
 		m_tagger.queue().assign(filelist);
@@ -396,7 +396,7 @@ void Window::parseCommandLineArguments()
 		return;
 	}
 
-	for(const auto& arg : args) {
+	for(const auto& arg : qAsConst(args)) {
 		if(arg.startsWith(QChar('-'))) {
 			continue;
 		}
@@ -858,7 +858,7 @@ void Window::createActions()
 	{
 		QString msg = tr("<p>New tags were found, ordered by number of times used:</p>");
 		msg.append(QStringLiteral("<ul><li>"));
-		for(const auto& e : l) {
+		for(const auto& e : qAsConst(l)) {
 			msg.append(e);
 			msg.append(QStringLiteral("</li><li>"));
 		}
