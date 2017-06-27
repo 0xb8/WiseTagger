@@ -31,6 +31,7 @@ set(wt_srcs
 	src/statistics.cpp
 	src/tagger.cpp
 	src/window.cpp
+	util/imagecache.cpp
 	util/misc.cpp
 	util/open_graphical_shell.cpp
 	resources/resources.qrc
