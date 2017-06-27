@@ -105,6 +105,17 @@ public:
 
 
 	/*!
+	 * \brief Returns Nth file in queue, wrapping around on negative indices.
+	 * \retval EmptyString - Queue is empty.
+	 *
+	 * When \p index is negative, returns Nth file from the back of queue.
+	 * When absolute value of \p index is larger than size of queue, the
+	 * resulting file index is determined as remainder of \a index / queue size.
+	 */
+	const QString& nth(ssize_t index) noexcept;
+
+
+	/*!
 	 * \brief Selects file.
 	 * \param index Index to select.
 	 * \return Selected file.

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>512</width>
-    <height>371</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -174,6 +174,161 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_lang">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>&amp;Language</string>
+         </property>
+         <property name="buddy">
+          <cstring>appLanguage</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QFontComboBox" name="fontFamily">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>5</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Tag Input font</string>
+         </property>
+         <property name="currentFont">
+          <font>
+           <family>Consolas</family>
+          </font>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="trackAddedTags">
+         <property name="toolTip">
+          <string>Toggle tracking of new tags and displaying new tags notifications</string>
+         </property>
+         <property name="text">
+          <string>Track &amp;Added Tags</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="4">
+        <widget class="QGroupBox" name="preloadGroup">
+         <property name="toolTip">
+          <string>Toggle preloading of previous and next images in queue</string>
+         </property>
+         <property name="whatsThis">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Preloading of images reduces the time needed to display previous or next file in queue.&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;To control the number of images preloaded use &lt;span style=&quot; font-style:italic;&quot;&gt;Image count  &lt;/span&gt;option. If you have an SSD and fast multi-core processor, you can set the number higher. Otherwise, if you have an HDD and slower processor with one or two cores, set this number to 1 or 2.&lt;/p&gt;&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;p&gt;To control the maximum amount of memory taken by image cache use &lt;span style=&quot; font-style:italic;&quot;&gt;Maximum memory for cache&lt;/span&gt; option. 256 MiB should be more than enough for most users.&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;
+</string>
+         </property>
+         <property name="title">
+          <string>Preload &amp;Images</string>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_count">
+            <property name="toolTip">
+             <string>Count of images behind and ahead of current image to preload</string>
+            </property>
+            <property name="text">
+             <string>Image &amp;count:</string>
+            </property>
+            <property name="buddy">
+             <cstring>preloadCount</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="preloadCount">
+            <property name="toolTip">
+             <string>Count of images behind and ahead of current image to preload</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>16</number>
+            </property>
+            <property name="value">
+             <number>2</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Maximum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_mem">
+            <property name="toolTip">
+             <string>Maximum amount of memory used to cache preloaded images</string>
+            </property>
+            <property name="text">
+             <string>&amp;Maximum memory for cache:</string>
+            </property>
+            <property name="buddy">
+             <cstring>cacheMemory</cstring>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="cacheMemory">
+            <property name="toolTip">
+             <string>Maximum amount of memory used to cache preloaded images</string>
+            </property>
+            <property name="suffix">
+             <string> MiB</string>
+            </property>
+            <property name="minimum">
+             <number>32</number>
+            </property>
+            <property name="maximum">
+             <number>1024</number>
+            </property>
+            <property name="value">
+             <number>64</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="6" column="0" colspan="4">
         <widget class="QGroupBox" name="proxyGroup">
          <property name="font">
@@ -215,7 +370,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>&amp;Protocol</string>
+               <string>&amp;Protocol:</string>
               </property>
               <property name="buddy">
                <cstring>proxyProtocol</cstring>
@@ -264,7 +419,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>&amp;Host</string>
+               <string>&amp;Host:</string>
               </property>
               <property name="buddy">
                <cstring>proxyHost</cstring>
@@ -300,7 +455,7 @@
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Po&amp;rt</string>
+               <string>Po&amp;rt:</string>
               </property>
               <property name="buddy">
                <cstring>proxyPort</cstring>
@@ -333,69 +488,6 @@
           </item>
          </layout>
         </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_lang">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>&amp;Language</string>
-         </property>
-         <property name="buddy">
-          <cstring>appLanguage</cstring>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1" colspan="2">
-        <widget class="QFontComboBox" name="fontFamily">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>5</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Tag Input font</string>
-         </property>
-         <property name="currentFont">
-          <font>
-           <family>Consolas</family>
-          </font>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QCheckBox" name="trackAddedTags">
-         <property name="toolTip">
-          <string>Toggle tracking of new tags and displaying new tags notifications</string>
-         </property>
-         <property name="text">
-          <string>Track Added Tags</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="4">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>469</width>
-           <height>13</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -862,6 +954,10 @@
   <tabstop>statsEnabled</tabstop>
   <tabstop>showCurrentDir</tabstop>
   <tabstop>vercheckEnabled</tabstop>
+  <tabstop>trackAddedTags</tabstop>
+  <tabstop>preloadGroup</tabstop>
+  <tabstop>preloadCount</tabstop>
+  <tabstop>cacheMemory</tabstop>
   <tabstop>proxyGroup</tabstop>
   <tabstop>proxyProtocol</tabstop>
   <tabstop>proxyHost</tabstop>
@@ -875,6 +971,8 @@
   <tabstop>cmdExecutableBrowse</tabstop>
   <tabstop>cmdArgsEdit</tabstop>
   <tabstop>cmdArgsPlaceholderShow</tabstop>
+  <tabstop>exportSettingsBtn</tabstop>
+  <tabstop>importSettingsBtn</tabstop>
  </tabstops>
  <resources/>
  <connections>

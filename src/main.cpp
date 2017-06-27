@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
 {
 	qSetMessagePattern(QStringLiteral("%{if-warning}[WARN] %{endif}"
 					  "%{if-debug}[DBG]  %{endif}"
+					  "%{if-info}[INFO] %{endif}"
+					  "%{if-critical}[CRIT] %{endif}"
 					  "(%{time h:mm:ss.zzz}) <%{if-category}%{category}%{endif}> "
 					  "%{if-debug}%{function}  %{endif}\t%{message}"));
 	QApplication a(argc, argv);

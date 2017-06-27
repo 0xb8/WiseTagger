@@ -15,6 +15,7 @@
 #include <QPixmap>
 #include <QString>
 #include <QTimer>
+#include "util/imagecache.h"
 
 class QResizeEvent;
 class QDragEnterEvent;
@@ -44,6 +45,8 @@ public:
 
 	QSize sizeHint() const override;
 
+	ImageCache cache;
+
 public slots:
 
 	/// Clears media and displays welcome text.
@@ -66,10 +69,12 @@ private:
 
 	static constexpr int resize_timeout = 100; //ms
 
+	bool tryLoadImageFromCache(const QString& filename);
 	void resizeMedia();
 	void updateStyle();
 	void clearState();
 
+	QString   m_current_file;
 	QSize     m_widget_size;
 	QSize     m_media_size;
 	QTimer    m_resize_timer;

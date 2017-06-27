@@ -347,6 +347,21 @@ const QString& FileQueue::backward() noexcept
 	return m_files[m_current];
 }
 
+const QString &FileQueue::nth(ssize_t index) noexcept
+{
+	static_assert(noexcept(m_files[m_current]), "");
+
+	if(m_files.empty()) {
+		pwarn << "nth(): queue empty";
+		return m_empty;
+	}
+
+	if(index < 0)
+		index = m_files.size() + index;
+
+	return m_files[std::abs(index) % m_files.size()];
+}
+
 size_t FileQueue::find(const QString &file) noexcept
 {
 	QFileInfo fi(file);

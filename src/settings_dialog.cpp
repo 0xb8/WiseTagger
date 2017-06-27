@@ -35,6 +35,9 @@
 #define S_PROXY_HOST    QStringLiteral("proxy/host")
 #define S_PROXY_PORT    QStringLiteral("proxy/port")
 #define S_PROXY_PROTO   QStringLiteral("proxy/protocol")
+#define S_PRELOAD       QStringLiteral("performance/pixmap_precache_enabled")
+#define S_PRELOAD_CNT   QStringLiteral("performance/pixmap_precache_count")
+#define S_PRELOAD_MEM   QStringLiteral("performance/pixmap_cache_size")
 
 #define D_LOCALE        QStringLiteral("English")
 #define D_STYLE         QStringLiteral("Default")
@@ -48,6 +51,9 @@
 #define D_PROXY_HOST    QStringLiteral("")
 #define D_PROXY_PORT    9050
 #define D_PROXY_PROTO   QStringLiteral("SOCKS5")
+#define D_PRELOAD       false
+#define D_PRELOAD_CNT   std::max(QThread::idealThreadCount() / 2, 1)
+#define D_PRELOAD_MEM   64
 
 
 
@@ -276,6 +282,9 @@ void SettingsDialog::reset()
 	ui->fontSize->     setValue(      settings.value(S_FONT_SIZE,     D_FONT_SIZE).toUInt());
 	ui->proxyPort->    setValue(      settings.value(S_PROXY_PORT,    D_PROXY_PORT).toUInt());
 	ui->proxyHost->    setText(       settings.value(S_PROXY_HOST,    D_PROXY_HOST).toString());
+	ui->preloadGroup-> setChecked(    settings.value(S_PRELOAD,       D_PRELOAD).toBool());
+	ui->preloadCount-> setValue(      settings.value(S_PRELOAD_CNT,   D_PRELOAD_CNT).toUInt());
+	ui->cacheMemory->  setValue(      settings.value(S_PRELOAD_MEM,   D_PRELOAD_MEM).toUInt());
 
 	resetModel();
 
@@ -377,6 +386,9 @@ void SettingsDialog::apply()
 	settings.setValue(S_PROXY_PORT,    ui->proxyPort->text());
 	settings.setValue(S_PROXY_HOST,    ui->proxyHost->text());
 	settings.setValue(S_PROXY_ENABLED, ui->proxyGroup->isChecked());
+	settings.setValue(S_PRELOAD,       ui->preloadGroup->isChecked());
+	settings.setValue(S_PRELOAD_CNT,   ui->preloadCount->value());
+	settings.setValue(S_PRELOAD_MEM,   ui->cacheMemory->value());
 
 	auto parse_arguments = [](const QString & args)
 	{
@@ -437,9 +449,12 @@ void SettingsDialog::restoreDefaults()
 	ui->vercheckEnabled->setChecked(  D_VERCHECK);
 	ui->trackAddedTags->setChecked(   D_TRACK_TAGS);
 	ui->proxyGroup->   setChecked(    D_PROXY_ENABLED);
+	ui->preloadGroup-> setChecked(    D_PRELOAD);
+	ui->proxyHost->    setText(       D_PROXY_HOST);
 	ui->proxyPort->    setValue(      D_PROXY_PORT);
 	ui->fontSize->     setValue(      D_FONT_SIZE);
-	ui->proxyHost->    setText(       D_PROXY_HOST);
+	ui->preloadCount-> setValue(      D_PRELOAD_CNT);
+	ui->cacheMemory->  setValue(      D_PRELOAD_MEM);
 }
 
 bool HideColumnsFilter::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const

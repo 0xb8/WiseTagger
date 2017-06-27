@@ -7,14 +7,18 @@
 
 #include "picture.h"
 #include "util/misc.h"
+#include <QSettings>
 #include <QResizeEvent>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QApplication>
 #include <QLoggingCategory>
+#include <QThread>
+#include <QElapsedTimer>
 
 namespace logging_category {Q_LOGGING_CATEGORY(picture, "Picture")}
+#define pinfo qCInfo(logging_category::picture)
 #define pdbg qCDebug(logging_category::picture)
 #define pwarn qCWarning(logging_category::picture)
 
@@ -38,6 +42,7 @@ Picture::Picture(QWidget *parent) :
 
 	connect(&m_resize_timer, &QTimer::timeout, this, [this]()
 	{
+		cache.clear();
 		if(!m_pixmap.isNull() || (m_movie && m_movie->isValid()))
 			resizeMedia();
 	});
@@ -52,6 +57,10 @@ void Picture::dropEvent(QDropEvent*)           {}
 bool Picture::loadMedia(const QString &filename)
 {
 	clearState();
+	m_current_file = filename;
+
+	if(tryLoadImageFromCache(filename))
+		return true;
 
 	QFile file(filename);
 	bool open = file.open(QIODevice::ReadOnly);
@@ -126,9 +135,21 @@ void Picture::resizeMedia()
 
 	switch(m_type) {
 		case Type::Image:
-			QLabel::setPixmap(m_pixmap.scaled(m_widget_size,
+
+			if(m_pixmap.size() == m_widget_size)
+			{
+				QLabel::setPixmap(m_pixmap); // for pixmaps from cache
+			} else {
+				if(m_pixmap.size() != m_media_size) {
+					pwarn << "pixmap not suitable for resize, reloading...";
+					loadMedia(m_current_file);
+					return;
+				}
+				pdbg << "resizing pixmap from" << m_pixmap.size() << "to" << m_widget_size;
+				QLabel::setPixmap(m_pixmap.scaled(m_widget_size,
 				Qt::IgnoreAspectRatio,
 				Qt::SmoothTransformation));
+			}
 			break;
 		case Type::AnimatedImage:
 			Q_ASSERT(m_movie != nullptr);
@@ -173,4 +194,47 @@ void Picture::clear()
 void Picture::resizeEvent(QResizeEvent*)
 {
 	m_resize_timer.start(resize_timeout);
+}
+
+bool Picture::tryLoadImageFromCache(const QString& filename)
+{
+	QSettings s;
+	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), false).toBool())
+		return false;
+
+	QElapsedTimer timer;
+	timer.start();
+
+	const int sleep_amount_ms = 10;
+	const int sleep_timeout_ms = 5000;
+
+	while(true) {
+		if(timer.elapsed() > sleep_timeout_ms) {
+			pwarn << "pixmap query timeout after" << timer.elapsed() << "ms.";
+			break;
+		}
+
+		auto query_result = cache.getPixmap(filename);
+
+		switch (query_result.result) {
+		case ImageCache::Loading:
+		case ImageCache::Evicted:
+			QThread::msleep(sleep_amount_ms);
+			continue;
+		case ImageCache::Ready:
+			m_pixmap     = query_result.pixmap;
+			m_media_size = query_result.original_size;
+			m_has_alpha  = m_pixmap.hasAlpha();
+			m_type       = Type::Image;
+			updateStyle();
+			resizeMedia();
+			return true;
+		default:
+			break; // does not breaks the loop, kept so I remember that
+		}
+		break;
+	}
+
+	pinfo << "cache miss, loading directly...";
+	return false;
 }

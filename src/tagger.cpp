@@ -66,6 +66,7 @@ void Tagger::clear()
 {
 	m_file_queue.clear();
 	m_picture.clear();
+	m_picture.cache.clear();
 	m_input.clear();
 }
 
@@ -93,6 +94,7 @@ bool Tagger::openFile(const QString &filename)
 	m_file_queue.push(fi.absolutePath());
 	m_file_queue.sort();
 	m_file_queue.select(m_file_queue.find(fi.absoluteFilePath()));
+	m_picture.cache.clear();
 	return loadCurrentFile();
 }
 
@@ -109,6 +111,7 @@ bool Tagger::openDir(const QString &dir)
 	m_file_queue.push(dir);
 	m_file_queue.sort();
 	m_file_queue.select(0u);
+	m_picture.cache.clear();
 	return loadCurrentFile();
 }
 
@@ -126,6 +129,7 @@ bool Tagger::openSession(const QString& sfile)
 			tr("<p>Could not load session from <b>%1</b></p>").arg(sfile));
 		return false;
 	}
+	m_picture.cache.clear();
 
 	bool res = loadCurrentFile();
 	if(res) {
@@ -267,6 +271,7 @@ void Tagger::updateSettings()
 		m_separator.show();
 	}
 	m_input.updateSettings();
+	m_picture.cache.setMemoryLimit(s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024);
 }
 
 void Tagger::setInputVisible(bool visible)
@@ -279,7 +284,6 @@ void Tagger::setInputVisible(bool visible)
 		return; // NOTE: no need to update following properties because they've been taken care of already
 
 	m_separator.setVisible(visible);
-
 	if(visible) {
 		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
 	} else {
@@ -534,6 +538,24 @@ bool Tagger::loadCurrentFile()
 	}
 	emit fileOpened(m_file_queue.current());
 	findTagsFiles();
+
+	if(m_file_queue.size() < 2)
+		return true;
+
+	QSettings s;
+	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), false).toBool())
+		return true;
+
+	int preloadcount = abs(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
+	preloadcount = std::max(std::min(preloadcount, 16), 1);
+	for(int i = -preloadcount; i < preloadcount; ++i)
+	{
+		if(i == 0)
+			continue;
+		auto idx = ssize_t(m_file_queue.currentIndex())+i;
+		m_picture.cache.addFile(m_file_queue.nth(idx), m_picture.size());
+	}
+
 	return true;
 }
 
