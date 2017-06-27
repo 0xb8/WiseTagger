@@ -1,0 +1,35 @@
+# Maintainer: cat <cat@wolfgirl.org>
+
+_realname='wisetagger'
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
+pkgver=r158.24e38a1
+pkgrel=1
+pkgdesc='A simple picture tagger'
+arch=('i686' 'x86_64')
+url='https://bitbicket.org/catgirl/wisetagger/'
+license=('custom:wtfpl')
+depends=("${MINGW_PACKAGE_PREFIX}-qt5")
+
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
+            "${MINGW_PACKAGE_PREFIX}-make"
+            'git')
+
+source=("git+https://catgirl@bitbucket.org/catgirl/wisetagger.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$_realname"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd ${srcdir}/${_realname}  
+  ${MINGW_PREFIX}/bin/qmake CONFIG+=release PREFIX="${pkgdir}${MINGW_PREFIX}"
+  make
+}
+
+package() {
+  cd ${srcdir}/${_realname}
+  make install
+}
