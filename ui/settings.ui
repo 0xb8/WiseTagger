@@ -141,7 +141,7 @@
           <string>Toggle statistics collection</string>
          </property>
          <property name="text">
-          <string>Collect &amp;Statistics</string>
+          <string>Save &amp;Statistics</string>
          </property>
          <property name="checked">
           <bool>true</bool>

@@ -33,10 +33,12 @@ QString util::read_resource_html(const char *filename)
 		file.setFileName(HTML_LOCATION.arg(QStringLiteral("English"), filename));
 		open = file.open(QIODevice::ReadOnly);
 	}
-	Q_ASSERT(open && "resource file not opened");
+	if(!open)
+		throw std::invalid_argument(std::string("read_resource_html():  ") + file.errorString().toStdString());
+
 	QString ret(file.readAll());
 	auto date = QDate::currentDate();
-	if(ret.size() > 250 && date.month() == 10 && date.day() == 31) {
+	if(strcmp(filename, "welcome.html") == 0 && date.month() == 10 && date.day() == 31) {
 		ret.append(QStringLiteral("\n<p>In loving memory of my cat <b>Семён</b> (April 2000 - 31 October 2016).<br/><em>Requiescat In Pace</em>.</p>"));
 	}
 	return ret;

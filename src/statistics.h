@@ -13,11 +13,13 @@
 #include <QElapsedTimer>
 #include <QSize>
 
+/// The TaggerStatistics singleton collects and displays various statistics.
 class TaggerStatistics : public QObject {
 	Q_OBJECT
 public:
-	explicit TaggerStatistics(QObject *_parent = nullptr);
-	~TaggerStatistics() override;
+
+	/// Returns reference to an instance of TaggerStatistics
+	static TaggerStatistics& instance();
 
 public slots:
 	/// Collects information about opened file.
@@ -29,12 +31,78 @@ public slots:
 	/// Counts how many times reverse search was used.
 	void reverseSearched();
 
+	/// Collects the time taken to display cached pixmap.
+	void pixmapLoadedFromCache(double time_ms);
+
+	/// Collects the time taken to display directly loaded pixmap.
+	void pixmapLoadedDirectly(double time_ms);
+
+	/// Collects the time taken to display animated image.
+	void movieLoadedDirectly(double time_ms);
+
 	/// Displays dialog with all collected statistics.
 	void showStatsDialog();
 
 private:
+	TaggerStatistics();
+	~TaggerStatistics() override;
+
 	QSettings m_settings;
 	QElapsedTimer m_elapsed_timer;
+
+
+	template<typename T>
+	struct RollingAverage
+	{
+		size_t count = 0;
+		T value = T{};
+
+
+		void addSample(T sample)
+		{
+			if(count == 0) {
+				value = old_value = sample;
+			}
+			++count;
+
+			value = old_value + (sample - old_value) / count;
+			old_value = value;
+		}
+	private:
+		T old_value;
+	};
+
+	template<typename T>
+	struct MinMax
+	{
+		T min = std::numeric_limits<T>::max();
+		T max = std::numeric_limits<T>::min();
+		bool hasMin() const
+		{
+			return min != std::numeric_limits<T>::max();
+		}
+		bool hasMax() const
+		{
+			return max != std::numeric_limits<T>::min();
+		}
+
+		void addSample(T sample)
+		{
+			if(sample > max)
+				max = sample;
+			if(sample < min)
+				min = sample;
+		}
+
+	};
+
+	RollingAverage<double> cached_pixmap_avg;
+	RollingAverage<double> direct_pixmap_avg;
+	RollingAverage<double> direct_movie_avg;
+	MinMax<double>         cached_pixmap_minmax;
+	MinMax<double>         direct_pixmap_minmax;
+	MinMax<double>         direct_movie_minmax;
+
 };
 
 #endif

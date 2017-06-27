@@ -38,6 +38,7 @@
 #include "util/command_placeholders.h"
 #include "util/size.h"
 #include "util/misc.h"
+#include "statistics.h"
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(window, "Window")
@@ -694,7 +695,7 @@ void Window::createActions()
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
-	connect(&m_reverse_search, &ReverseSearch::reverseSearched,&m_tagger.statistics(), &TaggerStatistics::reverseSearched);
+	connect(&m_reverse_search, &ReverseSearch::reverseSearched, &TaggerStatistics::instance(), &TaggerStatistics::reverseSearched);
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched,this, [this]()
 	{
 		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
@@ -710,7 +711,7 @@ void Window::createActions()
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
 	connect(&a_open_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInShell);
 	connect(&a_edit_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInEditor);
-	connect(&a_stats,       &QAction::triggered, &m_tagger.statistics(), &TaggerStatistics::showStatsDialog);
+	connect(&a_stats,       &QAction::triggered, &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);

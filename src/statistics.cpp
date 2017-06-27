@@ -38,7 +38,14 @@ namespace logging_category {Q_LOGGING_CATEGORY(stats, "Statistics")}
 #define TIME_SPENT              QStringLiteral("stats/time_spent_seconds")
 #define DATE_FIRST_LAUNCHED     QStringLiteral("stats/date_first_launched")
 
-TaggerStatistics::TaggerStatistics(QObject *_parent) : QObject(_parent)
+TaggerStatistics &TaggerStatistics::instance()
+{
+	static TaggerStatistics instance;
+	return instance;
+}
+
+
+TaggerStatistics::TaggerStatistics() : QObject(nullptr)
 {
 	m_elapsed_timer.start();
 	if(m_settings.value(DATE_FIRST_LAUNCHED).isNull()) {
@@ -57,6 +64,7 @@ TaggerStatistics::~TaggerStatistics()
 	m_settings.setValue(TIME_SPENT, time_spent);
 	m_settings.setValue(NUM_TIMES_LAUNCHED, ++times_launched);
 }
+
 
 void TaggerStatistics::fileOpened(const QString &filename, QSize dimensions)
 {
@@ -116,6 +124,24 @@ void TaggerStatistics::reverseSearched()
 	}
 	auto num = m_settings.value(NUM_REVERSE_SEARCHED, 0).toLongLong();
 	m_settings.setValue(NUM_REVERSE_SEARCHED, num + 1);
+}
+
+void TaggerStatistics::pixmapLoadedFromCache(double time_ms)
+{
+	cached_pixmap_avg.addSample(time_ms);
+	cached_pixmap_minmax.addSample(time_ms);
+}
+
+void TaggerStatistics::pixmapLoadedDirectly(double time_ms)
+{
+	direct_pixmap_avg.addSample(time_ms);
+	direct_pixmap_minmax.addSample(time_ms);
+}
+
+void TaggerStatistics::movieLoadedDirectly(double time_ms)
+{
+	direct_movie_avg.addSample(time_ms);
+	direct_movie_minmax.addSample(time_ms);
 }
 
 void TaggerStatistics::showStatsDialog()
@@ -183,6 +209,45 @@ void TaggerStatistics::showStatsDialog()
 		desc.append(tr("<br/><p><b>Note:</b> statistics collection is currently disabled. "
 		               "The stats displayed here are from previous launches.</p>"));
 	}
+
+	if(direct_pixmap_avg.count || cached_pixmap_avg.count || direct_movie_avg.count) {
+		QLocale loc;
+		auto min_direct = direct_pixmap_minmax.hasMin() ? loc.toString(direct_pixmap_minmax.min, 'f', 2) : QStringLiteral("0");
+		auto max_direct = direct_pixmap_minmax.hasMax() ? loc.toString(direct_pixmap_minmax.max, 'f', 2) : QStringLiteral("0");
+		auto min_cached = cached_pixmap_minmax.hasMin() ? loc.toString(cached_pixmap_minmax.min, 'f', 2) : QStringLiteral("0");
+		auto max_cached = cached_pixmap_minmax.hasMax() ? loc.toString(cached_pixmap_minmax.max, 'f', 2) : QStringLiteral("0");
+		auto min_movie  = direct_movie_minmax.hasMin()  ? loc.toString(direct_movie_minmax.min,  'f', 2) : QStringLiteral("0");
+		auto max_movie  = direct_movie_minmax.hasMax()  ? loc.toString(direct_movie_minmax.max,  'f', 2) : QStringLiteral("0");
+		auto avg_direct = direct_pixmap_avg.count       ? loc.toString(direct_pixmap_avg.value,  'f', 2) : QStringLiteral("0");
+		auto avg_cached = cached_pixmap_avg.count       ? loc.toString(cached_pixmap_avg.value,  'f', 2) : QStringLiteral("0");
+		auto avg_movie  = direct_movie_avg.count        ? loc.toString(direct_movie_avg.value,   'f', 2) : QStringLiteral("0");
+
+		QString perf_text;
+		if(direct_pixmap_avg.count) {
+			perf_text.append(util::read_resource_html("performance_direct_pixmap.html").arg(
+				QString::number(direct_pixmap_avg.count),
+				avg_direct,
+				min_direct,
+				max_direct));
+		}
+		if(cached_pixmap_avg.count) {
+			perf_text.append(util::read_resource_html("performance_cached_pixmap.html").arg(
+				QString::number(cached_pixmap_avg.count),
+				avg_cached,
+				min_cached,
+				max_cached));
+		}
+		if(direct_movie_avg.count)
+		{
+			perf_text.append(util::read_resource_html("performance_direct_movie.html").arg(
+				QString::number(direct_movie_avg.count),
+				avg_movie,
+				min_movie,
+				max_movie));
+		}
+		desc.append(util::read_resource_html("performance.html").arg(perf_text));
+	}
+
 	QMessageBox mb(QMessageBox::Information, tr("Statistics"), desc, QMessageBox::Ok, nullptr);
 	mb.setTextInteractionFlags(Qt::TextBrowserInteraction);
 	mb.exec();

@@ -23,6 +23,7 @@
 #include "util/misc.h"
 #include "util/open_graphical_shell.h"
 #include "window.h"
+#include "statistics.h"
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(tagger, "Tagger")
@@ -54,10 +55,10 @@ Tagger::Tagger(QWidget *_parent) :
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
 	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
-	connect(this, &Tagger::fileRenamed, &m_statistics, &TaggerStatistics::fileRenamed);
+	connect(this, &Tagger::fileRenamed, &TaggerStatistics::instance(), &TaggerStatistics::fileRenamed);
 	connect(this, &Tagger::fileOpened, this, [this](const auto& file)
 	{
-		m_statistics.fileOpened(file, m_picture.mediaSize());
+		TaggerStatistics::instance().fileOpened(file, m_picture.mediaSize());
 	});
 	updateSettings();
 }
@@ -249,11 +250,6 @@ QString Tagger::postURL() const
 FileQueue& Tagger::queue()
 {
 	return m_file_queue;
-}
-
-TaggerStatistics &Tagger::statistics()
-{
-	return m_statistics;
 }
 
 //------------------------------------------------------------------------------

@@ -6,6 +6,7 @@
  */
 
 #include "picture.h"
+#include "statistics.h"
 #include "util/misc.h"
 #include <QSettings>
 #include <QResizeEvent>
@@ -62,6 +63,9 @@ bool Picture::loadMedia(const QString &filename)
 	if(tryLoadImageFromCache(filename))
 		return true;
 
+	QElapsedTimer timer;
+	timer.start();
+
 	QFile file(filename);
 	bool open = file.open(QIODevice::ReadOnly);
 	if(!open) {
@@ -92,6 +96,7 @@ bool Picture::loadMedia(const QString &filename)
 
 		m_movie->setCacheMode(QMovie::CacheNone);
 		this->setMovie(m_movie.get());
+		TaggerStatistics::instance().movieLoadedDirectly(timer.nsecsElapsed() / 1e6);
 	} else {
 		m_pixmap = QPixmap::fromImage(reader.read());
 		if(m_pixmap.isNull()) {
@@ -103,6 +108,8 @@ bool Picture::loadMedia(const QString &filename)
 		m_media_size = m_pixmap.size();
 		m_has_alpha  = m_pixmap.hasAlpha();
 		m_type       = Type::Image;
+
+		TaggerStatistics::instance().pixmapLoadedDirectly(timer.nsecsElapsed() / 1e6);
 	}
 
 	updateStyle();
@@ -228,6 +235,7 @@ bool Picture::tryLoadImageFromCache(const QString& filename)
 			m_type       = Type::Image;
 			updateStyle();
 			resizeMedia();
+			TaggerStatistics::instance().pixmapLoadedFromCache(timer.nsecsElapsed() / 1e6);
 			return true;
 		default:
 			break; // does not breaks the loop, kept so I remember that
