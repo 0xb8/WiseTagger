@@ -12,10 +12,12 @@
 #include <QString>
 
 namespace std {
+	/// std::hash specialization to support QString
 	template<>
 	struct hash<QString> {
 		typedef QString      argument_type;
 		typedef std::size_t  result_type;
+		/// Computes hash of QString
 		result_type operator()(const argument_type &s) const {
 			using value_t = ushort;
 			result_type res{};

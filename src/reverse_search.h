@@ -21,9 +21,8 @@
 class QNetworkReply;
 class QObject;
 
-/*!
- * Class for reverse-searching image by uploading it to https://iqdb.org
- */
+
+/// The ReverseSearch class performs image reverse-search by uploading it to https://iqdb.org.
 class ReverseSearch : public QObject
 {
 	Q_OBJECT
@@ -83,8 +82,8 @@ signals:
 	void reverseSearched();
 
 	/*!
-	 * \param[out] bytesSent Number of bytes sent.
-	 * \param[out] bytesTotal Number of bytes total.
+	 * \param bytesSent Number of bytes sent.
+	 * \param bytesTotal Number of bytes total.
 	 */
 	void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
 

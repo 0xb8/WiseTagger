@@ -18,10 +18,14 @@
 class QKeyEvent;
 class QTextStream;
 
+
+/// The TagInput class provides a Line Edit widget designed for tagging.
 class TagInput : public QLineEdit {
 	Q_OBJECT
 public:
+
 	explicit TagInput(QWidget* _parent = nullptr);
+
 	/**
 	 * @brief Fixes and sorts tags.
 	 * @param sort Enables tag sorting.

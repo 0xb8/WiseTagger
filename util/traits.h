@@ -10,11 +10,16 @@
 
 namespace util {
 namespace traits {
+	/// Determines if all of Ts are nothrow-swappable
 	template<typename... T>
-	struct is_nothrow_swappable_all	{
+	class is_nothrow_swappable_all	{
 		static constexpr std::tuple<T...> *t = nullptr;
-		enum { value = noexcept(t->swap(*t)) };
+	public:
+		enum {
+			value = noexcept(t->swap(*t)) ///< \a true if all Ts are nothrow-swappable, \a false othewise
+		};
 	};
+	/// Alias for is_nothrow_swappable_all<>::value
 	template<typename... T>
 	constexpr bool is_nothrow_swappable_all_v = is_nothrow_swappable_all<T...>::value;
 }

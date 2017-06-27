@@ -18,16 +18,19 @@ namespace size {
 	template<class T, std::size_t N>
 	constexpr std::size_t array_size(T (&)[N]) noexcept { return N; }
 
+	/// Computes whole number of kilobytes (base 2) in \p bytes
 	inline std::size_t to_kib(std::size_t bytes)
 	{
 		return bytes / 1024;
 	}
 
+	/// Computes number of megabytes (base 2) in \p bytes
 	inline double to_mib(std::size_t bytes)
 	{
 		return static_cast<double>(bytes) / 1048576.0;
 	}
 
+	/// Returns human-readable file size of \p bytes.
 	inline QString printable(std::size_t bytes)
 	{
 		return bytes < 1024*1024 // if less than 1 Mb show exact KB size
@@ -35,6 +38,7 @@ namespace size {
 			: qApp->translate("PrintableFileSize", "%1 MiB").arg(to_mib(bytes), 0,'f', 3);
 	}
 
+	/// Computes percentage of \p value between \p max and \p min.
 	inline std::int64_t percent(std::int64_t value, std::int64_t max, std::int64_t min = 0ll)
 	{
 		if(value == 0 || max == 0 || max == min) return 0;

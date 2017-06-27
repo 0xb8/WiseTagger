@@ -77,14 +77,14 @@ public:
 	RenameStatus rename(RenameOptions options = RenameOption::NoOption);
 
 	/**
-	 * \brief Asks to rename current file and opens next.
+	 * \brief Asks user to rename current file and opens next.
 	 * \param options UI behavior modifiers.
 	 */
 	void nextFile(RenameOptions options = RenameOption::NoOption);
 
 
 	/**
-	 * \brief Asks to rename current file and opens previous.
+	 * \brief Asks user to rename current file and opens previous.
 	 * \param options UI behavior modifiers.
 	 */
 	void prevFile(RenameOptions options = RenameOption::NoOption);
@@ -123,7 +123,7 @@ public slots:
 	/// Sets Tag Input Visibility.
 	void setInputVisible(bool visible);
 
-	/// Asks to delete currently selected file.
+	/// Asks user to delete currently selected file.
 	void deleteCurrentFile();
 
 	/// Finds new set of tag files used for autocomplete.
@@ -139,8 +139,6 @@ public slots:
 	void updateSettings();
 
 signals:
-
-
 	/// This signal is emitted when specified media file has been successfully opened.
 	void fileOpened(const QString& file);
 
