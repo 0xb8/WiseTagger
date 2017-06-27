@@ -22,6 +22,7 @@
 #include <QSettings>
 #include <QStandardItemModel>
 #include <QtDebug>
+#include <QThread>
 
 #define S_LOCALE        QStringLiteral("window/language")
 #define S_STYLE         QStringLiteral("window/style")
