@@ -3,7 +3,7 @@
 _realname='wisetagger'
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
-pkgver=r158.24e38a1
+pkgver=r159.99ccb16
 pkgrel=1
 pkgdesc='A simple picture tagger'
 arch=('i686' 'x86_64')
@@ -25,11 +25,10 @@ pkgver() {
 
 build() {
   cd ${srcdir}/${_realname}  
-  ${MINGW_PREFIX}/bin/qmake CONFIG+=release PREFIX="${pkgdir}${MINGW_PREFIX}"
-  make
+  ${MINGW_PREFIX}/bin/qmake CONFIG+=release
+  make release
 }
 
 package() {
-  cd ${srcdir}/${_realname}
-  make install
+  install -D -m644 "${srcdir}/${_realname}/release/WiseTagger.exe" "${pkgdir}${MINGW_PREFIX}/bin/WiseTagger.exe"
 }
