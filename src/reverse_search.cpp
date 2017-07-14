@@ -183,12 +183,13 @@ void ReverseSearch::upload_file()
 
 	iqdb_parts.file.setBodyDevice(&m_image_file);
 
-	/* Check IQDB search services */
-	for(int i = 0; i < 12; ++i) {
-		/* these id's are skipped on iqdb form */
-		if(i > 6 && i < 10) continue;
-		/* id = 0 is unchecked by default */
-		iqdb_parts.service.setBody(QString::number(i+1).toLatin1());
+	/* Check IQDB search services
+	 * NOTE: these ids correspond to iqdb.org service ids, perhaps we could preload
+	 * them before searching and let user choose which ones to use.
+	 */
+	const auto ids = {1,2,3,4,5,6,10,11,13};
+	for(auto id : ids) {
+		iqdb_parts.service.setBody(QString::number(id).toLatin1());
 		multipart->append(iqdb_parts.service);
 	}
 	multipart->append(iqdb_parts.maxsize);
