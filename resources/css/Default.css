@@ -6,13 +6,12 @@
  */
 
 QLabel#Picture {
-    color: grey;
     font-size: 13px;
-    background-color: white;
 }
 
 QLineEdit#Input {
-    border-top-color: grey;
+    border-top-color: rgba(0,0,0,0.5);
+    padding: 0px 3px;
 }
 
 QLabel#StatusbarInfo {
@@ -22,5 +21,5 @@ QLabel#StatusbarInfo {
 
 QStatusBar {
     background-color: rgba(0,0,0,0.1);
-    border-top: 1px outset grey;
+    border-top: 1px outset rgba(0,0,0,0.15);
 }

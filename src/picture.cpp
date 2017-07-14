@@ -41,6 +41,17 @@ Picture::Picture(QWidget *parent) :
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setObjectName(QStringLiteral("Picture"));
 
+	// NOTE: support custom Qt themes
+	QPalette pal(palette());
+	pal.setColor(QPalette::Window, palette().color(QPalette::Base));
+	auto textcolor{palette().color(QPalette::Text)};
+	textcolor.setAlpha(140);
+	pal.setColor(QPalette::WindowText, textcolor);
+
+	setTextInteractionFlags(Qt::NoTextInteraction);
+	setAutoFillBackground(true);
+	setPalette(pal);
+
 	connect(&m_resize_timer, &QTimer::timeout, this, [this]()
 	{
 		cache.clear();
