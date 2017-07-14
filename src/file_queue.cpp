@@ -74,8 +74,11 @@ void FileQueue::push(const QString &f)
 
 void FileQueue::assign(const QStringList& paths)
 {
-	using cont_t = decltype(m_files);
+#if __GNUC__ > 5 // NOTE: workaround for old gcc used by appveyor
 	static_assert(util::traits::is_nothrow_swappable_all_v<decltype(m_files)>, "Member container should be nothrow swappable");
+#endif
+
+	using cont_t = decltype(m_files);
 	cont_t tmp;
 	QFileInfo fi;
 	for(const auto & p : qAsConst(paths)) {
@@ -111,7 +114,9 @@ const QString& FileQueue::select(size_t index) noexcept
 
 void FileQueue::sort() noexcept
 {
+#if __GNUC__ > 5 // NOTE: workaround for old gcc used by appveyor
 	static_assert(util::traits::is_nothrow_swappable_all_v<decltype(m_files)::value_type>, "");
+#endif
 
 	if(m_files.empty() || m_files.size() == 1)
 		return;
