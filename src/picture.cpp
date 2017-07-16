@@ -227,14 +227,16 @@ bool Picture::tryLoadImageFromCache(const QString& filename)
 
 	const int sleep_amount_ms = 10;
 	const int sleep_timeout_ms = 5000;
+	uint64_t unique_id = 0;
 
 	while(true) {
 		if(timer.elapsed() > sleep_timeout_ms) {
-			pwarn << "pixmap query timeout after" << timer.elapsed() << "ms.";
+			pwarn << "pixmap query timed out after" << timer.elapsed() << "ms.";
 			break;
 		}
 
-		auto query_result = cache.getPixmap(filename);
+		auto query_result = cache.getPixmap(filename, unique_id);
+		unique_id = query_result.unique_id;
 
 		switch (query_result.result) {
 		case ImageCache::Loading:

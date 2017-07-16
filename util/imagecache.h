@@ -28,10 +28,6 @@ class ImageCache
 {
 
 public:
-
-
-
-
 	ImageCache();
 	~ImageCache();
 
@@ -45,9 +41,18 @@ public:
 
 	struct QueryResult
 	{
-		QPixmap pixmap; ///< Valid pixmap if \ref QueryResult.result is \ref State::Ready, null pixmap otherwise.
-		QSize original_size; ///< Original size of pixmap if \ref QueryResult.result is \ref State::Ready.
-		ImageCache::State result; ///< Result of cache query.
+
+		/// Valid pixmap if \p result is \a State::Ready, null pixmap otherwise.
+		QPixmap           pixmap;
+
+		/// Original size of pixmap if \p result is \a State::Ready, invalid size otherwise.
+		QSize             original_size;
+
+		/// Non-zero unique id if \p result is not \a State::Invalid, zero otherwise.
+		uint64_t          unique_id;
+
+		/// Result of cache query.
+		ImageCache::State result;
 	};
 
 	/// Clears cache.
@@ -72,13 +77,17 @@ public:
 	/*!
 	 * \brief Tries to retrieve pixmap from cache.
 	 * \param filename Image file, the pixmap of which to retrieve from cache
+	 * \param unique_id If provided, used to avoid filename lookup in cache and/or filesystem.
 	 */
-	QueryResult getPixmap(const QString& filename);
+	QueryResult getPixmap(const QString& filename, uint64_t unique_id = 0) const;
 
 
 private:
 
 	void addFileThreadFunc(QString filename, QSize window_size);
+	void setFileInvalid(uint64_t unique_id);
+
+	uint64_t getUniqueFileID(const QString& filename);
 
 	struct Key
 	{
@@ -89,8 +98,10 @@ private:
 	struct futures;
 	futures* m_futures;
 
-	std::unordered_map<QString, Key> m_filekeys;
-	QReadWriteLock m_lock;
+	std::unordered_map<QString, uint64_t> m_file_id_cache;
+	std::unordered_map<uint64_t, Key>     m_id_keys;
+	mutable QReadWriteLock m_file_id_cache_lock;
+	mutable QReadWriteLock m_id_keys_lock;
 };
 
 #endif // IMAGECACHE_H
