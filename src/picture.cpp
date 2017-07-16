@@ -55,6 +55,13 @@ Picture::Picture(QWidget *parent) :
 	connect(&m_resize_timer, &QTimer::timeout, this, [this]()
 	{
 		cache.clear();
+		if(!m_pixmap.isNull()) {
+			if(m_pixmap.size() != m_media_size) {
+				pwarn << "pixmap not suitable for resize, reloading...";
+				loadMedia(m_current_file);
+				return;
+			}
+		}
 		if(!m_pixmap.isNull() || (m_movie && m_movie->isValid()))
 			resizeMedia();
 	});
@@ -158,11 +165,6 @@ void Picture::resizeMedia()
 			{
 				QLabel::setPixmap(m_pixmap); // for pixmaps from cache
 			} else {
-				if(m_pixmap.size() != m_media_size) {
-					pwarn << "pixmap not suitable for resize, reloading...";
-					loadMedia(m_current_file);
-					return;
-				}
 				pdbg << "resizing pixmap from" << m_pixmap.size() << "to" << m_widget_size;
 				QLabel::setPixmap(m_pixmap.scaled(m_widget_size,
 				Qt::IgnoreAspectRatio,
