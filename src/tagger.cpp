@@ -417,18 +417,18 @@ void Tagger::findTagsFiles(bool force)
 			"</a></p>").arg(tagsfile, override, search_paths_list));
 		mbox.setIcon(QMessageBox::Warning);
 		mbox.exec();
+	} else {
+		std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
+		m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
+		m_fs_watcher->addPaths(m_current_tag_files);
+		connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, this, [this](const auto& f)
+		{
+			this->reloadTags();
+			pdbg << "reloaded tags due to changed file:" << f;
+			emit this->tagFileChanged();
+		});
+		reloadTagsContents();
 	}
-
-	std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
-	m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
-	m_fs_watcher->addPaths(m_current_tag_files);
-	connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, this, [this](const auto& f)
-	{
-		this->reloadTags();
-		pdbg << "reloaded tags due to changed file:" << f;
-		emit this->tagFileChanged();
-	});
-	reloadTagsContents();
 }
 
 void Tagger::updateNewTagsCounts()

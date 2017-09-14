@@ -170,8 +170,12 @@ ImageCache::QueryResult ImageCache::getPixmap(const QString& filename, uint64_t 
 	if(key_it != m_id_keys.end()) {
 		k = key_it->second;
 		// only query cache if we know image was loaded at some point
-		if(k.state == State::Ready && QPixmapCache::find(k.key, &res.pixmap)) {
-			res.original_size = k.original_size;
+		if(k.state == State::Ready) {
+			if(QPixmapCache::find(k.key, &res.pixmap) && !res.pixmap.isNull()) {
+				res.original_size = k.original_size;
+			} else {
+				k.state = State::Invalid;
+			}
 		}
 		res.result = k.state;
 	}
@@ -251,23 +255,27 @@ void ImageCache::addFileThreadFunc(QString filename, QSize window_size)
 		return;
 	}
 
-	auto pixmap = QPixmap::fromImageReader(&reader);
+	auto image = reader.read();
 	file.close();
-	QSize original_size = pixmap.size();
 
-	float ratio = std::min(window_size.width()  / static_cast<float>(pixmap.width()),
-	                       window_size.height() / static_cast<float>(pixmap.height()));
+	if(image.isNull()) {
+		setFileInvalid(file_id);
+		return;
+	}
+
+	QSize original_size = image.size();
+	float ratio = std::min(window_size.width()  / static_cast<float>(image.width()),
+	                       window_size.height() / static_cast<float>(image.height()));
+	QSize new_size(image.width() * ratio, image.height() * ratio);
 
 	QPixmap respixmap;
 	if(ratio < 1.0f) {
-		respixmap = pixmap.scaled(QSize(pixmap.width() * ratio, pixmap.height() * ratio),
-			Qt::IgnoreAspectRatio,
-			Qt::SmoothTransformation);
+		respixmap = QPixmap::fromImage(image.scaled(new_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 	} else {
-		respixmap = pixmap;
+		respixmap = QPixmap::fromImage(std::move(image));
 	}
 	pdbg << "loaded" << (ratio < 1.0f ? "and resized" : "")
-	     << "pixmap for" << filename.mid(filename.lastIndexOf('/')+1) << "/" << file_id << "of" << respixmap.size();
+	     << "pixmap for" << filename.mid(filename.lastIndexOf('/')+1) << "/" << file_id << "of" << new_size;
 
 	{
 		QWriteLocker _{&m_id_keys_lock};
@@ -281,17 +289,6 @@ void ImageCache::addFileThreadFunc(QString filename, QSize window_size)
 			p->second.key = QPixmapCache::insert(respixmap);
 			p->second.original_size = original_size;
 			p->second.state = State::Ready;
-		} else {
-			pwarn << "reserved entry lost, recreating...";
-			auto res = m_id_keys.emplace(
-				std::make_pair(file_id,	Key{
-					QPixmapCache::insert(respixmap),
-					original_size,
-					State::Ready}));
-
-			if(!res.second) {
-				pcrit << "Could not recreate entry!";
-			}
 		}
 	}
 }

@@ -253,7 +253,7 @@ bool Picture::tryLoadImageFromCache(const QString& filename)
 			TaggerStatistics::instance().pixmapLoadedFromCache(timer.nsecsElapsed() / 1e6);
 			return true;
 		default:
-			break; // does not breaks the loop, kept so I remember that
+			break; // doesn't break the loop, kept so I remember that
 		}
 		break;
 	}
