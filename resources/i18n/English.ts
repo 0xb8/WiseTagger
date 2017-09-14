@@ -187,11 +187,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="217"/>
-        <source>Track &amp;Added Tags</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../ui/settings.ui" line="227"/>
         <source>Toggle preloading of previous and next images in queue</source>
         <translation type="unfinished"></translation>
@@ -276,13 +271,18 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="214"/>
-        <source>Toggle tracking of new tags and displaying new tags notifications</source>
+        <location filename="../../ui/settings.ui" line="144"/>
+        <source>Save &amp;Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="144"/>
-        <source>Save &amp;Statistics</source>
+        <location filename="../../ui/settings.ui" line="214"/>
+        <source>Toggle detection of new tags and displaying new tags notifications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../ui/settings.ui" line="217"/>
+        <source>Detect Unrecogni&amp;zed Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -381,7 +381,7 @@
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="725"/>
-        <location filename="../../src/settings_dialog.cpp" line="95"/>
+        <location filename="../../src/settings_dialog.cpp" line="96"/>
         <source>Export settings to file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -481,95 +481,95 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="99"/>
-        <location filename="../../src/settings_dialog.cpp" line="117"/>
+        <location filename="../../src/settings_dialog.cpp" line="100"/>
+        <location filename="../../src/settings_dialog.cpp" line="118"/>
         <source>Settings Files (*.ini)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="106"/>
+        <location filename="../../src/settings_dialog.cpp" line="107"/>
         <source>Export success</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="107"/>
+        <location filename="../../src/settings_dialog.cpp" line="108"/>
         <source>Successfully exported settings!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="109"/>
-        <location filename="../../src/settings_dialog.cpp" line="126"/>
+        <location filename="../../src/settings_dialog.cpp" line="110"/>
+        <location filename="../../src/settings_dialog.cpp" line="127"/>
         <source>Export failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="110"/>
+        <location filename="../../src/settings_dialog.cpp" line="111"/>
         <source>Could not export settings to file &lt;b&gt;%1&lt;/b&gt;. Check directory permissions and try again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="116"/>
+        <location filename="../../src/settings_dialog.cpp" line="117"/>
         <source>Import settings from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="123"/>
+        <location filename="../../src/settings_dialog.cpp" line="124"/>
         <source>Import success</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="124"/>
+        <location filename="../../src/settings_dialog.cpp" line="125"/>
         <source>Successfully imported settings!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="127"/>
+        <location filename="../../src/settings_dialog.cpp" line="128"/>
         <source>Could not import settings from file &lt;b&gt;%1&lt;/b&gt;. File may be corrupt or no read permissions.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="133"/>
+        <location filename="../../src/settings_dialog.cpp" line="134"/>
         <source>Select Executable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="205"/>
+        <location filename="../../src/settings_dialog.cpp" line="206"/>
         <source>Unknown command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="207"/>
+        <location filename="../../src/settings_dialog.cpp" line="208"/>
         <source>Remove Command?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="208"/>
+        <location filename="../../src/settings_dialog.cpp" line="209"/>
         <source>Remove command &lt;b&gt;%1&lt;/b&gt;?
 This action cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="344"/>
+        <location filename="../../src/settings_dialog.cpp" line="345"/>
         <source>Command Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="345"/>
+        <location filename="../../src/settings_dialog.cpp" line="346"/>
         <source>Hotkey</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="372"/>
+        <location filename="../../src/settings_dialog.cpp" line="373"/>
         <source>Language Changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="373"/>
+        <location filename="../../src/settings_dialog.cpp" line="374"/>
         <source>&lt;p&gt;Please restart %1 to apply language change.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="426"/>
+        <location filename="../../src/settings_dialog.cpp" line="427"/>
         <source>Unknown command %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1025,6 +1025,12 @@ All changes successfully applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../src/window.cpp" line="811"/>
+        <location filename="../../src/window.cpp" line="831"/>
+        <source>Session Files (%1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../src/window.cpp" line="817"/>
         <source>Save Session Error</source>
         <translation type="unfinished"></translation>
@@ -1070,18 +1076,18 @@ All changes successfully applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1064"/>
+        <location filename="../../src/window.cpp" line="1063"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1068"/>
+        <location filename="../../src/window.cpp" line="1067"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1068"/>
+        <location filename="../../src/window.cpp" line="1067"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>

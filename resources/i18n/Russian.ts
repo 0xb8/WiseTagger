@@ -117,7 +117,7 @@
     <message>
         <location filename="../../src/reverse_search.cpp" line="148"/>
         <source>&lt;p&gt;Reverse search of &lt;b&gt;%1&lt;/b&gt; failed: Unsupported file format.&lt;/p&gt;&lt;p&gt;Supported formats are: &lt;b&gt;%2&lt;/b&gt;.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Реверс-поиск  файла &lt;b&gt;%1&lt;/b&gt; не удался: Формат файла не поддерживается.&lt;/p&gt;&lt;p&gt;Поддерживаемые форматы: &lt;b&gt;%2&lt;/b&gt;.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;Реверс-поиск файла &lt;b&gt;%1&lt;/b&gt; не удался: Формат файла не поддерживается.&lt;/p&gt;&lt;p&gt;Поддерживаемые форматы: &lt;b&gt;%2&lt;/b&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../src/reverse_search.cpp" line="162"/>
@@ -188,10 +188,6 @@
         <translation>Собирать статистику работы программы</translation>
     </message>
     <message>
-        <source>Collect &amp;Statistics</source>
-        <translation type="vanished">Сбор &amp;статистики</translation>
-    </message>
-    <message>
         <location filename="../../ui/settings.ui" line="167"/>
         <source>Toggle display of current file directory in the status bar</source>
         <translation>Показывать текущую директорию в строке состояния</translation>
@@ -199,12 +195,7 @@
     <message>
         <location filename="../../ui/settings.ui" line="170"/>
         <source>Show Current &amp;Directory</source>
-        <translation>Отображать текущую &amp;директорию</translation>
-    </message>
-    <message>
-        <location filename="../../ui/settings.ui" line="217"/>
-        <source>Track &amp;Added Tags</source>
-        <translation>Отслеживать &amp;новые теги</translation>
+        <translation>Показывать текущую &amp;директорию</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="227"/>
@@ -215,7 +206,8 @@
         <location filename="../../ui/settings.ui" line="230"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Preloading of images reduces the time needed to display previous or next file in queue.&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;To control the number of images preloaded use &lt;span style=&quot; font-style:italic;&quot;&gt;Image count  &lt;/span&gt;option. If you have an SSD and fast multi-core processor, you can set the number higher. Otherwise, if you have an HDD and slower processor with one or two cores, set this number to 1 or 2.&lt;/p&gt;&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;p&gt;To control the maximum amount of memory taken by image cache use &lt;span style=&quot; font-style:italic;&quot;&gt;Maximum memory for cache&lt;/span&gt; option. 256 MiB should be more than enough for most users.&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;
 </source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Предзагрузка изображений позволяет уменьшить время, затрачиваемое на переход к следующему или предыдущему изображению в очереди.&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Чтобы установить число предзагружаемых изображений, используйте опцию&lt;span style=&quot; font-style:italic;&quot;&gt;Число изображений&lt;/span&gt;. Если ваш компьютер обладает SSD и быстрым многоядерным процессором, вы можете увеличить это число. В ином случае, если ваш компьютер обладает HDD и более медленным процессором с одним или двумя ядрами, установите эту опцию в значение 1 или 2.&lt;/p&gt;&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;p&gt;Чтобы установить размер оперативной памяти, используемой для кеширования изображений, используйте опцию &lt;span style=&quot; font-style:italic;&quot;&gt;Память под кеш&lt;/span&gt;. Для большинства пользователей будет достаточно не более 256 MiB.&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Предзагрузка изображений позволяет уменьшить время, затрачиваемое на переход к следующему или предыдущему изображению в очереди.&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Чтобы установить число предзагружаемых изображений, используйте опцию&lt;span style=&quot; font-style:italic;&quot;&gt;Число изображений&lt;/span&gt;. Если ваш компьютер обладает SSD и быстрым многоядерным процессором, вы можете увеличить это число. В ином случае, если ваш компьютер обладает HDD и более медленным процессором с одним или двумя ядрами, установите эту опцию в значение 1 или 2.&lt;/p&gt;&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;p&gt;Чтобы установить размер оперативной памяти, используемой для кеширования изображений, используйте опцию &lt;span style=&quot; font-style:italic;&quot;&gt;Память под кеш&lt;/span&gt;. Для большинства пользователей будет достаточно не более 256 MiB.&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;
+</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="234"/>
@@ -252,16 +244,12 @@
     <message>
         <location filename="../../ui/settings.ui" line="341"/>
         <source>WiseTagger accesses internet only when &lt;em&gt;Reverse Searching&lt;/em&gt; a picture using &lt;a href=&quot;https://iqdb.org&quot;&gt;iqdb.org&lt;/a&gt; service. In some cases a proxy is needed to access internet, or to protect your privacy (using &lt;a href=&quot;https://www.torproject.org/&quot;&gt;Tor&lt;/a&gt; for example).</source>
-        <translation>Wisetagger использует доступ к сети интернет в процессе &lt;em&gt;Реверс-поиска&lt;/em&gt; изображения при помощи сайта &lt;a href=&quot;https://iqdb.org&quot;&gt;iqdb.org&lt;/a&gt;. В некоторых случаях необходимо использовать прокси для доступа к сети, либо для обеспечения анонимности (к примеру, с помощью Tor).</translation>
+        <translation>Wisetagger использует доступ к сети интернет в процессе &lt;em&gt;Реверс-поиска&lt;/em&gt; изображения при помощи сайта &lt;a href=&quot;https://iqdb.org&quot;&gt;iqdb.org&lt;/a&gt;. В некоторых случаях необходимо использовать прокси для доступа к сети, либо для обеспечения анонимности (к примеру, с помощью &lt;a href=&quot;https://www.torproject.org/&quot;&gt;Tor&lt;/a&gt;).</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="344"/>
         <source>&amp;Use proxy</source>
         <translation>&amp;Использовать прокси</translation>
-    </message>
-    <message>
-        <source>&amp;Protocol</source>
-        <translation type="vanished">&amp;Протокол</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="389"/>
@@ -280,10 +268,6 @@
         <translation></translation>
     </message>
     <message>
-        <source>&amp;Host</source>
-        <translation type="vanished">&amp;Хост</translation>
-    </message>
-    <message>
         <location filename="../../ui/settings.ui" line="438"/>
         <source>Proxy Host</source>
         <translation>Хост прокси</translation>
@@ -294,22 +278,19 @@
         <translation></translation>
     </message>
     <message>
-        <source>Po&amp;rt</source>
-        <translation type="vanished">По&amp;рт</translation>
-    </message>
-    <message>
         <location filename="../../ui/settings.ui" line="474"/>
         <source>Proxy Port</source>
         <translation>Порт прокси</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="214"/>
-        <source>Toggle tracking of new tags and displaying new tags notifications</source>
-        <translation>Отслеживать добавленные теги и отображать уведомления о них</translation>
+        <source>Toggle detection of new tags and displaying new tags notifications</source>
+        <translation>Определять неизвестные теги и отображать уведомления о них</translation>
     </message>
     <message>
-        <source>Track Added Tags</source>
-        <translation type="vanished">Отслеживать новые теги</translation>
+        <location filename="../../ui/settings.ui" line="217"/>
+        <source>Detect Unrecogni&amp;zed Tags</source>
+        <translation>Определять &amp;неизвестные теги</translation>
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="373"/>
@@ -407,7 +388,7 @@
     </message>
     <message>
         <location filename="../../ui/settings.ui" line="725"/>
-        <location filename="../../src/settings_dialog.cpp" line="95"/>
+        <location filename="../../src/settings_dialog.cpp" line="96"/>
         <source>Export settings to file</source>
         <translation>Экспорт настроек в файл</translation>
     </message>
@@ -507,96 +488,96 @@
         <translation>Проверять &amp;обновления</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="99"/>
-        <location filename="../../src/settings_dialog.cpp" line="117"/>
+        <location filename="../../src/settings_dialog.cpp" line="100"/>
+        <location filename="../../src/settings_dialog.cpp" line="118"/>
         <source>Settings Files (*.ini)</source>
         <translation>Файлы настроек (*.ini)</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="106"/>
+        <location filename="../../src/settings_dialog.cpp" line="107"/>
         <source>Export success</source>
         <translation>Экспорт настроек удался</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="107"/>
+        <location filename="../../src/settings_dialog.cpp" line="108"/>
         <source>Successfully exported settings!</source>
         <translation>Настройки успешно экспортированы!</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="109"/>
-        <location filename="../../src/settings_dialog.cpp" line="126"/>
+        <location filename="../../src/settings_dialog.cpp" line="110"/>
+        <location filename="../../src/settings_dialog.cpp" line="127"/>
         <source>Export failed</source>
         <translation>Экспорт настроек не удался</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="110"/>
+        <location filename="../../src/settings_dialog.cpp" line="111"/>
         <source>Could not export settings to file &lt;b&gt;%1&lt;/b&gt;. Check directory permissions and try again.</source>
         <translation>Не удалось экспортировать настройки в файл &lt;b&gt;%1&lt;/b&gt;. Проверьте права доступа к директории и попробуйте снова.</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="116"/>
+        <location filename="../../src/settings_dialog.cpp" line="117"/>
         <source>Import settings from file</source>
         <translation>Импортировать настройки из файла</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="123"/>
+        <location filename="../../src/settings_dialog.cpp" line="124"/>
         <source>Import success</source>
         <translation>Импорт настроек удался</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="124"/>
+        <location filename="../../src/settings_dialog.cpp" line="125"/>
         <source>Successfully imported settings!</source>
         <translation>Настройки успешно импортированы!</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="127"/>
+        <location filename="../../src/settings_dialog.cpp" line="128"/>
         <source>Could not import settings from file &lt;b&gt;%1&lt;/b&gt;. File may be corrupt or no read permissions.</source>
         <translation>Не удалось импортировать настройки из файла &lt;b&gt;%1&lt;/b&gt;. Файл настроек мог быть поврежден, либо нет прав на чтение файла.</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="133"/>
+        <location filename="../../src/settings_dialog.cpp" line="134"/>
         <source>Select Executable</source>
         <translation>Выбрать программу</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="205"/>
+        <location filename="../../src/settings_dialog.cpp" line="206"/>
         <source>Unknown command</source>
         <translation>Неизвестная команда</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="207"/>
+        <location filename="../../src/settings_dialog.cpp" line="208"/>
         <source>Remove Command?</source>
         <translation>Удалить команду?</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="208"/>
+        <location filename="../../src/settings_dialog.cpp" line="209"/>
         <source>Remove command &lt;b&gt;%1&lt;/b&gt;?
 This action cannot be undone!</source>
         <translation>Удалить команду &lt;b&gt;%1&lt;/b&gt;?
 Это действие не может быть отменено!</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="344"/>
+        <location filename="../../src/settings_dialog.cpp" line="345"/>
         <source>Command Name</source>
         <translation>Название команды</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="345"/>
+        <location filename="../../src/settings_dialog.cpp" line="346"/>
         <source>Hotkey</source>
         <translation>Хоткей</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="372"/>
+        <location filename="../../src/settings_dialog.cpp" line="373"/>
         <source>Language Changed</source>
         <translation>Язык изменен</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="373"/>
+        <location filename="../../src/settings_dialog.cpp" line="374"/>
         <source>&lt;p&gt;Please restart %1 to apply language change.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Перезапустите %1 чтобы применить изменение языка.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/settings_dialog.cpp" line="426"/>
+        <location filename="../../src/settings_dialog.cpp" line="427"/>
         <source>Unknown command %1</source>
         <translation>Неизвестная команда %1</translation>
     </message>
@@ -630,10 +611,6 @@ This action cannot be undone!</source>
         <location filename="../../src/tagger.cpp" line="168"/>
         <source>Delete file?</source>
         <translation>Удалить файл?</translation>
-    </message>
-    <message>
-        <source>&lt;p&gt;Are you sure you want to delete &lt;b&gt;%1&lt;/b&gt; permanently?&lt;/p&gt;&lt;dd&gt;&lt;dl&gt;File type: %2&lt;/dl&gt;&lt;dl&gt;File size: %3&lt;/dl&gt;&lt;dl&gt;Dimensions: %4 x %5&lt;/dl&gt;&lt;dl&gt;Modified: %6&lt;/dl&gt;&lt;/dd&gt;&lt;p&gt;&lt;em&gt;This action cannot be undone!&lt;/em&gt;&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p&gt;Вы действительно хотите удалить &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;&lt;dd&gt;&lt;dl&gt;Тип файла: %2&lt;/dl&gt;&lt;dl&gt;Размер файла: %3&lt;/dl&gt;&lt;dl&gt;Разрешение: %4 x %5&lt;/dl&gt;&lt;dl&gt;Изменен: %6&lt;/dl&gt;&lt;/dd&gt;&lt;p&gt;&lt;em&gt;Это действие не может быть отменено!&lt;/em&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="180"/>
@@ -1018,6 +995,12 @@ All changes successfully applied.</source>
 Все изменения успешно применены.</translation>
     </message>
     <message>
+        <location filename="../../src/window.cpp" line="811"/>
+        <location filename="../../src/window.cpp" line="831"/>
+        <source>Session Files (%1)</source>
+        <translation>Файлы сессий (%1)</translation>
+    </message>
+    <message>
         <location filename="../../src/window.cpp" line="817"/>
         <source>Save Session Error</source>
         <translation>Не удалось сохранить сессию</translation>
@@ -1078,13 +1061,13 @@ All changes successfully applied.</source>
         <translation>Загрузка %1 на iqdb.org... загружено %2%</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1068"/>
+        <location filename="../../src/window.cpp" line="1067"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation>включен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1068"/>
+        <location filename="../../src/window.cpp" line="1067"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation>выключен</translation>
@@ -1098,10 +1081,6 @@ All changes successfully applied.</source>
         <location filename="../../src/window.cpp" line="87"/>
         <source>&amp;Go To File Number...</source>
         <translation>Перейти к файлу под &amp;номером...</translation>
-    </message>
-    <message>
-        <source>Image Files (%1);;Session Files (%2)</source>
-        <translation type="vanished">Файлы изображений (%1);;Файлы сессий (%2)</translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="208"/>
@@ -1168,7 +1147,7 @@ All changes successfully applied.</source>
         <translation>Включить восстановление тегов имиджборд к их оригинальным версиям.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1064"/>
+        <location filename="../../src/window.cpp" line="1063"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>

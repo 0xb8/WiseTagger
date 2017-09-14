@@ -211,10 +211,10 @@
        <item row="4" column="1">
         <widget class="QCheckBox" name="trackAddedTags">
          <property name="toolTip">
-          <string>Toggle tracking of new tags and displaying new tags notifications</string>
+          <string>Toggle detection of new tags and displaying new tags notifications</string>
          </property>
          <property name="text">
-          <string>Track &amp;Added Tags</string>
+          <string>Detect Unrecogni&amp;zed Tags</string>
          </property>
          <property name="checked">
           <bool>true</bool>
