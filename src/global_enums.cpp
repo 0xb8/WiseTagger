@@ -6,6 +6,7 @@
  */
 
 #include "global_enums.h"
+#include <type_traits>
 
 /*! \file */
 
@@ -26,7 +27,7 @@
 		out << static_cast<std::underlying_type_t<E>>(v); return out;   \
 	}                                                                       \
 	QDataStream &operator>>(QDataStream& in, E & v) {                       \
-		using enum_t = std::remove_reference_t<decltype(v)>;            \
+		using enum_t = std::decay_t<decltype(v)>;                       \
 		using repr_t = std::underlying_type_t<enum_t>;                  \
 		repr_t val{}; in >> val; v = static_cast<enum_t>(val);          \
 		return in;                                                      \

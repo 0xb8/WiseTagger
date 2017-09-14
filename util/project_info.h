@@ -20,6 +20,4 @@
 	#error "No target company"
 #endif // TARGET_COMPANY
 
-#define BUILD_FROM __DATE__ ", " __TIME__
-
 #endif // PROJECT_INFO_H

@@ -1049,10 +1049,9 @@ void Window::about()
 {
 	QMessageBox::about(nullptr,
 	tr("About %1").arg(QStringLiteral(TARGET_PRODUCT)),
-	util::read_resource_html("about.html").arg(
-		QStringLiteral(TARGET_PRODUCT),
-		qApp->applicationVersion(),
-		QStringLiteral(BUILD_FROM)).arg(QDate::currentDate().year()));
+	util::read_resource_html("about.html")
+		.arg(QStringLiteral(TARGET_PRODUCT), qApp->applicationVersion())
+		.arg(QDate::currentDate().year()));
 }
 
 void Window::help()
