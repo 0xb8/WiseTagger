@@ -5,32 +5,47 @@ Simple picture tagging tool
 [![Build status](https://ci.appveyor.com/api/projects/status/h7kpn21xadcxsab1?svg=true)](https://ci.appveyor.com/project/catgirl/wisetagger)
 
 ## Features ##
-* tag autocomplete
-* tag implication
-* tag replacement and removal
-* filesystem-based tag file selection
-* picture drag-and-drop support
-* image reverse-search (using iqdb.org) with proxy support
-* custom commands support
-* crossplatform, using Qt5 Framework
+* Tag autocomplete
+* Tag implication
+* Tag replacement and removal
+* Filesystem-based tag file selection        
+* Picture drag-and-drop support
+* Picture reverse-search (using iqdb.org) with proxy support
+* Custom commands support
+* Almost instant switching between previous and next pictures (experimental, disabled by default)
+* Crossplatform, using Qt5 Framework
 
 ### Tag File Syntax ###
-Each tag is placed on its own line and must contain only numbers, letters, and limited punctuation (not including quotes and commas).
+Each tag must be placed on separate line and must contain only letters, numbers and limited punctuation (not including quotes, commas, dash and equal signs).
 All whitespace is ignored.
 
-If disallowed character is found, it will be ignored with the rest of the line. This behaviour can be used to make comments, e.g. `// comment`.
+If disallowed character is found, it will be ignored with the rest of the line. This behavior can be used to make comments, e.g. `# comment`.
 
 ```
-# 'unneeded' will be automatically removed
--unneeded
+# These tags will be presented in autocomplete sugestions as needed, with their relative order preserved.
+maid
+nekomimi
+ponytail
+pout
+smile
+sad
 
-# tag replacement: 'school_uniform' will be automatically replaced with 'seifuku'
-seifuku = school_uniform
+# Tag 'tagme' will be automatically removed.
+# If you decide to keep this tag, you can type it again and it will stay.
+# This tag will NOT be suggested in autocomplete.
+-tagme
 
-# tag implication: 'nekomimi' will be automatically added when 'catgirl' is added
+# tag replacement: 'megane' will be automatically replaced with 'glasses'.
+# If you decide to keep original tag, you can type it again and it will stay.
+# Tag 'glasses' will be suggested in autocomplete.
+glasses = megane
+
+# tag implication: 'nekomimi' will be automatically added when 'catgirl' is added.
+# If you decide to remove implied tag, erase it and it will not be added again.
+# Tag 'catgirl' will be suggested in autocomplete, but 'nekomimi' will NOT. Add it on other line if needed.
 catgirl : nekomimi
 
-# replace and add tags simultaneously
+# replace and add tags simultaneously. Order does not matter.
 catgirl = animal_ears : nekomimi
 
 # tag lists (comma-separated) may also be used.
@@ -40,27 +55,39 @@ some_tag = first_replaced_tag, second_replaced_tag : first_implied_tag, second_i
 - one, two, three
 ```
 
-**Note that tags will be presented in autocomplete suggestions in the same order they are in tags file!** Use external tools to sort tags.txt file if needed, e.g.
+**Note that tags will be presented in autocomplete suggestions in the same order they are in tags file!** Use external tools to sort tags.txt file if needed, e.g.:
 
 ```
-cat original.tags.txt | uniq | sort -o sorted.tags.txt
+cat original.tags.txt | sort | uniq > sorted.tags.txt
 ```
 
-Some imageboard tags will be also replaced with their shorter or longer versions if corresponding option is enabled.
-For example, if `Replace imageboard tags` option is enabled, and «yande.re 12345» or «Konachan.com - 67890» tags are present, they will be replaced with «yandere_12345» and «konachan_67890» respectively.
-Similarly, if `Restore imageboard tags` option is enabled, «konachan_67890» will be turned back to «Konachan.com - 67890».
+### Imageboard tag compaction ###
+Some imageboard tags may be replaced with their shorter or longer versions.
 
-### Tag File Selection ###
-There are two kinds of tag files: 
+For example, if *Options - Replace imageboard tags* is enabled, and `yande.re 12345` or `Konachan.com - 67890` tags are present, they will be replaced with `yandere_12345` and `konachan_67890` respectively.
+
+Similarly, if *Options - Restore imageboard tags* is enabled, `konachan_67890` will be turned back to `Konachan.com - 67890`.
+
+### Tag file selection ###
+To use tag autocompletion place *Normal Tag File* or *Override Tag File* in the directory with your pictures, or in any of its parent directories.
 
 * Normal Tag File - Files with suffix `.tags.txt`, e.g. `my.tags.txt`
 * Override Tag File - Files with suffix `.tags!.txt`, e.g. `my.tags!.txt`
 
-In both cases prefix can be omitted, leaving only corresponding suffix as file name. Such files starting with `.` are treated as hidden in UNIX-like systems.
+The difference between them is that when *Override Tag File* is found in some directory, the search stops. With *Normal Tag File*, the search continues until all candidate directories have been checked.
 
-To use tag autocompletion place *Normal Tag File* or *Override Tag File* in a directory with your pictures. 
+Tag file prefix can be omitted, leaving only corresponding suffix as file name, e.g. `.tags.txt`. Such files are treated as hidden in UNIX-like systems.
 
-Pictures in subdirectories will pick up tag file in parent directory. 
-You can place more *Normal Tag Files* in subdirectories, in this case contents of subdirectory files will be appended to contents of parent tag file.
+When multiple tag files are found, their contents will be combined. If this behavior is not desired in some particular directory, place *Override Tag File* there.
 
-To override tag files for subdirectory, place *Override Tag File* in that directory.
+#### Tag file reloading ####
+
+WiseTagger will automatically reload tag file(s) if it has been modified. You can also reload tag file manually with *Navigation - Reload Tag File* menu command.
+
+You can open current set of tag files in default text editor using *Navigation - Edit Tag File* menu command.
+
+#### New tags detection ####
+
+WiseTagger will detect tags that are added by user but are not present in any of the tag files.
+
+After such tag had been used a few times, WiseTagger will display notification message with copyable list of new tags.
