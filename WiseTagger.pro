@@ -28,21 +28,51 @@ VERSION = "0.5.2"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT QT_NO_INFO_OUTPUT
 
 DEFINES +=                                           \
+    QT_DEPRECATED_WARNINGS                           \
     APP_VERSION=\\\"$$VERSION\\\"                    \
     TARGET_PRODUCT=\\\"$$QMAKE_TARGET_PRODUCT\\\"    \
     TARGET_COMPANY=\\\"$$QMAKE_TARGET_COMPANY\\\"
 
 CONFIG += c++14
 
-PRECOMPILED_HEADER += util/precompiled.h
+Debug:PRECOMPILED_HEADER += util/precompiled.h
 
 SOURCES +=                                           \
-    $$PWD/src/*.cpp                                  \
-    $$PWD/util/*.cpp
+    src/file_queue.cpp                               \
+    src/global_enums.cpp                             \
+    src/input.cpp                                    \
+    src/main.cpp                                     \
+    src/multicompleter.cpp                           \
+    src/picture.cpp                                  \
+    src/reverse_search.cpp                           \
+    src/settings_dialog.cpp                          \
+    src/statistics.cpp                               \
+    src/tagger.cpp                                   \
+    src/window.cpp                                   \
+    util/imagecache.cpp                              \
+    util/misc.cpp                                    \
+    util/open_graphical_shell.cpp
 
 HEADERS  +=                                          \
-    $$PWD/src/*.h                                    \
-    $$PWD/util/*.h
+    src/file_queue.h                                 \
+    src/global_enums.h                               \
+    src/input.h                                      \
+    src/multicompleter.h                             \
+    src/picture.h                                    \
+    src/reverse_search.h                             \
+    src/settings_dialog.h                            \
+    src/statistics.h                                 \
+    src/tagger.h                                     \
+    src/window.h                                     \
+    util/command_placeholders.h                      \
+    util/imageboard.h                                \
+    util/imagecache.h                                \
+    util/misc.h                                      \
+    util/open_graphical_shell.h                      \
+    util/project_info.h                              \
+    util/size.h                                      \
+    util/traits.h                                    \
+    util/unordered_map_qt.h
 
 RESOURCES +=                                         \
     resources/resources.qrc
@@ -50,7 +80,6 @@ RESOURCES +=                                         \
 FORMS +=                                             \
     ui/settings.ui
 
-# lupdate cannot into wildcard expansion
 TRANSLATIONS = resources/i18n/Russian.ts             \
 	       resources/i18n/English.ts
 
