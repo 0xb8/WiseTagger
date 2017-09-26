@@ -551,7 +551,7 @@ void Window::processNewVersion(QNetworkReply *r)
 
 	if(res < 0) {
 		const auto version_str = newver.toString();
-		addNotification(tr("New Version Available"),
+		addNotification(tr("New version available"),
 			tr("Version %1 is available.").arg(version_str),
 			tr("<h3>Updated version available: v%1</h3>"
 			   "<p><a href=\"%2\">Click here to download new version</a>.</p>")
@@ -698,7 +698,7 @@ void Window::createActions()
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched, &TaggerStatistics::instance(), &TaggerStatistics::reverseSearched);
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched,this, [this]()
 	{
-		addNotification(tr("IQDB Upload Finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
+		addNotification(tr("IQDB upload finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
 	});
 
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
@@ -864,7 +864,32 @@ void Window::createActions()
 			msg.append(QStringLiteral("</li><li>"));
 		}
 		msg.append(QStringLiteral("</li></ul>"));
-		addNotification(tr("New Tags Added"), tr("Check Notifications menu for list of added tags."), msg);
+		addNotification(tr("New tags added"), tr("Check Notifications menu for list of added tags."), msg);
+	});
+	connect(&m_tagger, &Tagger::tagFilesNotFound,[this](QString normalname, QString overridename, QStringList paths)
+	{
+		QString path_list;
+		path_list.reserve(paths.size() * 128);
+		for(const auto& s : qAsConst(paths)) {
+			path_list.push_back(QStringLiteral("<li>"));
+			path_list.push_back(s);
+			path_list.push_back(QStringLiteral("</li>"));
+		}
+		addNotification(tr("Tag file not found"),
+		                tr("Could not locate suitable tag file"),
+		                tr("<h2>Could not locate suitable tag file</h2>"
+		                   "<p>You can still browse and rename files, but tag autocomplete will not work.</p>"
+		                   "<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened file "
+		                   "and in directories directly above it."
+
+		                   "<p>Tag files we looked for:"
+		                   "<dd><dl>Appending tag file: <b>%1</b></dl>"
+		                   "<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
+		                   "<p>Directories where we looked for them, in search order:"
+		                   "<ol>%3</ol></p>"
+		                   "<p><a href=\"https://bitbucket.org/catgirl/wisetagger/overview\">"
+		                   "Appending and overriding tag files documentation"
+		                   "</a></p>").arg(normalname, overridename, path_list));
 	});
 	connect(&a_show_settings, &QAction::triggered, [this]()
 	{
@@ -1031,9 +1056,6 @@ void Window::updateMenus()
 	a_save_next.setDisabled(val);
 	a_save_prev.setDisabled(val);
 	a_delete_file.setDisabled(val);
-	a_reload_tags.setDisabled(val);
-	a_open_tags.setDisabled(val);
-	a_edit_tags.setDisabled(val);
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);
@@ -1042,6 +1064,11 @@ void Window::updateMenus()
 	for(auto action : menu_commands.actions()) {
 		action->setDisabled(val);
 	}
+
+	val = m_tagger.hasTagFile();
+	a_reload_tags.setEnabled(val);
+	a_open_tags.setEnabled(val);
+	a_edit_tags.setEnabled(val);
 }
 
 //------------------------------------------------------------------------------

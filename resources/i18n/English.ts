@@ -626,23 +626,13 @@ This action cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="404"/>
-        <source>&lt;h3&gt;Could not locate suitable tag file&lt;/h3&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/tagger.cpp" line="405"/>
-        <source>&lt;p&gt;You can still browse and rename files, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened file and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://bitbucket.org/catgirl/wisetagger/overview&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/tagger.cpp" line="508"/>
+        <location filename="../../src/tagger.cpp" line="494"/>
         <source>Error opening media</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="487"/>
-        <location filename="../../src/tagger.cpp" line="498"/>
+        <location filename="../../src/tagger.cpp" line="473"/>
+        <location filename="../../src/tagger.cpp" line="484"/>
         <source>Error opening file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -652,57 +642,57 @@ This action cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="488"/>
+        <location filename="../../src/tagger.cpp" line="474"/>
         <source>&lt;p&gt;Directory &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;File from another directory will be opened instead.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="499"/>
+        <location filename="../../src/tagger.cpp" line="485"/>
         <source>&lt;p&gt;File &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="509"/>
+        <location filename="../../src/tagger.cpp" line="495"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File format is not supported or file corrupted.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="592"/>
+        <location filename="../../src/tagger.cpp" line="578"/>
         <source>Cannot rename file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="593"/>
+        <location filename="../../src/tagger.cpp" line="579"/>
         <source>&lt;p&gt;Cannot rename file &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File with this name already exists in &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="602"/>
+        <location filename="../../src/tagger.cpp" line="588"/>
         <source>Rename file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="603"/>
+        <location filename="../../src/tagger.cpp" line="589"/>
         <source>Rename &lt;b&gt;%1&lt;/b&gt;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="607"/>
+        <location filename="../../src/tagger.cpp" line="593"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="608"/>
+        <location filename="../../src/tagger.cpp" line="594"/>
         <source>Discard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="614"/>
+        <location filename="../../src/tagger.cpp" line="600"/>
         <source>Could not rename file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="615"/>
+        <location filename="../../src/tagger.cpp" line="601"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -920,11 +910,6 @@ This action cannot be undone!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="554"/>
-        <source>New Version Available</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../src/window.cpp" line="555"/>
         <source>Version %1 is available.</source>
         <translation type="unfinished"></translation>
@@ -1005,12 +990,12 @@ This action cannot be undone!</source>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="701"/>
-        <source>IQDB Upload Finished</source>
+        <source>Search results page opened in default browser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="701"/>
-        <source>Search results page opened in default browser.</source>
+        <source>IQDB upload finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1067,27 +1052,22 @@ All changes successfully applied.</source>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="867"/>
-        <source>New Tags Added</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/window.cpp" line="867"/>
         <source>Check Notifications menu for list of added tags.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1063"/>
+        <location filename="../../src/window.cpp" line="1090"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1067"/>
+        <location filename="../../src/window.cpp" line="1094"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1067"/>
+        <location filename="../../src/window.cpp" line="1094"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
@@ -1133,12 +1113,37 @@ All changes successfully applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../src/window.cpp" line="554"/>
+        <source>New version available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../src/window.cpp" line="683"/>
         <source>Reload changes in tag files and search for newly added tag files.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1051"/>
+        <location filename="../../src/window.cpp" line="867"/>
+        <source>New tags added</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="878"/>
+        <source>Tag file not found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="879"/>
+        <source>Could not locate suitable tag file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="880"/>
+        <source>&lt;h2&gt;Could not locate suitable tag file&lt;/h2&gt;&lt;p&gt;You can still browse and rename files, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened file and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://bitbucket.org/catgirl/wisetagger/overview&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="1078"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>

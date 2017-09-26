@@ -232,6 +232,11 @@ bool Tagger::isEmpty() const
 	return m_file_queue.empty();
 }
 
+bool Tagger::hasTagFile() const
+{
+	return m_input.hasTagFile();
+}
+
 QSize Tagger::mediaDimensions() const
 {
 	return m_picture.mediaSize();
@@ -359,14 +364,11 @@ void Tagger::findTagsFiles(bool force)
 
 	m_current_tag_files.clear();
 
-	QString search_paths_list;
-	search_paths_list.reserve(search_dirs.size() * 96);
+	QStringList search_paths_list;
+	search_paths_list.reserve(search_dirs.size());
 
 	for(const auto dir : qAsConst(search_dirs)) {
-		search_paths_list.push_back(QStringLiteral("<li>"));
 		search_paths_list.push_back(dir.path());
-		search_paths_list.push_back(QStringLiteral("</li>"));
-
 		if(!dir.exists()) continue;
 
 		auto list_override = dir.entryInfoList({override});
@@ -399,25 +401,7 @@ void Tagger::findTagsFiles(bool force)
 
 	pdbg << m_current_tag_files;
 
-	if(m_current_tag_files.isEmpty()) {
-		QMessageBox mbox;
-		mbox.setText(tr("<h3>Could not locate suitable tag file</h3>"));
-		mbox.setInformativeText(tr(
-			"<p>You can still browse and rename files, but tag autocomplete will not work.</p>"
-			"<hr>WiseTagger will look for <em>tag files</em> in directory of the currently opened file "
-			"and in directories directly above it."
-
-			"<p>Tag files we looked for:"
-			"<dd><dl>Appending tag file: <b>%1</b></dl>"
-			"<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
-			"<p>Directories where we looked for them, in search order:"
-			"<ol>%3</ol></p>"
-			"<p><a href=\"https://bitbucket.org/catgirl/wisetagger/overview\">"
-			"Appending and overriding tag files documentation"
-			"</a></p>").arg(tagsfile, override, search_paths_list));
-		mbox.setIcon(QMessageBox::Warning);
-		mbox.exec();
-	} else {
+	if(Q_LIKELY(!m_current_tag_files.isEmpty())) {
 		std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
 		m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
 		m_fs_watcher->addPaths(m_current_tag_files);
@@ -428,6 +412,8 @@ void Tagger::findTagsFiles(bool force)
 			emit this->tagFileChanged();
 		});
 		reloadTagsContents();
+	} else {
+		emit tagFilesNotFound(tagsfile, override, search_paths_list);
 	}
 }
 

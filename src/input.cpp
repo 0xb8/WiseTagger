@@ -191,6 +191,11 @@ QString TagInput::postURL() const
 	return ib::get_imageboard_meta(m_text_list.begin(), m_text_list.end()).post_url;
 }
 
+bool TagInput::hasTagFile() const
+{
+	return !m_tags_from_file.isEmpty();
+}
+
 QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
 {
 	auto initial_tags = m_initial_text.split(QChar(' '), QString::SkipEmptyParts);

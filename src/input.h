@@ -58,6 +58,12 @@ public:
 	 */
 	QString postURL() const;
 
+
+	/**
+	 * @brief Returs whether tag file(s) is present.
+	 */
+	bool hasTagFile() const;
+
 	/**
 	 * @brief Returns tags added by user.
 	 * @param exclude_tags_from_file If set to true, only tags not present

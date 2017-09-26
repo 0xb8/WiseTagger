@@ -95,6 +95,9 @@ public:
 	/// Returns whether the file queue is empty.
 	bool    isEmpty() const;
 
+	/// Returns whether tag file(s) is present.
+	bool    hasTagFile() const;
+
 	/// Returns dimensions of current media.
 	QSize   mediaDimensions() const;
 
@@ -165,6 +168,14 @@ signals:
 
 	/// This signal is emitted when tag file contents have been changed externally.
 	void tagFileChanged();
+
+	/**
+	 * \brief This signal is emitted when no tag files were found.
+	 * \param normal_file Normal tag file name.
+	 * \param override_file Override tag file name.
+	 * \param paths List of paths that have been searched for tag files.
+	 */
+	void tagFilesNotFound(QString normal_file, QString override_file, QStringList paths);
 
 private:
 	void findTagsFiles(bool force = false);
