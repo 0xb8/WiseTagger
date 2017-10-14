@@ -88,7 +88,7 @@ bool Tagger::openFile(const QString &filename)
 		return false;
 
 	const QFileInfo fi(filename);
-	if(!fi.isReadable() || !fi.isFile() || !fi.isAbsolute()) {
+	if(!fi.isReadable() || !fi.isFile()) {
 		return false;
 	}
 	m_file_queue.clear();
@@ -105,13 +105,13 @@ bool Tagger::openDir(const QString &dir)
 		return false;
 
 	const QFileInfo fi(dir);
-	if(!fi.isReadable() || !fi.isDir() || !fi.isAbsolute()) {
+	if(!fi.isReadable() || !fi.isDir()) {
 		return false;
 	}
 	m_file_queue.clear();
 	m_file_queue.push(dir);
 	m_file_queue.sort();
-	m_file_queue.select(0u);
+	m_file_queue.select(0u); // NOTE: must select after sorting, otherwise selects first file in directory order
 	m_picture.cache.clear();
 	return loadCurrentFile();
 }
@@ -627,7 +627,7 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 		}
 
 		default:
-			return RenameStatus::Failed;
+			Q_UNREACHABLE();
 		}
 	}
 

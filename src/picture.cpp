@@ -66,6 +66,8 @@ Picture::Picture(QWidget *parent) :
 			resizeMedia();
 	});
 	m_resize_timer.setSingleShot(true);
+
+	clear();
 }
 
 // Implement empty event handlers to allow filtering by MainWindow

@@ -24,7 +24,6 @@ namespace logging_category {
 
 /* static data */
 const QString FileQueue::m_empty{nullptr,0};
-const size_t  FileQueue::npos = std::numeric_limits<size_t>::max();
 const QString FileQueue::sessionNameFilter = QStringLiteral("*.wt-session");
 
 void FileQueue::setNameFilter(const QStringList &f) noexcept(false)

@@ -34,7 +34,7 @@ public:
 	};
 
 	/// Value used as invalid index.
-	static const size_t npos;
+	static constexpr size_t npos = std::numeric_limits<size_t>::max();
 
 	/// Checks suffix of session files.
 	static bool checkSessionFileSuffix(const QFileInfo&);
@@ -215,7 +215,7 @@ private:
 	static const QString m_empty;
 	std::deque<QString>  m_files;
 	QStringList          m_name_filters;
-	size_t               m_current = std::numeric_limits<size_t>::max();
+	size_t               m_current = npos;
 	SortQueueBy          m_sort_by = SortQueueBy::FileName;
 };
 

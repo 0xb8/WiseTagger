@@ -124,6 +124,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	setCentralWidget(&m_tagger);
 	setAcceptDrops(true);
 	updateStyle(); // NOTE: should be called before menus are created.
+	updateWindowTitle();
 	createActions();
 	createMenus();
 	createCommands();
@@ -388,23 +389,27 @@ void Window::showEvent(QShowEvent *e)
 //------------------------------------------------------------------------------
 void Window::parseCommandLineArguments()
 {
-	auto args = qApp->arguments();
-	args.pop_front();
+	const auto args = qApp->arguments(); // slow
 
-	if(args.size() == 1) {
-		m_tagger.open(args.first());
+	if(args.size() <= 1)
+		return;
+
+	if(args.size() == 2) {
+		m_tagger.open(args.back()); // may open session file or read list from stdin
 		return;
 	}
 
-	for(const auto& arg : qAsConst(args)) {
-		if(arg.startsWith(QChar('-'))) {
+	for(int i = 1; i < args.size(); ++i) {
+		auto& arg = args.at(i);
+		if(args.startsWith(QChar('-'))) {
 			continue;
 		}
-
 		m_tagger.queue().push(arg);
 	}
+
+	m_tagger.queue().select(0); // must select 0 before sorting to always open first argument
 	m_tagger.queue().sort();
-	m_tagger.openFileInQueue();
+	m_tagger.openFileInQueue(m_tagger.queue().currentIndex()); // sorting changed the index of selected file
 }
 
 //------------------------------------------------------------------------------
