@@ -46,8 +46,13 @@ find_package(Qt5 REQUIRED COMPONENTS Core Gui Network Widgets ${WINEXTRAS_PKG})
 qt5_wrap_ui(wisetagger_ui_hdrs
 	ui/settings.ui
 )
-add_executable(WiseTagger ${SUBSYSTEM} ${wt_srcs} ${wisetagger_ui_hdrs} ${wisetagger_rc_srcs})
+add_executable(WiseTagger ${SUBSYSTEM} ${wt_srcs} ${wisetagger_ui_hdrs})
 target_link_libraries(WiseTagger Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets ${WINEXTRAS})
+target_compile_definitions(WiseTagger PRIVATE QT_DEPRECATED_WARNINGS)
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+	target_compile_definitions(WiseTagger PRIVATE QT_NO_DEBUG_OUTPUT QT_NO_INFO_OUTPUT)
+endif()
 
 configure_file("util/project_info.h.in" "util/project_info.h")
 
