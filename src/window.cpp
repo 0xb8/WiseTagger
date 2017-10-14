@@ -364,8 +364,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 void Window::closeEvent(QCloseEvent *e)
 {
 	if(m_tagger.fileModified()) {
-		auto r = m_tagger.rename();
-		if(r == Tagger::RenameStatus::Renamed || r == Tagger::RenameStatus::Failed) {
+		if(Tagger::canExit(m_tagger.rename())) {
 			saveSettings();
 			QMainWindow::closeEvent(e);
 			return;

@@ -24,6 +24,15 @@
 class FileQueue {
 public:
 
+	/// Result of rename operation
+	enum class RenameResult
+	{
+		GenericFailure    =-1,
+		Success           = 0,
+		SourceFileMissing = 1,
+		TargetFileExists  = 2
+	};
+
 	/// Value used as invalid index.
 	static const size_t npos;
 
@@ -168,10 +177,9 @@ public:
 	 * \brief Renames currently selected file.
 	 * \param New file name.
 	 *
-	 * \retval true  - Renamed successfully.
-	 * \retval false - Could not rename.
+	 * \returns Result of rename operation.
 	 */
-	bool renameCurrentFile(const QString&);
+	RenameResult renameCurrentFile(const QString&);
 
 
 	/*!

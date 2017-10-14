@@ -257,6 +257,13 @@ FileQueue& Tagger::queue()
 	return m_file_queue;
 }
 
+bool Tagger::canExit(Tagger::RenameStatus status)
+{
+	if(status == RenameStatus::Cancelled || status == RenameStatus::Failed)
+		return false;
+	return true;
+}
+
 //------------------------------------------------------------------------------
 
 void Tagger::updateSettings()
@@ -572,17 +579,6 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	if(new_file_path == m_file_queue.current() || m_input.text().isEmpty())
 		return RenameStatus::Failed;
 
-	/* Check for possible filename conflict */
-	if(QFileInfo::exists(new_file_path)) {
-		QMessageBox::critical(this,
-			tr("Cannot rename file"),
-			tr("<p>Cannot rename file <b>%1</b></p>"
-			   "<p>File with this name already exists in <b>%2</b></p>"
-			   "<p>Please change some of your tags.</p>")
-				.arg(file.fileName(), file.canonicalPath()));
-		return RenameStatus::Cancelled;
-	}
-
 	/* Show save dialog */
 	QMessageBox renameMessageBox(QMessageBox::Question,
 		tr("Rename file?"),
@@ -595,19 +591,44 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 
 	int reply;
 	if(options.testFlag(RenameOption::ForceRename) || (reply = renameMessageBox.exec()) == QMessageBox::Save ) {
-		if(!m_file_queue.renameCurrentFile(new_file_path)) {
+
+		auto result = m_file_queue.renameCurrentFile(new_file_path);
+
+		switch (result) {
+		case FileQueue::RenameResult::SourceFileMissing:
+		case FileQueue::RenameResult::GenericFailure:
+
 			QMessageBox::warning(this,
 				tr("Could not rename file"),
 				tr("<p>Could not rename <b>%1</b></p>"
-				   "<p>File may have been renamed or removed by another application.</p>").arg(file.fileName()));
+				   "<p>File may have been renamed or removed by another application, "
+				   "or file with this name already exists in current directory.</p>")
+					.arg(file.fileName()));
+			return RenameStatus::Failed;
+
+		case FileQueue::RenameResult::TargetFileExists:
+
+			QMessageBox::critical(this,
+				tr("Cannot rename file"),
+				tr("<p>Cannot rename <b>%1</b></p>"
+				   "<p>File with this name already exists in <b>%2</b></p>"
+				   "<p>Please change some of your tags.</p>")
+					.arg(file.fileName(), file.canonicalPath()));
+			return RenameStatus::Cancelled;
+
+		case FileQueue::RenameResult::Success:
+		{
+			QSettings settings;
+			if(settings.value(QStringLiteral("track-added-tags"), true).toBool()) {
+				updateNewTagsCounts();
+			}
+			emit fileRenamed(m_input.text());
+			return RenameStatus::Renamed;
+		}
+
+		default:
 			return RenameStatus::Failed;
 		}
-		QSettings settings;
-		if(settings.value(QStringLiteral("track-added-tags"), true).toBool()) {
-			updateNewTagsCounts();
-		}
-		emit fileRenamed(m_input.text());
-		return RenameStatus::Renamed;
 	}
 
 	if(reply == QMessageBox::Cancel) {

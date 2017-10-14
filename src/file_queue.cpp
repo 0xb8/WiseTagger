@@ -186,18 +186,27 @@ void FileQueue::sort() noexcept
 		m_current = 0;
 }
 
-bool FileQueue::renameCurrentFile(const QString& new_path)
+FileQueue::RenameResult FileQueue::renameCurrentFile(const QString& new_path)
 {
 	if(m_current >= m_files.size()) {
 		pwarn << "renameCurrentFile(): queue empty or index is out of bounds";
-		return false;
+		return RenameResult::SourceFileMissing;
 	}
 
-	bool renamed = QFile(m_files.at(m_current)).rename(new_path);
-	if(renamed) {
+	QFile source_file(m_files.at(m_current));
+	if(!source_file.exists())
+		return RenameResult::SourceFileMissing;
+
+	if(QFile::exists(new_path))
+		return RenameResult::TargetFileExists;
+
+	if(source_file.rename(new_path)) {
 		m_files.at(m_current) = new_path;
+		return RenameResult::Success;
 	}
-	return renamed;
+
+	pwarn << "renameCurrentFile(): error: " << source_file.errorString();
+	return RenameResult::GenericFailure;
 }
 
 bool FileQueue::deleteCurrentFile()

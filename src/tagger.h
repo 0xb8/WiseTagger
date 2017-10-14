@@ -51,21 +51,27 @@ public:
 	/// Result of rename operation
 	enum class RenameStatus
 	{
-		Cancelled = -1, ///< Rename was cancelled by user.
-		Failed = 0,     ///< Rename failed.
-		Renamed = 1,    ///< Renamed successfully.
-		NotModified = 2 ///< File name was not modified.
+		Cancelled   = -1, ///< Rename was cancelled by user.
+		Failed      = 0,  ///< Rename failed.
+		Renamed     = 1,  ///< Renamed successfully.
+		NotModified = 2   ///< File name was not modified.
 	};
 	Q_ENUM(RenameStatus)
 
 	/// Options controlling UI behavior when renaming file.
 	enum class RenameOption
 	{
-		NoOption = 0x0,          ///< Default UI behavior.
-		ForceRename = 0x1        ///< Force rename - do not show rename dialog.
+		NoOption    = 0x0,  ///< Default UI behavior.
+		ForceRename = 0x1   ///< Force rename - do not show rename dialog.
 	};
 	using RenameOptions = QFlags<RenameOption>;
 	Q_FLAG(RenameOptions)
+
+	/**
+	 * \brief Determines whether it is safe to close the application.
+	 * \param status Rename operation status, see Tagger::rename().
+	 */
+	static bool canExit(RenameStatus status);
 
 	/**
 	 * \brief Renames current file
