@@ -231,7 +231,7 @@ void Window::addNotification(QString title, QString description, QString body)
 	if(!body.isEmpty()) {
 		auto action = menu_notifications.addAction(title);
 
-		connect(action, &QAction::triggered, [title,body,this,action](){
+		connect(action, &QAction::triggered, this, [this,title,body]() {
 			QMessageBox mb(QMessageBox::Information, title, body, QMessageBox::Ok, this);
 			mb.setTextInteractionFlags(Qt::TextBrowserInteraction);
 			mb.exec();
@@ -601,8 +601,7 @@ void Window::createCommands()
 			action->setShortcut(hkey);
 		}
 
-		connect(action, &QAction::triggered,
-			[this,name,binary,cmd] ()
+		connect(action, &QAction::triggered, this, [this,name,binary,cmd]()
 		{
 			auto cmd_tmp = cmd; // NOTE: separate copy is needed instead of mutable lambda
 			auto to_native = [](const auto& path)
@@ -700,7 +699,7 @@ void Window::createActions()
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched, &TaggerStatistics::instance(), &TaggerStatistics::reverseSearched);
-	connect(&m_reverse_search, &ReverseSearch::reverseSearched,this, [this]()
+	connect(&m_reverse_search, &ReverseSearch::reverseSearched, this, [this]()
 	{
 		addNotification(tr("IQDB upload finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
 	});
@@ -728,39 +727,39 @@ void Window::createActions()
 		                   "All changes successfully applied."),
 		                QStringLiteral(""));
 	});
-	connect(&m_tagger,      &Tagger::fileOpened, [this]()
+	connect(&m_tagger,      &Tagger::fileOpened, this, [this]()
 	{
 		updateImageboardPostURL(m_tagger.postURL());
 	});
-	connect(&a_save_file,   &QAction::triggered, [this]()
+	connect(&a_save_file,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.rename();
 	});
-	connect(&a_next_file,   &QAction::triggered, [this]()
+	connect(&a_next_file,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.nextFile();
 	});
-	connect(&a_prev_file,   &QAction::triggered, [this]()
+	connect(&a_prev_file,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.prevFile();
 	});
-	connect(&a_save_next,   &QAction::triggered, [this]()
+	connect(&a_save_next,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.nextFile(Tagger::RenameOption::ForceRename);
 	});
-	connect(&a_save_prev,   &QAction::triggered, [this]()
+	connect(&a_save_prev,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.prevFile(Tagger::RenameOption::ForceRename);
 	});
-	connect(&a_open_post,   &QAction::triggered, [this]()
+	connect(&a_open_post,   &QAction::triggered, this, [this]()
 	{
 		QDesktopServices::openUrl(m_post_url);
 	});
-	connect(&a_iqdb_search, &QAction::triggered, [this]()
+	connect(&a_iqdb_search, &QAction::triggered, this, [this]()
 	{
 		m_reverse_search.search(m_tagger.currentFile());
 	});
-	connect(&a_open_loc,    &QAction::triggered, [this]()
+	connect(&a_open_loc,    &QAction::triggered, this, [this]()
 	{
 		util::open_file_in_gui_shell(m_tagger.currentFile());
 	});
@@ -772,12 +771,12 @@ void Window::createActions()
 	{
 		QSettings s; s.setValue(SETT_RESTORE_TAGS, checked);
 	});
-	connect(&a_view_statusbar, &QAction::triggered, [this](bool checked)
+	connect(&a_view_statusbar, &QAction::triggered, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
 		m_statusbar.setVisible(checked && m_view_mode != ViewMode::Minimal);
 	});
-	connect(&a_view_fullscreen, &QAction::triggered, [this](bool checked)
+	connect(&a_view_fullscreen, &QAction::triggered, this, [this](bool checked)
 	{
 		if(checked) {
 			m_view_maximized = isMaximized();
@@ -790,24 +789,24 @@ void Window::createActions()
 			}
 		}
 	});
-	connect(&a_view_minimal, &QAction::triggered, [this](bool checked)
+	connect(&a_view_minimal, &QAction::triggered, this, [this](bool checked)
 	{
 		m_view_mode = checked ? ViewMode::Minimal : ViewMode::Normal;
 		QSettings s; s.setValue(SETT_VIEW_MODE, QVariant::fromValue(m_view_mode));
 		updateSettings();
 		m_tagger.updateSettings();
 	});
-	connect(&a_view_menu, &QAction::triggered, [this](bool checked)
+	connect(&a_view_menu, &QAction::triggered, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_MENU, checked);
 		this->menuBar()->setVisible(checked);
 	});
-	connect(&a_view_input, &QAction::triggered, [this](bool checked)
+	connect(&a_view_input, &QAction::triggered, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
 		this->m_tagger.setInputVisible(checked);
 	});
-	connect(&a_save_session, &QAction::triggered, [this]()
+	connect(&a_save_session, &QAction::triggered, this, [this]()
 	{
 		auto filename = QFileDialog::getSaveFileName(this,
 			tr("Save Session"),
@@ -825,7 +824,7 @@ void Window::createActions()
 		QSettings s;
 		s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(filename).absolutePath());
 	});
-	connect(&a_open_session, &QAction::triggered, [this]()
+	connect(&a_open_session, &QAction::triggered, this, [this]()
 	{
 		QSettings s;
 		auto lastdir = s.value(SETT_LAST_SESSION_DIR, m_last_directory).toString();
@@ -835,7 +834,7 @@ void Window::createActions()
 			tr("Session Files (%1)").arg(FileQueue::sessionNameFilter));
 		m_tagger.openSession(filename);
 	});
-	connect(&a_go_to_number, &QAction::triggered, [this]()
+	connect(&a_go_to_number, &QAction::triggered, this, [this]()
 	{
 		auto number = QInputDialog::getInt(this,
 			tr("Enter Number"),
@@ -854,12 +853,12 @@ void Window::createActions()
 	{
 		QSettings s; s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(path).absolutePath());
 	});
-	connect(&m_tagger, &Tagger::fileOpened, [this](const QString& path)
+	connect(&m_tagger, &Tagger::fileOpened, this, [this](const QString& path)
 	{
 		m_last_directory = QFileInfo(path).absolutePath();
 		QSettings s; s.setValue(SETT_LAST_DIR, m_last_directory);
 	});
-	connect(&m_tagger, &Tagger::newTagsAdded, [this](const QStringList& l)
+	connect(&m_tagger, &Tagger::newTagsAdded, this, [this](const QStringList& l)
 	{
 		QString msg = tr("<p>New tags were found, ordered by number of times used:</p>");
 		msg.append(QStringLiteral("<ul><li>"));
@@ -870,7 +869,7 @@ void Window::createActions()
 		msg.append(QStringLiteral("</li></ul>"));
 		addNotification(tr("New tags added"), tr("Check Notifications menu for list of added tags."), msg);
 	});
-	connect(&m_tagger, &Tagger::tagFilesNotFound,[this](QString normalname, QString overridename, QStringList paths)
+	connect(&m_tagger, &Tagger::tagFilesNotFound, this, [this](QString normalname, QString overridename, QStringList paths)
 	{
 		QString path_list;
 		path_list.reserve(paths.size() * 128);
@@ -891,11 +890,11 @@ void Window::createActions()
 		                   "<dl>Overriding tag file: <b>%2</b></dl></dd></p>"
 		                   "<p>Directories where we looked for them, in search order:"
 		                   "<ol>%3</ol></p>"
-		                   "<p><a href=\"https://bitbucket.org/catgirl/wisetagger/overview\">"
+		                   "<p><a href=\"https://github.com/0xb8/WiseTagger#tag-file-selection\">"
 		                   "Appending and overriding tag files documentation"
 		                   "</a></p>").arg(normalname, overridename, path_list));
 	});
-	connect(&a_show_settings, &QAction::triggered, [this]()
+	connect(&a_show_settings, &QAction::triggered, this, [this]()
 	{
 		auto sd = new SettingsDialog(this);
 		connect(sd, &SettingsDialog::updated, this, &Window::updateSettings);
@@ -906,7 +905,7 @@ void Window::createActions()
 		});
 		sd->open();
 	});
-	connect(&ag_sort_criteria, &QActionGroup::triggered,[this](QAction* a)
+	connect(&ag_sort_criteria, &QActionGroup::triggered, this, [this](QAction* a)
 	{
 		m_tagger.queue().setSortBy(a->data().value<SortQueueBy>());
 		m_tagger.queue().sort();

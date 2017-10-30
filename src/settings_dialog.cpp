@@ -56,11 +56,8 @@
 #define D_PRELOAD_CNT   std::max(QThread::idealThreadCount() / 2, 1)
 #define D_PRELOAD_MEM   64
 
-
-
-
 #ifdef Q_OS_WIN
-	#define EXECUTABLE_EXTENSION tr("Executable Files (*.exe)")
+	#define EXECUTABLE_EXTENSION SettingsDialog::tr("Executable Files (*.exe)")
 #else
 	#define EXECUTABLE_EXTENSION QStringLiteral("")
 #endif
@@ -89,7 +86,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 			restoreDefaults();
 		}
 	});
-	connect(ui->exportSettingsBtn, &QPushButton::clicked, [this](){
+	connect(ui->exportSettingsBtn, &QPushButton::clicked, this, [this](){
 		QSettings settings;
 		auto portable = settings.value(QStringLiteral("settings-portable"), false).toBool();
 		auto path = QFileDialog::getSaveFileName(this,
@@ -112,7 +109,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 		}
 
 	});
-	connect(ui->importSettingsBtn, &QPushButton::clicked, [this](){
+	connect(ui->importSettingsBtn, &QPushButton::clicked, this, [this](){
 		auto path = QFileDialog::getOpenFileName(this,
 			tr("Import settings from file"), QDir::homePath()+QStringLiteral("/WiseTagger.ini"),
 			tr("Settings Files (*.ini)"));
@@ -129,7 +126,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 		}
 
 	});
-	connect(ui->cmdExecutableBrowse, &QPushButton::clicked, [this](){
+	connect(ui->cmdExecutableBrowse, &QPushButton::clicked, this, [this](){
 		auto dir = QFileInfo(ui->cmdExecutableEdit->text()).absolutePath();
 		auto n = QFileDialog::getOpenFileName(this,tr("Select Executable"),dir, EXECUTABLE_EXTENSION);
 		if(!n.isEmpty()) {
@@ -138,20 +135,20 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 		}
 	});
 	// Placeholder inserters
-	connect(ui->p_filepath, &QAction::triggered, [this](bool){
+	connect(ui->p_filepath, &QAction::triggered, this, [this](bool){
 		ui->cmdArgsEdit->insert(QStringLiteral(" " CMD_PLDR_PATH " "));
 	});
-	connect(ui->p_filedir, &QAction::triggered, [this](bool){
+	connect(ui->p_filedir, &QAction::triggered, this, [this](bool){
 		ui->cmdArgsEdit->insert(QStringLiteral(" " CMD_PLDR_DIR " "));
 	});
-	connect(ui->p_filename, &QAction::triggered, [this](bool){
+	connect(ui->p_filename, &QAction::triggered, this, [this](bool){
 		ui->cmdArgsEdit->insert(QStringLiteral(" " CMD_PLDR_FULLNAME " "));
 	});
-	connect(ui->p_basename, &QAction::triggered, [this](bool){
+	connect(ui->p_basename, &QAction::triggered, this, [this](bool){
 		ui->cmdArgsEdit->insert(QStringLiteral(" " CMD_PLDR_BASENAME " "));
 	});
 	// Move down
-	connect(ui->downCmd, &QPushButton::clicked, [this](){
+	connect(ui->downCmd, &QPushButton::clicked, this, [this](){
 		auto row = ui->cmdView->currentIndex().row();
 		if(row < ui->cmdView->model()->rowCount()-1) {
 			auto list = m_cmdl->takeRow(row);
@@ -162,7 +159,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 
 	});
 	// Move up
-	connect(ui->upCmd, &QPushButton::clicked, [this](){
+	connect(ui->upCmd, &QPushButton::clicked, this, [this](){
 		auto row = ui->cmdView->currentIndex().row();
 		if(row > 0) {
 			auto list = m_cmdl->takeRow(row);
@@ -172,7 +169,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 		ui->cmdView->setFocus();
 	});
 	// Add new command
-	connect(ui->a_newcmd, &QAction::triggered, [this](bool){
+	connect(ui->a_newcmd, &QAction::triggered, this, [this](bool){
 		auto row = ui->cmdView->currentIndex().row();
 		auto new_row = row + 1;
 		m_cmdl->insertRow(new_row, QList<QStandardItem*>());
@@ -183,19 +180,19 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 
 	});
 	// Add new separator
-	connect(ui->a_newsep, &QAction::triggered, [this](bool){
+	connect(ui->a_newsep, &QAction::triggered, this, [this](bool){
 		auto row = ui->cmdView->currentIndex().row();
 		m_cmdl->insertRow(row+1, QList<QStandardItem*>{new QStandardItem(CMD_SEPARATOR)});
 		ui->cmdView->selectRow(row+1);
 		ui->cmdView->setFocus();
 	});
 	// Remove button
-	connect(ui->removeCmd, &QPushButton::clicked, [this](){
+	connect(ui->removeCmd, &QPushButton::clicked, this, [this](){
 		ui->a_removeitem->setData(ui->cmdView->currentIndex());
 		ui->a_removeitem->trigger();
 	});
 	// Remove action
-	connect(ui->a_removeitem, &QAction::triggered, [this](bool){
+	connect(ui->a_removeitem, &QAction::triggered, this, [this](bool){
 		if(!ui->a_removeitem->data().isNull()) {
 			auto index = ui->a_removeitem->data().toModelIndex();
 			if(!index.isValid()) return;
@@ -205,8 +202,8 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 			if(cmd != CMD_SEPARATOR) {
 				if(cmd.isEmpty()) cmd = tr("Unknown command");
 				reply = QMessageBox::question(this,
-					tr("Remove Command?"),
-					tr("Remove command <b>%1</b>?\nThis action cannot be undone!").arg(cmd),
+					tr("Remove command?"),
+					tr("<p>Remove <b>%1</b>?</p><p>This action cannot be undone!</p>").arg(cmd),
 					QMessageBox::Yes, QMessageBox::No);
 			}
 			if(reply == -1 || reply == QMessageBox::Yes) {
@@ -222,7 +219,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 	menu_ctx->addSeparator();
 	menu_ctx->addAction(ui->a_removeitem);
 
-	connect(ui->cmdView, &QTableView::customContextMenuRequested, [this, menu_ctx](const QPoint& p) {
+	connect(ui->cmdView, &QTableView::customContextMenuRequested, this, [this, menu_ctx](const QPoint& p) {
 		auto index = ui->cmdView->indexAt(p);
 		ui->a_removeitem->setData(index);
 		menu_ctx->exec(ui->cmdView->mapToGlobal(p));
@@ -311,7 +308,7 @@ void SettingsDialog::reset()
 	};
 
 	connect(ui->cmdView->selectionModel(), &QItemSelectionModel::currentRowChanged,
-	[this, disable_widgets](auto a, auto){
+	this, [this, disable_widgets](auto a, auto){
 		m_dmpr->setCurrentIndex(a.row());
 		bool disabled = false;
 		if(m_cmdl->data(m_cmdl->index(a.row(), 0)) == CMD_SEPARATOR) {
