@@ -487,7 +487,7 @@ void Window::updateStyle()
 	Q_ASSERT(open);
 	qApp->setStyleSheet(styles_file.readAll());
 	qApp->setWindowIcon(QIcon(QStringLiteral(":/wisetagger.svg")));
-	m_tray_icon.setIcon(this->windowIcon());
+	m_tray_icon.setIcon(QPixmap(QStringLiteral(":/wisetagger.svg"))); // BUG: cannot use QIcon on linux, but QPixmap works (might be related to QTBUG-55932)
 }
 
 #ifdef Q_OS_WIN
