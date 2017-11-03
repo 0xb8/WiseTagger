@@ -119,6 +119,32 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 	m_index = 0;
 }
 
+static void update_model(QStandardItemModel& model, const QStringList& tags, const std::unordered_map<QString,QString>& comments)
+{
+	model.clear();
+	model.setColumnCount(1);
+	model.setRowCount(tags.size());
+	for(int i = 0; i < model.rowCount(); ++i) {
+		auto index = model.index(i, 0);
+		const auto& tag = tags[i];
+		if(Q_UNLIKELY(!model.setData(index, tag, Qt::UserRole))) {
+			pwarn << "could not set completion data for "<< tag << "at" << index;
+		}
+		auto it = comments.find(tag);
+		if(Q_UNLIKELY(it != comments.end())) {
+			//pdbg << "setting comment data for " << tags[i] << ":" << it->second;
+			QString data = tag;
+			data.append(QStringLiteral("  ("));
+			data.append(it->second);
+			data.append(QStringLiteral(")"));
+			if(Q_UNLIKELY(!model.setData(index, data, Qt::DisplayRole)))
+				pwarn << "could not set tag comment:" << data;
+		} else {
+			model.setData(index, tag, Qt::DisplayRole);
+		}
+	}
+}
+
 void TagInput::loadTagFiles(const QStringList &files)
 {
 	if(files.isEmpty()) {
@@ -128,6 +154,7 @@ void TagInput::loadTagFiles(const QStringList &files)
 	m_related_tags.clear();
 	m_replaced_tags.clear();
 	m_removed_tags.clear();
+	m_comment_tooltips.clear();
 
 	QStringList tags;
 	for(const auto& file : qAsConst(files)) {
@@ -147,7 +174,11 @@ void TagInput::loadTagFiles(const QStringList &files)
 
 	tags.removeDuplicates();
 	m_tags_from_file = tags;
-	m_completer = std::make_unique<MultiSelectCompleter>(tags, nullptr);
+
+	update_model(m_tags_model, m_tags_from_file, m_comment_tooltips);
+
+	m_completer = std::make_unique<MultiSelectCompleter>(&m_tags_model, nullptr);
+	m_completer->setCompletionRole(Qt::UserRole);
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
 }
@@ -238,12 +269,12 @@ void TagInput::updateSettings()
 
 QStringList TagInput::parse_tags_file(QTextStream *input)
 {
-	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag;
+	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag, comment;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, mapped_tags_list;
 
 	auto allowed_in_tag = [](QChar c)
 	{
-		const char valid_chars[] = "`~!@#$%^&*()_;.";
+		const char valid_chars[] = "`~!@$%^&*()_;.";
 		return c.isLetterOrNumber() ||
 			std::find(std::begin(valid_chars),
 			          std::end(valid_chars),
@@ -267,14 +298,26 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 		removed_tag.clear();
 		replaced_tag.clear();
 		mapped_tag.clear();
+		comment.clear();
 
 		removed_tags_list.clear();
 		replaced_tags_list.clear();
 		mapped_tags_list.clear();
 
-		bool appending_main = true, removing_main = false, found_replace = false, found_mapped = false;
+		bool appending_main = true, removing_main = false, found_replace = false, found_mapped = false, found_comment = false;
 
 		for(int i = 0; i < current_line.length(); ++i) {
+
+			if(current_line[i] == QChar('#')) {
+				found_comment = true;
+				continue;
+			}
+
+			if(found_comment) {
+				comment.append(current_line[i]);
+				continue;
+			}
+
 			if(!allowed_in_file(current_line[i])) {
 				break; // go to next line
 			}
@@ -363,6 +406,16 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 		if(!main_tag.isEmpty()) {
 			main_tags_list.push_back(main_tag);
+			if(!comment.isEmpty()) {
+				comment = comment.trimmed();
+				auto it = m_comment_tooltips.find(main_tag);
+				if(it != m_comment_tooltips.end()) {
+					it->second.append(QStringLiteral(", "));
+					it->second.append(comment);
+				} else {
+					m_comment_tooltips.insert(std::make_pair(main_tag, comment));
+				}
+			}
 		}
 
 		for(const auto& remtag : qAsConst(removed_tags_list)) {

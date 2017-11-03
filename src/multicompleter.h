@@ -12,8 +12,8 @@ class MultiSelectCompleter : public QCompleter
 {
 	Q_OBJECT
 public:
-	MultiSelectCompleter(const QStringList& items, QObject* _parent);
-	~MultiSelectCompleter() override;
+	using QCompleter::QCompleter;
+	~MultiSelectCompleter() override = default;
 
 public:
 	QString pathFromIndex(const QModelIndex& index) const override;

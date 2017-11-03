@@ -6,11 +6,6 @@
 
 #include <QLineEdit>
 
-MultiSelectCompleter::MultiSelectCompleter(const QStringList& items, QObject* _parent)
-	: QCompleter(items, _parent){}
-
-MultiSelectCompleter::~MultiSelectCompleter(){}
-
 QString MultiSelectCompleter::pathFromIndex(const QModelIndex& index) const
 {
 	auto path = QCompleter::pathFromIndex(index);

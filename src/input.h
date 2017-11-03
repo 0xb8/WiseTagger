@@ -10,6 +10,7 @@
 
 #include <QStringList>
 #include <QLineEdit>
+#include <QStandardItemModel>
 #include <memory>
 
 #include "multicompleter.h"
@@ -126,7 +127,24 @@ private:
 	QString     m_post_url;
 
 	/**
-	 * @brief Multimap used to keep track of related tags
+	 * @brief A model used to display completions with comments.
+	 *
+	 * In order for auto-completion to ignore the comment text, original
+	 * tags are inserted into Qt::UserRole, while display tags are inserted
+	 * into Qt::DisplayRole.
+	 */
+	QStandardItemModel m_tags_model;
+
+	/**
+	 * @brief Map used to collect tag comments.
+	 *
+	 * Key is original tag, value is a string with comma-separated comments
+	 * (same tag may appear in multiple files with different comments).
+	 */
+	std::unordered_map<QString,QString> m_comment_tooltips;
+
+	/**
+	 * @brief Multimap used to keep track of related tags.
 	 *
 	 * Key is original tag, value is corresponding related tag.
 	 * Special marker value (equal to key) is used to mark tag as processed.
@@ -147,7 +165,7 @@ private:
 	 * Key is original tag, value is boolean that is set to true if tag was
 	 * already processed.
 	 */
-	std::unordered_map      <QString, bool>   m_removed_tags;  // k: removed tag -- v: been removed already?
+	std::unordered_map      <QString, bool>   m_removed_tags;
 	std::unique_ptr<MultiSelectCompleter>     m_completer;
 
 	using tag_iterator = decltype(std::begin(m_text_list));
