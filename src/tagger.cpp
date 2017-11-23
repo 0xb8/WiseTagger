@@ -196,6 +196,11 @@ void Tagger::deleteCurrentFile()
 	}
 }
 
+void Tagger::fixTags()
+{
+	m_input.fixTags();
+}
+
 //------------------------------------------------------------------------------
 
 QString Tagger::currentFile() const

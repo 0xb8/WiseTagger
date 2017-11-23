@@ -87,6 +87,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_go_to_number(    tr("&Go To File Number..."), nullptr)
 	, a_open_session(    tr("Open Session"), nullptr)
 	, a_save_session(    tr("Save Session"), nullptr)
+	, a_fix_tags(        tr("&Apply Tag Fixes"), nullptr)
 	, a_open_loc(        tr("Open &Containing Folder"), nullptr)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
 	, a_open_tags(       tr("Open Tag File &Location"), nullptr)
@@ -128,6 +129,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	createActions();
 	createMenus();
 	createCommands();
+	updateMenus();
 	initSettings();
 	QTimer::singleShot(50, this, &Window::parseCommandLineArguments); // NOTE: should be called later to avoid unnecessary media resize after process launch.
 
@@ -594,9 +596,8 @@ void Window::createCommands()
 		cmd.removeFirst();
 
 		auto action = menu_commands.addAction(name);
-		this->addAction(action); // NOTE: to make hotkeys work when menubar is hidden
+		this->addAction(action); // NOTE: to make hotkeys work when menubar is hidden, does not take ownership
 		action->setIcon(util::get_icon_from_executable(binary));
-		action->setEnabled(false);
 		if(!hkey.isEmpty()) {
 			action->setShortcut(hkey);
 		}
@@ -654,6 +655,7 @@ void Window::createActions()
 	a_save_next.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Left));
 	a_delete_file.setShortcut(  QKeySequence::Delete);
+	a_fix_tags.setShortcut(     QKeySequence(tr("Ctrl+A", "Fix tags")));
 	a_open_post.setShortcut(    QKeySequence(tr("Ctrl+P", "Open post")));
 	a_iqdb_search.setShortcut(  QKeySequence(tr("Ctrl+F", "Reverse search")));
 	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
@@ -663,21 +665,6 @@ void Window::createActions()
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
-
-	a_next_file.setEnabled(false);
-	a_prev_file.setEnabled(false);
-	a_save_file.setEnabled(false);
-	a_save_next.setEnabled(false);
-	a_save_prev.setEnabled(false);
-	a_delete_file.setEnabled(false);
-	a_open_post.setEnabled(false);
-	a_iqdb_search.setEnabled(false);
-	a_open_loc.setEnabled(false);
-	a_reload_tags.setEnabled(false);
-	a_open_tags.setEnabled(false);
-	a_edit_tags.setEnabled(false);
-	a_save_session.setEnabled(false);
-	a_go_to_number.setEnabled(false);
 
 	a_open_post.setStatusTip(  tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(tr("Upload this image to iqdb.org and open search results page in default browser."));
@@ -711,6 +698,7 @@ void Window::createActions()
 	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
 	connect(&a_delete_file, &QAction::triggered, &m_tagger, &Tagger::deleteCurrentFile);
+	connect(&a_fix_tags,    &QAction::triggered, &m_tagger, &Tagger::fixTags);
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
 	connect(&a_open_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInShell);
 	connect(&a_edit_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInEditor);
@@ -933,6 +921,7 @@ void Window::createMenus()
 	add_action(menu_file, a_save_file);
 	add_action(menu_file, a_save_session);
 	add_separator(menu_file);
+	add_action(menu_file, a_fix_tags);
 	add_action(menu_file, a_delete_file);
 	add_separator(menu_file);
 	add_action(menu_file, a_open_post);
@@ -1059,6 +1048,7 @@ void Window::updateMenus()
 	a_save_next.setDisabled(val);
 	a_save_prev.setDisabled(val);
 	a_delete_file.setDisabled(val);
+	a_fix_tags.setDisabled(val);
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);

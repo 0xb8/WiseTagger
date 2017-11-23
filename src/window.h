@@ -90,6 +90,7 @@ private:
 	QAction a_go_to_number;
 	QAction a_open_session;
 	QAction a_save_session;
+	QAction a_fix_tags;
 	QAction a_open_loc;
 	QAction a_reload_tags;
 	QAction a_open_tags;

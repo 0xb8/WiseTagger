@@ -135,6 +135,9 @@ public slots:
 	/// Asks user to delete currently selected file.
 	void deleteCurrentFile();
 
+	/// Applies tag transformations to current file name.
+	void fixTags();
+
 	/// Finds new set of tag files used for autocomplete.
 	void reloadTags();
 
