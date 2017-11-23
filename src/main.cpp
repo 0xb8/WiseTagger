@@ -28,8 +28,10 @@ int main(int argc, char *argv[])
 					  "%{if-debug}[DBG]  %{endif}"
 					  "%{if-info}[INFO] %{endif}"
 					  "%{if-critical}[CRIT] %{endif}"
-					  "(%{time h:mm:ss.zzz}) <%{if-category}%{category}%{endif}> "
-					  "%{if-debug}%{function}  %{endif}\t%{message}"));
+					  "(%{time h:mm:ss.zzz}) "
+	                                  "%{if-category}<%{category}> %{endif}"
+					  "%{if-debug}%{function} %{threadid} %{endif}"
+	                                  "    %{message}"));
 	QApplication a(argc, argv);
 	a.setApplicationVersion(QStringLiteral(APP_VERSION));
 	a.setApplicationName(QStringLiteral(TARGET_PRODUCT));

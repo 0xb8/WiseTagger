@@ -9,7 +9,7 @@
 #include <QFile>
 #include <QImageReader>
 #include <QLoggingCategory>
-#include <QtConcurrent/QtConcurrentRun>
+#include <memory>
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>
@@ -65,39 +65,69 @@ static uint64_t get_file_identifier(const QString &path)
 #error "get_file_identifier() not implemented for this OS"
 #endif
 
+static uint64_t get_image_identifier(const QString& filename, QSize size)
+{
+	uint64_t file_id = get_file_identifier(filename), image_id = 0u;
+	if(file_id != 0) {
+		image_id = file_id ^ (qHash(size.width(), 0x34ba7cf0) * qHash(size.height(), 0x98015dea));
+	}
+	return image_id;
+}
+
 namespace logging_category {Q_LOGGING_CATEGORY(imagecache, "ImageCache")}
 #define pdbg qCDebug(logging_category::imagecache)
 #define pwarn qCWarning(logging_category::imagecache)
-#define pcrit qCCritical(logging_category::imagecache)
 
-#define FUTURES_COUNT 40
 #define DEFAULT_CACHE_SIZE_KB 64*1024
 
-struct ImageCache::futures
+struct LoadResizeImageTask : public QRunnable
 {
-	std::array<QFuture<void>, FUTURES_COUNT> ft;
+	ImageCache* cache;
+	QString     filename;
+	QSize       window_size;
+
+	LoadResizeImageTask(ImageCache* cache_, const QString& filename_, QSize window_size_) :
+	        cache(cache_), filename(filename_), window_size(window_size_)
+	{
+		Q_ASSERT(cache);
+		setAutoDelete(true);
+	}
+
+	void run() override
+	{
+		if(cache->m_shutting_down.load(std::memory_order_acquire))
+			return;
+
+		if(filename.isEmpty() || window_size.isNull())
+			return;
+
+		filename.detach();
+		auto addFileThreadFn = &ImageCache::addFileThreadFunc;
+		(cache->*addFileThreadFn)(filename, window_size);
+	}
 };
 
 ImageCache::ImageCache()
 {
-	QPixmapCache::setCacheLimit(DEFAULT_CACHE_SIZE_KB);
 	m_file_id_cache.reserve(DEFAULT_CACHE_SIZE_KB / 512);
-	m_id_keys.reserve(DEFAULT_CACHE_SIZE_KB / 512);
-	m_futures = new futures;
+	m_image_cache.setMaxCost(DEFAULT_CACHE_SIZE_KB);
+	m_shutting_down.store(false, std::memory_order_relaxed);
 }
 
 ImageCache::~ImageCache()
 {
-	pdbg << "waiting on remaining futures...";
-	for(auto& f : m_futures->ft) {
-		f.waitForFinished();
-	}
-	delete m_futures;
-	pdbg << "waiting on remaining futures completed.";
+	m_shutting_down.store(true, std::memory_order_release);
+	pdbg << "waiting on remaining tasks...";
+	m_thread_pool.clear();
+	m_thread_pool.waitForDone();
+	pdbg << "waiting on remaining tasks completed.";
 }
 
-void ImageCache::setMemoryLimit(size_t size_in_kb)
+void ImageCache::setMemoryLimitKiB(size_t size_in_kb)
 {
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
+
 	if(size_in_kb < DEFAULT_CACHE_SIZE_KB) {
 		pwarn.nospace() <<"memory limit (" << size_in_kb << " KiB) is smaller than default (" << DEFAULT_CACHE_SIZE_KB << " KiB); did you forget to convert to kilobytes?";
 		return;
@@ -105,41 +135,44 @@ void ImageCache::setMemoryLimit(size_t size_in_kb)
 
 	{
 		QWriteLocker _{&m_file_id_cache_lock};
-		m_file_id_cache.reserve(size_in_kb / 512);
+		m_file_id_cache.reserve(size_in_kb / 256);
 	}
 	{
-		QWriteLocker _{&m_id_keys_lock};
-		m_id_keys.reserve(size_in_kb / 512);
-		QPixmapCache::setCacheLimit(size_in_kb);
+		QWriteLocker _{&m_image_cache_lock};
+		m_image_cache.setMaxCost(size_in_kb * 1024);
+	}
+}
+
+void ImageCache::setMaxConcurrentTasks(int num)
+{
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
+
+	if(num <= 0) {
+		m_thread_pool.setMaxThreadCount(QThread::idealThreadCount());
+	} else {
+		m_thread_pool.setMaxThreadCount(num);
 	}
 }
 
 void ImageCache::addFile(const QString& filename, QSize window_size)
 {
-	int available_idx = -1;
-	for(int i = 0; i < FUTURES_COUNT; ++i) {
-		auto f = m_futures->ft[i];
-		if(f.isCanceled() || f.isFinished()) {
-			available_idx = i;
-			break;
-		}
-	}
-	if(available_idx < 0) {
-		pwarn << "too many pending futures";
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
 		return;
+
+	auto task = std::make_unique<LoadResizeImageTask>(this, filename, window_size);
+	if(m_thread_pool.tryStart(task.get())) {
+		(void)task.release();
 	}
-
-	auto future = QtConcurrent::run(this, &ImageCache::addFileThreadFunc, filename, window_size);
-
-	m_futures->ft[available_idx] = future;
 }
 
-ImageCache::QueryResult ImageCache::getPixmap(const QString& filename, uint64_t unique_id) const
+ImageCache::QueryResult ImageCache::getImage(const QString& filename, QSize window_size, uint64_t unique_id) const
 {
-	ImageCache::Key k;
 	QueryResult res;
 	res.result = State::Invalid;
 	res.unique_id = 0u;
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return res;
 
 	if(unique_id == 0u) {
 		QReadLocker _{&m_file_id_cache_lock};
@@ -154,7 +187,7 @@ ImageCache::QueryResult ImageCache::getPixmap(const QString& filename, uint64_t 
 			 * Hopefully OS does a better job caching file metadata
 			 * than me :/
 			 */
-			res.unique_id = get_file_identifier(filename);
+			res.unique_id = get_image_identifier(filename, window_size);
 		}
 		unique_id = res.unique_id;
 	} else {
@@ -165,101 +198,80 @@ ImageCache::QueryResult ImageCache::getPixmap(const QString& filename, uint64_t 
 		return res;
 	}
 
-	QReadLocker _{&m_id_keys_lock};
-	auto key_it = m_id_keys.find(unique_id);
-	if(key_it != m_id_keys.end()) {
-		k = key_it->second;
+	QReadLocker _{&m_image_cache_lock};
+	auto entry = m_image_cache.object(unique_id);
+	if(entry) {
 		// only query cache if we know image was loaded at some point
-		if(k.state == State::Ready) {
-			if(QPixmapCache::find(k.key, &res.pixmap) && !res.pixmap.isNull()) {
-				res.original_size = k.original_size;
+		if(entry->state == State::Ready) {
+			if(entry->image.isNull()) {
+				pdbg << "state is ready but image is null";
+				entry->state = State::Invalid;
 			} else {
-				k.state = State::Invalid;
+				res.original_size = entry->original_size;
+				res.image = entry->image;
+				res.result = State::Ready;
 			}
+		} else {
+			res.result = entry->state;
 		}
-		res.result = k.state;
+	} else {
+		pdbg << "evicted miss" << filename;
 	}
 	return res;
 }
 
-void ImageCache::addFileThreadFunc(QString filename, QSize window_size)
+void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size)
 {
-	auto file_id = getUniqueFileID(filename);
-	bool evicted = false;
-	{
-		QReadLocker _{&m_id_keys_lock};
-		auto p = m_id_keys.find(file_id);
-		if(p != m_id_keys.end()) {
-			switch (p->second.state)
-			{
-			case State::Loading:
-			case State::Invalid:
-			case State::Evicted:
-				return;
+	auto image_id = getUniqueImageID(filename, window_size);
 
-			case State::Ready:
-				if(QPixmapCache::find(p->second.key, nullptr))
-				{
-					return; // already in cache
-				}
-				evicted = true;
-				break;
-			}
-		}
+	{	// check if other thread began to load image before locking for write
+		QReadLocker _{&m_image_cache_lock};
+		if(m_image_cache.contains(image_id))
+			return;
 	}
 
-	if(evicted) {
-		QWriteLocker _{&m_id_keys_lock};
-		auto p = m_id_keys.find(file_id);
-		if(p != m_id_keys.end()) {
-			// NOTE: another thread might have finished reloading file, better check again
-			if(p->second.state == State::Ready && !QPixmapCache::find(p->second.key, nullptr)) {
-				pdbg << "pixmap evicted, reloading: " << filename;
-				p->second.state = State::Evicted;
-			}
-			else return; // someone already reloaded image
+	{
+		if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+			return;
+
+		// reserve entry in cache for this image to indicate that this thread is already loading it
+		auto entry = std::make_unique<Entry>(QImage{}, QSize{}, State::Loading);
+
+		QWriteLocker _{&m_image_cache_lock};
+		if(m_image_cache.contains(image_id)) // recheck
+			return;
+
+		if(m_image_cache.insert(image_id, entry.get())) {
+			(void)entry.release();
 		} else {
-			pcrit << "entry lost while trying to reload evicted image";
+			pdbg << "failed to insert empty entry into cache:" << filename;
 			return;
 		}
 	}
 
-	{
-		QWriteLocker _{&m_id_keys_lock};
-		// reserve entry in map for this image
-		auto res = m_id_keys.emplace(std::make_pair(file_id, Key{QPixmapCache::Key{}, QSize{}, State::Loading}));
-		if(!res.second) { // already exists
-
-			switch (res.first->second.state) {
-			case State::Ready:
-			case State::Loading:
-			case State::Invalid:
-				pdbg << "attempted to load image that is already being loaded";
-				return;
-			case State::Evicted: // only load if image was evicted
-				res.first->second.state = State::Loading;
-				break;
-			}
-		}
-	}
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
 
 	QFile file(filename);
 	if(!file.open(QIODevice::ReadOnly)) {
-		setFileInvalid(file_id);
+		setFileInvalid(image_id);
 		return;
 	}
 
 	QImageReader reader(&file);
 	if(!reader.canRead() || reader.supportsAnimation()) { // NOTE: to prevent caching of animated images
-		setFileInvalid(file_id);
+		setFileInvalid(image_id);
 		return;
 	}
 
 	auto image = reader.read();
 	file.close();
 
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
+
 	if(image.isNull()) {
-		setFileInvalid(file_id);
+		setFileInvalid(image_id);
 		return;
 	}
 
@@ -268,71 +280,101 @@ void ImageCache::addFileThreadFunc(QString filename, QSize window_size)
 	                       window_size.height() / static_cast<float>(image.height()));
 	QSize new_size(image.width() * ratio, image.height() * ratio);
 
-	QPixmap respixmap;
+	QImage resimage;
 	if(ratio < 1.0f) {
-		respixmap = QPixmap::fromImage(image.scaled(new_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+		resimage = image.scaled(new_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 	} else {
-		respixmap = QPixmap::fromImage(std::move(image));
+		resimage = image;
 	}
 	pdbg << "loaded" << (ratio < 1.0f ? "and resized" : "")
-	     << "pixmap for" << filename.mid(filename.lastIndexOf('/')+1) << "/" << file_id << "of" << new_size;
+	     << "image for" << filename.mid(filename.lastIndexOf('/')+1) << "/" << image_id << "of" << new_size;
 
-	{
-		QWriteLocker _{&m_id_keys_lock};
-		auto p = m_id_keys.find(file_id);
-		if(p != m_id_keys.end()) {
-			if(p->second.state != State::Loading) {
-				pcrit << "attempted to finalize pixmap that was not being loaded";
-				return;
+	insertResizedImage(image_id, std::move(resimage), original_size);
+}
+
+void ImageCache::insertResizedImage(uint64_t unique_id, QImage&& image, QSize original_size)
+{
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
+
+	auto cost = image.byteCount();
+	bool need_realloc = false;
+	std::unique_ptr<Entry> entry;
+
+	{ // fast path
+		QWriteLocker _{&m_image_cache_lock};
+		entry.reset(m_image_cache.take(unique_id));
+		if(entry) {
+			entry->image = std::move(image);
+			entry->original_size = original_size;
+			entry->state = State::Ready;
+			if(m_image_cache.insert(unique_id, entry.get(), cost)) {
+				(void)entry.release();
 			}
+		} else {
+			need_realloc = true;
+		}
+	}
 
-			p->second.key = QPixmapCache::insert(respixmap);
-			p->second.original_size = original_size;
-			p->second.state = State::Ready;
+	if(need_realloc) { // slow path
+		if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+			return;
+		pdbg << "realloc required, slow path";
+		entry = std::make_unique<Entry>(std::move(image), original_size, State::Ready);
+		Q_ASSERT(entry);
+		QWriteLocker _{&m_image_cache_lock};
+		if(m_image_cache.insert(unique_id,entry.get(),cost)) {
+			(void)entry.release();
 		}
 	}
 }
 
-uint64_t ImageCache::getUniqueFileID(const QString& filename)
+
+uint64_t ImageCache::getUniqueImageID(const QString& filename, QSize size)
 {
-	uint64_t file_id = 0;
+	uint64_t image_id = 0;
 	{ // look for file id in cache first
 		QReadLocker _{&m_file_id_cache_lock};
 		auto id_it = m_file_id_cache.find(filename);
 		if(id_it != m_file_id_cache.end()) {
-			file_id = id_it->second;
+			image_id = id_it->second;
 		}
 	}
 
 	// could not find id in cache, have to query the filesystem
-	if(file_id == 0) {
-		file_id = get_file_identifier(filename);
-		if(file_id != 0) {
+	if(image_id == 0) {
+		image_id = get_image_identifier(filename, size);
+		if(image_id) {
 			QWriteLocker _{&m_file_id_cache_lock};
-			m_file_id_cache.insert(std::make_pair(filename, file_id));
+			m_file_id_cache.insert(std::make_pair(filename, image_id));
 		}
 	}
-	return file_id;
+	return image_id;
 }
 
 void ImageCache::setFileInvalid(uint64_t unique_id)
 {
-	QWriteLocker _{&m_id_keys_lock};
-	auto p = m_id_keys.find(unique_id);
-	if(p != m_id_keys.end()) {
-		p->second.state = State::Invalid;
+	QWriteLocker _{&m_image_cache_lock};
+	auto entry = m_image_cache.take(unique_id);
+	if(entry) {
+		entry->state = State::Invalid;
+		entry->image = QImage{};
+		entry->original_size = QSize{};
+		m_image_cache.insert(unique_id, entry);
 	}
 }
 
 void ImageCache::clear()
 {
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
+
 	{
 		QWriteLocker _{&m_file_id_cache_lock};
 		m_file_id_cache.clear();
 	}
 	{
-		QWriteLocker _{&m_id_keys_lock};
-		m_id_keys.clear();
-		QPixmapCache::clear();
+		QWriteLocker _{&m_image_cache_lock};
+		m_image_cache.clear();
 	}
 }

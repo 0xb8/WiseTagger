@@ -8,16 +8,18 @@
 #ifndef IMAGECACHE_H
 #define IMAGECACHE_H
 
-#include <QPixmapCache>
+#include <QCache>
+#include <QImage>
 #include <QReadWriteLock>
-#include <unordered_map>
+#include <QThreadPool>
+#include <atomic>
 #include "util/unordered_map_qt.h"
 
 /*!
- * \brief Provides threaded pixmap prefetcher and resizer.
+ * \brief Provides threaded image prefetcher and resizer.
  *
  * This class provides multi-threaded image file preloading and resizing to
- * common display size.
+ * preferred display size.
  *
  * After an image file has been added to cache, users can query if that file is
  * ready for use, or decide to wait until it is ready otherwise.
@@ -31,21 +33,19 @@ public:
 	ImageCache();
 	~ImageCache();
 
-	enum State
+	enum class State
 	{
 		Invalid, ///< Failed to read or decode the image.
 		Loading, ///< Image is currently being loaded by some thread
 		Ready,   ///< Image is ready for use.
-		Evicted, ///< Image has been evicted from pixmap cache.
 	};
 
 	struct QueryResult
 	{
+		/// Valid image if \p result is \a State::Ready, null image otherwise.
+		QImage            image;
 
-		/// Valid pixmap if \p result is \a State::Ready, null pixmap otherwise.
-		QPixmap           pixmap;
-
-		/// Original size of pixmap if \p result is \a State::Ready, invalid size otherwise.
+		/// Original size of image if \p result is \a State::Ready, invalid size otherwise.
 		QSize             original_size;
 
 		/// Non-zero unique id if \p result is not \a State::Invalid, zero otherwise.
@@ -58,50 +58,63 @@ public:
 	/// Clears cache.
 	void    clear();
 
-	/// Sets maximum memory pixmap cache can use.
-	void    setMemoryLimit(size_t size_in_kb);
+	/// Sets maximum amount of memory in KiB for image cache.
+	void    setMemoryLimitKiB(size_t size_in_kb);
 
 	/*!
-	 * \brief Adds file to be preloaded and resized according to \p window_size.
-	 * \param filename File to preload
-	 * \param window_size Used to determine the size of cached image
+	 * \brief Sets maximum number of concurrent image load tasks.
 	 *
-	 * This function schedules separate thread to load and resize image.
-	 * You can safely issue multiple calls with same \p filename only if
-	 * \p window_size remains the same for all calls. Otherwise the resulting
-	 * pixmap size is unspecified.
+	 * NOTE: Must be called from only main thread!
+	 */
+	void    setMaxConcurrentTasks(int num);
+
+	/*!
+	 * \brief Schedules file for preloading with respect to \p window_size.
+	 * \param filename File to preload
+	 * \param window_size Used to determine the resulting size of image.
+	 *
+	 * This function schedules image load/resize task in a thread pool.
+	 * You can safely issue multiple calls with same \p filename if
+	 * \p window_size remains unchanged for all calls.
+	 * Otherwise it will pollute the cache with multiple versions of same
+	 * image. Increasing the size generally requires complete reload anyway
+	 * (for image quality), so you should \ref clear() the cache on size change.
 	 */
 	void    addFile(const QString& filename, QSize window_size);
 
-
 	/*!
-	 * \brief Tries to retrieve pixmap from cache.
-	 * \param filename Image file, the pixmap of which to retrieve from cache
-	 * \param unique_id If provided, used to avoid filename lookup in cache and/or filesystem.
+	 * \brief Tries to retrieve image from cache.
+	 * \param window_size Expected image size.
+	 * \param unique_id If non-zero, used to avoid filename lookup as optimization.
 	 */
-	QueryResult getPixmap(const QString& filename, uint64_t unique_id = 0) const;
+	QueryResult getImage(const QString& filename, QSize window_size, uint64_t unique_id = 0) const;
 
 
 private:
+	friend struct LoadResizeImageTask;
 
-	void addFileThreadFunc(QString filename, QSize window_size);
+	void addFileThreadFunc(const QString & filename, QSize window_size);
 	void setFileInvalid(uint64_t unique_id);
+	void insertResizedImage(uint64_t unique_id, QImage&& image, QSize original_size);
 
-	uint64_t getUniqueFileID(const QString& filename);
+	uint64_t getUniqueImageID(const QString& filename, QSize size);
 
-	struct Key
+	struct Entry
 	{
-		QPixmapCache::Key key;
-		QSize original_size;
-		State state;
+		Entry(QImage&& img, QSize size, State st) : image(std::move(img)), original_size(size), state(st) { }
+		QImage image;
+		QSize  original_size;
+		State  state;
 	};
-	struct futures;
-	futures* m_futures;
 
-	std::unordered_map<QString, uint64_t> m_file_id_cache;
-	std::unordered_map<uint64_t, Key>     m_id_keys;
+	using FilenameIdCache = std::unordered_map<QString, uint64_t>;
+
+	QThreadPool            m_thread_pool;
+	FilenameIdCache        m_file_id_cache;
+	QCache<uint64_t,Entry> m_image_cache;
 	mutable QReadWriteLock m_file_id_cache_lock;
-	mutable QReadWriteLock m_id_keys_lock;
+	mutable QReadWriteLock m_image_cache_lock;
+	std::atomic_bool       m_shutting_down;
 };
 
 #endif // IMAGECACHE_H

@@ -279,7 +279,8 @@ void Tagger::updateSettings()
 		m_separator.show();
 	}
 	m_input.updateSettings();
-	m_picture.cache.setMemoryLimit(s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024);
+	m_picture.cache.setMemoryLimitKiB(s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024);
+	m_picture.cache.setMaxConcurrentTasks(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2);
 }
 
 void Tagger::setInputVisible(bool visible)
@@ -537,7 +538,7 @@ bool Tagger::loadCurrentFile()
 
 	int preloadcount = abs(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
 	preloadcount = std::max(std::min(preloadcount, 16), 1);
-	for(int i = -preloadcount; i < preloadcount; ++i)
+	for(int i = -preloadcount; i <= preloadcount; ++i)
 	{
 		if(i == 0)
 			continue;

@@ -19,7 +19,6 @@
 #include <QElapsedTimer>
 
 namespace logging_category {Q_LOGGING_CATEGORY(picture, "Picture")}
-#define pinfo qCInfo(logging_category::picture)
 #define pdbg qCDebug(logging_category::picture)
 #define pwarn qCWarning(logging_category::picture)
 
@@ -227,7 +226,7 @@ bool Picture::tryLoadImageFromCache(const QString& filename)
 	QElapsedTimer timer;
 	timer.start();
 
-	const int sleep_amount_ms = 10;
+	const int sleep_amount_ms = 20;
 	const int sleep_timeout_ms = 5000;
 	uint64_t unique_id = 0;
 
@@ -237,16 +236,15 @@ bool Picture::tryLoadImageFromCache(const QString& filename)
 			break;
 		}
 
-		auto query_result = cache.getPixmap(filename, unique_id);
+		auto query_result = cache.getImage(filename, this->size(), unique_id);
 		unique_id = query_result.unique_id;
 
 		switch (query_result.result) {
-		case ImageCache::Loading:
-		case ImageCache::Evicted:
+		case ImageCache::State::Loading:
 			QThread::msleep(sleep_amount_ms);
 			continue;
-		case ImageCache::Ready:
-			m_pixmap     = query_result.pixmap;
+		case ImageCache::State::Ready:
+			m_pixmap     = QPixmap::fromImage(query_result.image);
 			m_media_size = query_result.original_size;
 			m_has_alpha  = m_pixmap.hasAlpha();
 			m_type       = Type::Image;
@@ -260,6 +258,6 @@ bool Picture::tryLoadImageFromCache(const QString& filename)
 		break;
 	}
 
-	pinfo << "cache miss, loading directly...";
+	pwarn << "cache miss:" << filename << "/" << unique_id <<", trying to load directly...";
 	return false;
 }
