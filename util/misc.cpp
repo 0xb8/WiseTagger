@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QMetaEnum>
 #include "misc.h"
+#include "size.h"
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
@@ -168,4 +169,51 @@ QString util::join(const QStringList& list, QChar separator)
 	}
 	ret.truncate(ret.lastIndexOf(separator));
 	return ret;
+}
+
+QByteArray util::guess_image_format(const QString& filename)
+{
+	const char * const exts[] = {
+		"jpg", "jpeg",
+		"png",
+		"gif",
+		"bmp",
+		"svg",
+		"tga",
+		"tiff",
+		"webp"
+	};
+	const char * const formats[] = {
+		"jpg",
+		"png",
+		"gif",
+		"bmp",
+		"svg",
+		"tga",
+		"tiff",
+		"webp"
+	};
+	const unsigned exts_to_formats[] = {
+		0, 0, // jpeg
+	        1,    // png
+	        2,    // gif
+	        3,    // bmp
+	        4,    // svg
+	        5,    // tga
+	        6,    // tiff
+	        7     // webp
+	};
+
+	QByteArray res;
+	const auto ext = filename.mid(filename.lastIndexOf('.')+1).toLower();
+
+	for(size_t i = 0; i < util::size::array_size(formats); ++i) {
+		if(ext == exts[i]) {
+			auto fmt_id = exts_to_formats[i];
+			res.append(formats[fmt_id]);
+			break;
+		}
+	}
+
+	return res;
 }

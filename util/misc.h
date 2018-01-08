@@ -23,6 +23,7 @@ QString                 language_name(QLocale::Language);
 QString                 duration(std::uint64_t ms);
 QIcon                   get_icon_from_executable(const QString& path);
 QStringList             supported_image_formats_namefilter();
+QByteArray              guess_image_format(const QString& filename);
 QString                 join(const QStringList&, QChar separator = QChar(' '));
 bool                    backup_settings_to_file(const QString& path);
 bool                    restore_settings_from_file(const QString& path);

@@ -95,6 +95,10 @@ bool Picture::loadMedia(const QString &filename)
 	file.close();
 
 	QImageReader reader(&m_file_buf);
+	auto format = util::guess_image_format(filename);
+	if(!format.isEmpty()) {
+		reader.setFormat(format);
+	}
 
 	if(reader.imageCount() > 1) {
 		reader.jumpToImage(0);
@@ -128,7 +132,7 @@ bool Picture::loadMedia(const QString &filename)
 		m_has_alpha  = m_pixmap.hasAlpha();
 		m_type       = Type::Image;
 
-		TaggerStatistics::instance().pixmapLoadedDirectly(timer.nsecsElapsed() / 1e6);
+		TaggerStatistics::instance().pixmapLoadedDirectly(timer.nsecsElapsed() * 1e-6);
 	}
 
 	updateStyle();

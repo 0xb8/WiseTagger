@@ -6,10 +6,12 @@
  */
 
 #include "imagecache.h"
+#include "util/misc.h"
 #include <QFile>
 #include <QImageReader>
 #include <QLoggingCategory>
 #include <memory>
+#include <limits>
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>
@@ -258,7 +260,9 @@ void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size)
 		return;
 	}
 
-	QImageReader reader(&file);
+	auto format = util::guess_image_format(filename);
+
+	QImageReader reader(&file, format);
 	if(!reader.canRead() || reader.supportsAnimation()) { // NOTE: to prevent caching of animated images
 		setFileInvalid(image_id);
 		return;
@@ -297,7 +301,12 @@ void ImageCache::insertResizedImage(uint64_t unique_id, QImage&& image, QSize or
 	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
 		return;
 
-	auto cost = image.byteCount();
+#if (QT_VERSION < QT_VERSION_CHECK(5, 10, 0)) // NOTE: deprecated since Qt 5.10
+	int cost = image.byteCount();
+#else
+	auto size = image.sizeInBytes();
+	int cost = std::min(size, static_cast<decltype(size)>(std::numeric_limits<int>::max()));
+#endif
 	bool need_realloc = false;
 	std::unique_ptr<Entry> entry;
 
