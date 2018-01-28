@@ -10,7 +10,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui network widgets
+QT += core gui network widgets svg
 
 win32 {
     QT += winextras
