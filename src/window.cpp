@@ -92,6 +92,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
 	, a_open_tags(       tr("Open Tag File &Location"), nullptr)
 	, a_edit_tags(       tr("&Edit Tag File"), nullptr)
+	, a_edit_temp_tags(  tr("Edit Temporary Tags..."), nullptr)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_show_settings(   tr("P&references..."), nullptr)
@@ -702,6 +703,7 @@ void Window::createActions()
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
 	connect(&a_open_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInShell);
 	connect(&a_edit_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInEditor);
+	connect(&a_edit_temp_tags, &QAction::triggered, &m_tagger, &Tagger::openTempTagFileEditor);
 	connect(&a_stats,       &QAction::triggered, &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
@@ -956,6 +958,7 @@ void Window::createMenus()
 	add_separator(menu_navigation);
 	add_action(menu_navigation, a_reload_tags);
 	add_action(menu_navigation, a_edit_tags);
+	add_action(menu_navigation, a_edit_temp_tags);
 
 	// View menu actions
 	add_action(menu_view, a_view_fullscreen);
@@ -1054,6 +1057,7 @@ void Window::updateMenus()
 	a_open_loc.setDisabled(val);
 	a_save_session.setDisabled(val);
 	a_go_to_number.setDisabled(val);
+	a_edit_temp_tags.setDisabled(val);
 	for(auto action : menu_commands.actions()) {
 		action->setDisabled(val);
 	}

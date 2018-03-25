@@ -144,6 +144,9 @@ public slots:
 	/// Opens current tag files set in default editor.
 	void openTagFilesInEditor();
 
+	/// Opens dialog to edit temporaty tag files.
+	void openTempTagFileEditor();
+
 	/// Opens current tag files set in default file browser.
 	void openTagFilesInShell();
 
@@ -206,6 +209,7 @@ private:
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
+	QString     m_temp_tags;
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
 	unsigned    m_overall_new_tag_counts = 0u;

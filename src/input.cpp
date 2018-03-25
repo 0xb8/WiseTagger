@@ -145,9 +145,9 @@ static void update_model(QStandardItemModel& model, const QStringList& tags, con
 	}
 }
 
-void TagInput::loadTagFiles(const QStringList &files)
+void TagInput::loadTagData(const QByteArray& data)
 {
-	if(files.isEmpty()) {
+	if(data.isEmpty()) {
 		return;
 	}
 
@@ -156,21 +156,9 @@ void TagInput::loadTagFiles(const QStringList &files)
 	m_removed_tags.clear();
 	m_comment_tooltips.clear();
 
-	QStringList tags;
-	for(const auto& file : qAsConst(files)) {
-		QFile f(file);
-		if(!f.open(QIODevice::ReadOnly|QIODevice::Text)) {
-			QMessageBox::warning(this,
-				tr("Error opening tag file"),
-				tr("<p>Could not open <b>%1</b></p>"
-				   "<p>File may have been renamed or removed by another application.</p>").arg(file));
-			continue;
-		}
-
-		QTextStream in(&f);
-		in.setCodec("UTF-8");
-		tags += parse_tags_file(&in);
-	}
+	QTextStream in(data);
+	in.setCodec("UTF-8");
+	auto tags = parse_tags_file(&in);
 
 	tags.removeDuplicates();
 	m_tags_from_file = tags;

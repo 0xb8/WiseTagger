@@ -40,9 +40,9 @@ public:
 	void fixTags(bool sort = true);
 
 	/**
-	 * @brief Loads and parses tags from .txt files.
+	 * @brief  Loads and parses tags from \p data.
 	 */
-	void loadTagFiles(const QStringList& files);
+	void loadTagData(const QByteArray& data);
 
 	/**
 	 * @brief Resets state used to keep track of already processed tags.

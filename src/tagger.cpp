@@ -16,6 +16,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QUrl>
+#include <QInputDialog>
 #include <algorithm>
 #include <cmath>
 #include "global_enums.h"
@@ -312,10 +313,25 @@ void Tagger::reloadTags()
 	findTagsFiles(true);
 }
 
-
 void Tagger::reloadTagsContents()
 {
-	m_input.loadTagFiles(m_current_tag_files);
+	QByteArray data;
+	for(const auto& filename : qAsConst(m_current_tag_files)) {
+		QFile file(filename);
+		if(!file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+			QMessageBox::warning(this,
+				tr("Error opening tag file"),
+				tr("<p>Could not open <b>%1</b></p>"
+				   "<p>File may have been renamed or removed by another application.</p>").arg(filename));
+			continue;
+		}
+		data.push_back(file.readAll());
+		data.push_back('\n');
+	}
+
+	data.push_back(m_temp_tags.toUtf8());
+
+	m_input.loadTagData(data);
 	m_input.clearTagState();
 }
 
@@ -323,6 +339,21 @@ void Tagger::openTagFilesInEditor()
 {
 	for(const auto& file : qAsConst(m_current_tag_files)) {
 		QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+	}
+}
+
+void Tagger::openTempTagFileEditor()
+{
+	bool ok;
+	QString text = QInputDialog::getMultiLineText(this,
+	                                              tr("Edit temporary tags"),
+	                                              tr("Temporary tags:"),
+	                                              m_temp_tags,
+	                                              &ok);
+
+	if(ok) {
+		m_temp_tags = text;
+		reloadTagsContents();
 	}
 }
 
@@ -380,7 +411,7 @@ void Tagger::findTagsFiles(bool force)
 	QStringList search_paths_list;
 	search_paths_list.reserve(search_dirs.size());
 
-	for(const auto dir : qAsConst(search_dirs)) {
+	for(const auto& dir : qAsConst(search_dirs)) {
 		search_paths_list.push_back(dir.path());
 		if(!dir.exists()) continue;
 
@@ -595,6 +626,7 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
 	renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
 
+	QSettings settings;
 	int reply;
 	if(options.testFlag(RenameOption::ForceRename) || (reply = renameMessageBox.exec()) == QMessageBox::Save ) {
 
@@ -623,17 +655,12 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 			return RenameStatus::Cancelled;
 
 		case FileQueue::RenameResult::Success:
-		{
-			QSettings settings;
 			if(settings.value(QStringLiteral("track-added-tags"), true).toBool()) {
 				updateNewTagsCounts();
 			}
 			emit fileRenamed(m_input.text());
 			return RenameStatus::Renamed;
-		}
 
-		default:
-			Q_UNREACHABLE();
 		}
 	}
 
