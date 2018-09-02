@@ -18,13 +18,13 @@ addons:
 install:
   - lsb_release -a
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 60
-  - sudo apt-add-repository -y ppa:beineri/opt-qt58-trusty
+  - sudo apt-add-repository -y ppa:beineri/opt-qt-5.10.1-trusty
   - sudo apt-get -qq update
-  - sudo apt-get -qq install qt58tools qt58base qt58svg qt58imageformats qt58translations
+  - sudo apt-get -qq install qt510tools qt510base qt510svg qt510imageformats qt510translations
 
 script:
-  - QTDIR="/opt/qt58"
+  - QTDIR="/opt/qt510"
   - PATH="$QTDIR/bin:$PATH"
-  - qt58-env.sh
+  - qt510-env.sh
   - qmake CONFIG+=release
   - make
