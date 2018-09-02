@@ -884,6 +884,31 @@ void Window::createActions()
 		                   "Appending and overriding tag files documentation"
 		                   "</a></p>").arg(normalname, overridename, path_list));
 	});
+	connect(&m_tagger, &Tagger::parseError, this, [this](QString regex_source, QString error, int column)
+	{
+		auto arrow_left = QStringLiteral("~~~~ ^");
+		auto arrow_right = QStringLiteral("^ ~~~~");
+
+		QString arrow;
+		if (column < arrow_left.size()) {
+			arrow.fill(' ', column);
+			arrow.append(arrow_right);
+		} else {
+			arrow.fill(' ', column - arrow_left.size());
+			arrow.append(arrow_left);
+		}
+
+		addNotification(tr("Tag file syntax error"), tr("Regular expression syntax error"),
+		                tr("<h2>Regular expression syntax error</h2>"
+		                   "<p>At column %1: %2</p>"
+		                   "<pre style=\"font-family: Consolas, \"Lucida Console\", Monaco,monospace,monospace;\">"
+		                   "%3\n\n"
+		                   "<span style=\"color: red\">%4</span>"
+		                   "<pre>").arg(column)
+		                           .arg(error.toHtmlEscaped(),
+		                                regex_source.toHtmlEscaped(),
+		                                arrow));
+	});
 	connect(&a_show_settings, &QAction::triggered, this, [this]()
 	{
 		auto sd = new SettingsDialog(this);

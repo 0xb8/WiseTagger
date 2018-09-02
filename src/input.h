@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QLineEdit>
 #include <QStandardItemModel>
+#include <QRegularExpression>
 #include <memory>
 
 #include "multicompleter.h"
@@ -76,6 +77,14 @@ public:
 	 * @brief Updates configuration from QSettings
 	 */
 	void updateSettings();
+
+signals:
+
+	/**
+	 * @brief Emitted on tag file parse error
+	 */
+	void parseError(QString regex_source, QString error, int column);
+
 
 protected:
 	void keyPressEvent(QKeyEvent* event) override;
@@ -166,6 +175,17 @@ private:
 	 * already processed.
 	 */
 	std::unordered_map      <QString, bool>   m_removed_tags;
+
+
+	/**
+	 * @brief List of regular expressions to be checked on first tag fix.
+	 *
+	 * .first - regular expression
+	 * .second - id for related tags search.
+	 */
+	QVector<QPair<QRegularExpression, QString>> m_regexps;
+
+
 	std::unique_ptr<MultiSelectCompleter>     m_completer;
 
 	using tag_iterator = decltype(std::begin(m_text_list));

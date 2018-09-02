@@ -189,6 +189,11 @@ signals:
 	 */
 	void tagFilesNotFound(QString normal_file, QString override_file, QStringList paths);
 
+	/**
+	 * @brief Emitted on tag file parse error
+	 */
+	void parseError(QString regex_source, QString error, int column);
+
 private:
 	void findTagsFiles(bool force = false);
 	void reloadTagsContents();

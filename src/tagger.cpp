@@ -56,6 +56,7 @@ Tagger::Tagger(QWidget *_parent) :
 	m_separator.setObjectName(QStringLiteral("Separator"));
 
 	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
+	connect(&m_input, &TagInput::parseError, this, &Tagger::parseError);
 	connect(this, &Tagger::fileRenamed, &TaggerStatistics::instance(), &TaggerStatistics::fileRenamed);
 	connect(this, &Tagger::fileOpened, this, [this](const auto& file)
 	{

@@ -31,6 +31,36 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 
 void TagInput::fixTags(bool sort)
 {
+	for (auto& p : qAsConst(m_regexps)) {
+
+		auto& re = p.first;
+		auto& src = p.second;
+
+		QRegularExpressionMatch m = re.match(text());
+		if (m.hasMatch()) {
+
+			auto capture_start = m.capturedStart();
+			auto capture_end = m.capturedEnd();
+
+			auto t = text();
+			t.remove(capture_start, capture_end - capture_start);
+
+			for (auto r : related_tags(src)) {
+				for (auto capture_group : re.namedCaptureGroups()) {
+					if (!capture_group.isEmpty()) {
+						r.replace(capture_group, m.captured(capture_group));
+					}
+				}
+				t.append(' ');
+				t.append(r);
+			}
+			if (!t.isEmpty()) {
+				QLineEdit::setText(t);
+			}
+		}
+	}
+
+
 	m_text_list = text().split(QChar(' '), QString::SkipEmptyParts);
 	QSettings settings;
 	if(settings.value(QStringLiteral("imageboard/replace-tags"), false).toBool())
@@ -155,6 +185,7 @@ void TagInput::loadTagData(const QByteArray& data)
 	m_replaced_tags.clear();
 	m_removed_tags.clear();
 	m_comment_tooltips.clear();
+	m_regexps.clear();
 
 	QTextStream in(data);
 	in.setCodec("UTF-8");
@@ -258,11 +289,12 @@ void TagInput::updateSettings()
 QStringList TagInput::parse_tags_file(QTextStream *input)
 {
 	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag, comment;
+	QString regex_source;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, mapped_tags_list;
 
 	auto allowed_in_tag = [](QChar c)
 	{
-		const char valid_chars[] = "`~!@$%^&*()_;.";
+		const char valid_chars[] = "`~!@$%^&*()[]_;.";
 		return c.isLetterOrNumber() ||
 			std::find(std::begin(valid_chars),
 			          std::end(valid_chars),
@@ -271,7 +303,7 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 	auto allowed_in_file = [&allowed_in_tag](QChar c)
 	{
-		const char valid_chars[] = " \t-=:,";
+		const char valid_chars[] = " \t-=:,\'\"";
 		return	c.isLetterOrNumber() ||
 			allowed_in_tag(c)    ||
 			std::find(std::begin(valid_chars),
@@ -280,7 +312,17 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 	};
 
 	while(!input->atEnd()) {
-		current_line = input->readLine();
+		current_line = input->readLine().trimmed();
+
+		// process line continuations
+		while (current_line.endsWith('\\')) {
+			current_line.chop(1);
+			current_line = current_line.trimmed();
+			current_line.append(input->readLine().trimmed());
+		}
+
+		if (current_line.isEmpty())
+			continue;
 
 		main_tag.clear();
 		removed_tag.clear();
@@ -292,9 +334,53 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 		replaced_tags_list.clear();
 		mapped_tags_list.clear();
 
+		int first_parse_symbol_pos = 0;
 		bool appending_main = true, removing_main = false, found_replace = false, found_mapped = false, found_comment = false;
 
-		for(int i = 0; i < current_line.length(); ++i) {
+
+		// if first symbol on line is a single quote, it's a regular expression
+		if (current_line.front() == '\'') {
+
+			int from = -1;
+			int idx = -1;
+			int last_actual_quote_pos = -1;
+
+			// search for last non-escaped single quote
+			while((idx = current_line.lastIndexOf('\'', from)) > 1) {
+
+				if (current_line[idx - 1] != '\\') {
+					last_actual_quote_pos = idx;
+					break;
+				}
+				else {
+					// if found escaped quote, search again from it's position
+					from = idx - current_line.length() - 1;
+				}
+			}
+
+			Q_ASSERT(last_actual_quote_pos > 1);
+
+			regex_source = current_line.mid(1, last_actual_quote_pos-1);
+
+			if (!regex_source.isEmpty()) {
+
+				QRegularExpression regex(regex_source);
+
+				if (regex.isValid()) {
+					appending_main = false;
+					m_regexps.push_back(QPair<QRegularExpression, QString>(regex, regex_source));
+					main_tag = regex_source;
+					first_parse_symbol_pos = last_actual_quote_pos - 1;
+				} else {
+					emit parseError(regex_source, regex.errorString(), regex.patternErrorOffset() + 1);
+					continue;
+				}
+
+			}
+		}
+
+
+		for(int i = first_parse_symbol_pos; i < current_line.length(); ++i) {
 
 			if(current_line[i] == QChar('#')) {
 				found_comment = true;
@@ -338,7 +424,7 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 				}
 			}
 
-			if(current_line[i] == '-' && main_tag.isEmpty()) {
+			if(current_line[i] == '-' && main_tag.isEmpty() && regex_source.isEmpty()) {
 				appending_main = false;
 				found_mapped = false;
 				found_replace = false;
