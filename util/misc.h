@@ -5,6 +5,15 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
+/** @dir util
+ * @brief Misc utilities
+ */
+
+/**
+ * @file misc.h
+ * @brief Miscellaneous utilities
+ */
+
 #ifndef UTIL_MISC_H
 #define UTIL_MISC_H
 
@@ -14,18 +23,43 @@
 #include <QLocale>
 #include <type_traits>
 
+/**
+ * @namespace util
+ * @brief Miscellaneous utilities
+ */
 namespace util {
 
+/// Read resource HTML file contents
 QString                 read_resource_html(const char* filename);
+
+/// language saved in settings
 QLocale::Language       language_from_settings();
+
+/// Language code corresponding to language \p name string
 QLocale::Language       language_code(const QString& name);
-QString                 language_name(QLocale::Language);
+
+/// Language name string from language \p code
+QString                 language_name(QLocale::Language code);
+
+/// String with human-readable time duration
 QString                 duration(std::uint64_t ms);
+
+/// Load icon from executable file (windows-only)
 QIcon                   get_icon_from_executable(const QString& path);
+
+/// All supported image formats filter list
 QStringList             supported_image_formats_namefilter();
+
+/// Guessed image format for \p filename
 QByteArray              guess_image_format(const QString& filename);
+
+/// Join list of strings with \p separator
 QString                 join(const QStringList&, QChar separator = QChar(' '));
+
+/// Save current settings into \p path file
 bool                    backup_settings_to_file(const QString& path);
+
+/// Load settings from \p path 
 bool                    restore_settings_from_file(const QString& path);
 
 } // namespace util

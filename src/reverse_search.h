@@ -8,6 +8,11 @@
 #ifndef REVERSESEARCH_H
 #define REVERSESEARCH_H
 
+
+/** @file reverse_search.h
+ *  @brief Class @ref ReverseSearch
+ */
+
 #include <QNetworkAccessManager>
 #include <QProgressDialog>
 #include <QHttpMultiPart>
@@ -22,7 +27,13 @@ class QNetworkReply;
 class QObject;
 
 
-/// The ReverseSearch class performs image reverse-search by uploading it to https://iqdb.org.
+/*!
+ * \brief Implements image reverse-search on the web
+ *
+ * The \ref ReverseSearch class uploads specified image file by uploading
+ * it to to https://iqdb.org and retrieving the results HTML document, 
+ * which can then be displayed in system-default browser. 
+ */
 class ReverseSearch : public QObject
 {
 	Q_OBJECT
@@ -41,8 +52,8 @@ public slots:
 	/*!
 	 * \brief Specify proxy URL to use.
 	 *
-	 * Proxy URL must start with valid scheme (http:// or socks://) and end
-	 * with valid port number (0 < port <= 65535).
+	 * Proxy URL must start with valid scheme (\c http:// or \c socks://) and end
+	 * with valid port number \code (0 < port <= 65535) \endcode.
 	 *
 	 * \a Example: \c http://proxy.example.com:8080
 	 */
@@ -50,38 +61,39 @@ public slots:
 
 
 	/*!
-	 * \brief Enables or disables proxy.
-	 * \param enable Enable proxy.
+	 * \brief Set whether the proxy is used for subsequent requests.
 	 */
 	void	setProxyEnabled(bool enable);
 
 	/*!
-	 * \brief Updates proxy configuration from QSettings.
+	 * \brief Update proxy configuration from QSettings.
 	 */
 	void updateSettings();
 public:
 
 	/*!
+	 * \brief Is the proxy currently enabled
 	 * \retval true Proxy is enabled.
 	 * \retval false Proxy is disabled.
 	 */
 	bool	proxyEnabled() const;
 
-	/// Returns current proxy URL.
+	/// Current proxy URL.
 	QString	proxyURL() const;
 
-	/// Returns current proxy.
+	/// Current proxy object.
 	QNetworkProxy proxy() const;
 
 signals:
 
-	/// Upload finished.
+	/// Emitted when upload has finished.
 	void finished();
 
-	/// Reverse search finished sucessfully.
+	/// Emitted when reverse search has sucessfully finished.
 	void reverseSearched();
 
 	/*!
+	 * \brief Emitted while uploading the file.
 	 * \param bytesSent Number of bytes sent.
 	 * \param bytesTotal Number of bytes total.
 	 */

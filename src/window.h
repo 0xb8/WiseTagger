@@ -8,6 +8,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+/*! \file window.h
+ *  \brief Class @ref Window
+ */
+
 #include "reverse_search.h"
 #include "tagger.h"
 #include "settings_dialog.h"
@@ -24,6 +28,9 @@
 #include <QtWinExtras>
 #endif
 
+/*!
+ * \brief Application's main window
+ */
 class Window : public QMainWindow {
 	Q_OBJECT
 public:
@@ -31,14 +38,38 @@ public:
 	~Window() override = default;
 
 public slots:
+	/// Display current upload progress in window title
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
+
+	/// Hide current upload progress
 	void hideUploadProgress();
+
+	/// Update the window's title
 	void updateWindowTitle();
+
+	/// Update the window's title to show progress in percent.
 	void updateWindowTitleProgress(int progress);
+
+	/// Update the status bar
 	void updateStatusBarText();
+
+	/// Update current file's imageboard post URL
 	void updateImageboardPostURL(QString url);
+
+	/*!
+	 * \brief Submit new notification
+	 * 
+	 * Notifications are queued and are shown in a submenu of main menu bar.
+	 * \param title Notification title
+	 * \param description Short description
+	 * \param body Main notification text
+	 */
 	void addNotification(QString title, QString description, QString body);
+
+	/// Remove notification from queue
 	void removeNotification(QString title);
+
+	/// Update settings
 	void updateSettings();
 
 protected:

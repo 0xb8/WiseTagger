@@ -11,7 +11,15 @@
 #include <QObject>
 #include <QDataStream>
 
-/*! \file  */
+
+/** \dir src
+ *  \brief Core sources.
+ */
+
+/*! 
+ * \file global_enums.h
+ * \brief Class \ref GlobalEnums 
+ */
 
 /*!
  * Declares stream operators used to save and load values of custom enum types with QSettings etc.
@@ -22,11 +30,12 @@
 
 
 /*!
- * GlobalEnums class used to enable Qt Meta Type support for enum types.
+ * \brief GlobalEnums class used to enable Qt Meta Type support for enum types.
  *
  * This class cannot be instantiated. 
  * To register enum type with Qt MetaType, add Q_ENUM(YourEnum) directly after 
  * YourEnum definition. 
+ *
  * Then add ENUM_STREAM_OPERATORS(GlobalEnums::YourEnum) after this class to 
  * enable saving and loading values of YourEnum with QSettings.
  * After that, proceed to file global_enums.cpp and register declared stream 
@@ -60,8 +69,10 @@ ENUM_STREAM_OPERATORS(GlobalEnums::ViewMode)
 ENUM_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
 
 
-// Convenience type aliases
+/// Alias for \ref GlobalEnums::ViewMode enumeration
 using ViewMode    = GlobalEnums::ViewMode;
+
+/// Alias for \ref GlobalEnums::SortQueueBy enumeration
 using SortQueueBy = GlobalEnums::SortQueueBy;
 
 #endif // GLOBAL_ENUMS_H

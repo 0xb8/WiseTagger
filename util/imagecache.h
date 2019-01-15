@@ -8,6 +8,11 @@
 #ifndef IMAGECACHE_H
 #define IMAGECACHE_H
 
+/**
+ * \file imagecache.h
+ * \brief Class \ref ImageCache
+ */
+
 #include <QCache>
 #include <QImage>
 #include <QReadWriteLock>
@@ -16,10 +21,10 @@
 #include "util/unordered_map_qt.h"
 
 /*!
- * \brief Provides threaded image prefetcher and resizer.
+ * \brief Threaded image prefetcher and resizer.
  *
- * This class provides multi-threaded image file preloading and resizing to
- * preferred display size.
+ * Class \ref ImageCache provides multi-threaded image file preloading and resizing 
+ * to requested display size.
  *
  * After an image file has been added to cache, users can query if that file is
  * ready for use, or decide to wait until it is ready otherwise.
@@ -33,6 +38,7 @@ public:
 	ImageCache();
 	~ImageCache();
 
+	/// State of cache query
 	enum class State
 	{
 		Invalid, ///< Failed to read or decode the image.
@@ -40,6 +46,7 @@ public:
 		Ready,   ///< Image is ready for use.
 	};
 
+	/// Results of cache query
 	struct QueryResult
 	{
 		/// Valid image if \p result is \a State::Ready, null image otherwise.
@@ -55,35 +62,39 @@ public:
 		ImageCache::State result;
 	};
 
-	/// Clears cache.
+	/// Clear cache.
 	void    clear();
 
-	/// Sets maximum amount of memory in KiB for image cache.
+	/// Set maximum amount of memory in KiB for the whole image cache system.
 	void    setMemoryLimitKiB(size_t size_in_kb);
 
 	/*!
-	 * \brief Sets maximum number of concurrent image load tasks.
+	 * \brief Set maximum number of concurrent image load tasks.
 	 *
-	 * NOTE: Must be called from only main thread!
+	 * \note Must be called from main thread only!
 	 */
 	void    setMaxConcurrentTasks(int num);
 
 	/*!
-	 * \brief Schedules file for preloading with respect to \p window_size.
+	 * \brief Schedule file for preloading with respect to \p window_size.
 	 * \param filename File to preload
 	 * \param window_size Used to determine the resulting size of image.
 	 *
-	 * This function schedules image load/resize task in a thread pool.
-	 * You can safely issue multiple calls with same \p filename if
+	 * Schedules image load/resize task in a thread pool.
+	 *
+	 * \note You can safely issue multiple calls with same \p filename if
 	 * \p window_size remains unchanged for all calls.
-	 * Otherwise it will pollute the cache with multiple versions of same
-	 * image. Increasing the size generally requires complete reload anyway
-	 * (for image quality), so you should \ref clear() the cache on size change.
+	 *
+	 * \note Otherwise, the cache will be polluted with multiple versions of
+	 * the same image. Increasing the size generally requires complete reload
+	 * anyway (for image quality), so you should \ref clear() the cache on 
+	 * any size change.
 	 */
 	void    addFile(const QString& filename, QSize window_size);
 
 	/*!
-	 * \brief Tries to retrieve image from cache.
+	 * \brief Try to retrieve image from cache.
+	 * \param filename Image file path.
 	 * \param window_size Expected image size.
 	 * \param unique_id If non-zero, used to avoid filename lookup as optimization.
 	 */

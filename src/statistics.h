@@ -8,6 +8,10 @@
 #ifndef STATISTICS_H
 #define STATISTICS_H
 
+/** @file statistics.h
+ *  @brief Class @ref TaggerStatistics
+ */
+
 #include <QSettings>
 #include <QObject>
 #include <QElapsedTimer>

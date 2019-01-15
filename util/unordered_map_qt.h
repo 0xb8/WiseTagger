@@ -8,6 +8,11 @@
 #ifndef UNORDERED_MAP_QT_H
 #define UNORDERED_MAP_QT_H
 
+/**
+ * \file unordered_map_qt.h
+ * \brief Support for QStrings in std::unordered_map
+ */
+
 #include <unordered_map>
 #include <QString>
 

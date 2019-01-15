@@ -8,6 +8,10 @@
 #ifndef WISETAGGER_H
 #define WISETAGGER_H
 
+/*! \file tagger.h
+ *  \brief Class \ref Tagger
+ */
+
 #include <QVBoxLayout>
 #include <QResizeEvent>
 #include <QLabel>
@@ -22,8 +26,10 @@
 #include "input.h"
 #include "file_queue.h"
 
-/**
- * Main widget of application. Contains Picture viewer and TagInput.
+/*!
+ * \brief Main widget of the application. 
+ * 
+ * Contains Picture viewer and TagInput.
  */
 class Tagger : public QWidget
 {
@@ -33,19 +39,19 @@ public:
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override = default;
 
-	/// Opens file, session or directory.
+	/// Open file, session or directory.
 	bool open(const QString& filename);
 
-	/// Opens file and enqueues its directory.
+	/// Open file and enqueue its directory.
 	bool openFile(const QString&);
 
-	/// Enqueues directory contents and opens first file.
+	/// Enqueue directory contents and open first file.
 	bool openDir(const QString&);
 
-	/// Opens tagging session from file.
+	/// Open tagging session from file.
 	bool openSession(const QString& sfile);
 
-	/// Opens file with specified index in queue.
+	/// Open file with specified index in queue.
 	bool openFileInQueue(size_t index = 0);
 
 	/// Result of rename operation
@@ -67,130 +73,130 @@ public:
 	using RenameOptions = QFlags<RenameOption>;
 	Q_FLAG(RenameOptions)
 
-	/**
-	 * \brief Determines whether it is safe to close the application.
+	/*!
+	 * \brief Determine whether it is safe to close the application.
 	 * \param status Rename operation status, see Tagger::rename().
 	 */
 	static bool canExit(RenameStatus status);
 
-	/**
-	 * \brief Renames current file
-	 * \param options UI behavior modifiers.
+	/*!
+	 * \brief Rename current file
+	 * \param options UI behavior modifiers (see \ref RenameOption).
 	 * \retval RenameStatus::Renamed Renamed successfully
 	 * \retval RenameStatus::Cancelled Rename cancelled by user.
 	 * \retval RenameStatus::Failed Failed to rename.
 	 */
 	RenameStatus rename(RenameOptions options = RenameOption::NoOption);
 
-	/**
-	 * \brief Asks user to rename current file and opens next.
-	 * \param options UI behavior modifiers.
+	/*!
+	 * \brief Ask user to rename current file and opens next.
+	 * \param options UI behavior modifiers (see \ref RenameOption).
 	 */
 	void nextFile(RenameOptions options = RenameOption::NoOption);
 
 
-	/**
-	 * \brief Asks user to rename current file and opens previous.
-	 * \param options UI behavior modifiers.
+	/*!
+	 * \brief Ask user to rename current file and opens previous.
+	 * \param options UI behavior modifiers (see \ref RenameOption).
 	 */
 	void prevFile(RenameOptions options = RenameOption::NoOption);
 
-	/// Returns whether current file name is modified by user.
+	/// Is current file name modified by user.
 	bool    fileModified()    const;
 
-	/// Returns whether the file queue is empty.
+	/// Is the file queue empty.
 	bool    isEmpty() const;
 
-	/// Returns whether tag file(s) is present.
+	/// Are tag file(s) present.
 	bool    hasTagFile() const;
 
-	/// Returns dimensions of current media.
+	/// Dimensions of current media.
 	QSize   mediaDimensions() const;
 
-	/// Returns file size of current media.
+	/// File size of current media.
 	size_t  mediaFileSize()     const;
 
-	/// Returns imageboard post URL of current media.
+	/// Imageboard post URL of current media.
 	QString postURL()         const;
 
-	/// Returns current media path.
+	/// Current media path.
 	QString currentFile()     const;
 
-	/// Returns path to directory of current media.
+	/// Path to directory of current media.
 	QString currentDir()      const;
 
-	/// Returns file name of current media.
+	/// File name of current media.
 	QString currentFileName() const;
 
-	/// Returns file type of current media.
+	/// File type of current media.
 	QString currentFileType() const;
 
-	/// Returns reference to FileQueue.
+	/// Reference to FileQueue.
 	FileQueue& queue();
 
 public slots:
-	/// Sets Tag Input Visibility.
+	/// Set Tag Input visibility.
 	void setInputVisible(bool visible);
 
-	/// Asks user to delete currently selected file.
+	/// Ask user to delete currently selected file.
 	void deleteCurrentFile();
 
 	/// Applies tag transformations to current file name.
 	void fixTags();
 
-	/// Finds new set of tag files used for autocomplete.
+	/// Find new set of tag files used for autocomplete.
 	void reloadTags();
 
-	/// Opens current tag files set in default editor.
+	/// Open current tag files set in default editor.
 	void openTagFilesInEditor();
 
-	/// Opens dialog to edit temporaty tag files.
+	/// Open dialog to edit temporaty tag files.
 	void openTempTagFileEditor();
 
-	/// Opens current tag files set in default file browser.
+	/// Open current tag files set in default file browser.
 	void openTagFilesInShell();
 
-	/// Updates configuration from QSettings.
+	/// Update configuration from QSettings.
 	void updateSettings();
 
 signals:
-	/// This signal is emitted when specified media file has been successfully opened.
+	/// Emitted when media file has been successfully opened.
 	void fileOpened(const QString& file);
 
-	/// This signal is emitted when specified session file has been sucessfully opened.
+	/// Emitted when session file has been sucessfully opened.
 	void sessionOpened(const QString& sfile);
 
-	/**
-	 * \brief This signal is emitted when file name has been modified by user.
-	 * \retval New file name.
+	/*!
+	 * \brief Emitted when file name has been modified by user.
+	 * \param newname New file name.
 	 */
 	void tagsEdited(const QString& newname);
 
-	/**
-	 * \brief This signal is emitted when file has been renamed by user.
-	 * \retval New file name.
+	/*!
+	 * \brief Emitted when file has been renamed by user.
+	 * \param newname New file name.
 	 */
 	void fileRenamed(const QString& newname);
 
-	/**
-	 * \brief This signal is emitted when new tags have been added by user.
-	 * \retval List of tags not in tag file added for current file.
+	/*!
+	 * \brief Emitted when new tags have been added by user.
+	 * \param newtags List of tags not in tag file that were added for current file.
 	 */
 	void newTagsAdded(const QStringList& newtags);
 
-	/// This signal is emitted when tag file contents have been changed externally.
+	/// Emitted when tag file contents have been changed externally.
 	void tagFileChanged();
 
-	/**
-	 * \brief This signal is emitted when no tag files were found.
+	/*!
+	 * \brief Emitted when no tag files were found.
 	 * \param normal_file Normal tag file name.
 	 * \param override_file Override tag file name.
 	 * \param paths List of paths that have been searched for tag files.
 	 */
 	void tagFilesNotFound(QString normal_file, QString override_file, QStringList paths);
 
-	/**
-	 * @brief Emitted on tag file parse error
+	/*!
+	 * \copydoc TagInput::parseError()
 	 */
 	void parseError(QString regex_source, QString error, int column);
 

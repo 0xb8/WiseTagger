@@ -8,9 +8,19 @@
 #ifndef UTIL_TRAITS_H
 #define UTIL_TRAITS_H
 
+/** 
+ * \file traits.h
+ * \brief Type traits
+ */
+
+/** 
+ * \namespace util::traits
+ * \brief Type traits
+ */
+
 namespace util {
 namespace traits {
-	/// Determines if all of Ts are nothrow-swappable
+	/// Determine if all of \p Ts are nothrow-swappable
 	template<typename... T>
 	class is_nothrow_swappable_all	{
 		static constexpr std::tuple<T...> *t = nullptr;

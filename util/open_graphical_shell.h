@@ -9,8 +9,14 @@
 #define OPEN_GRAPHICAL_SHELL_H
 #include <QString>
 
+/*!
+ * \file open_graphical_shell.h
+ * \brief Open file in GUI file manager.
+ */
+
 namespace util {
 
+/// Open \p file in GUI file manager.
 void open_file_in_gui_shell(const QString& file);
 
 }

@@ -8,6 +8,10 @@
 #ifndef PICTURE_H
 #define PICTURE_H
 
+/** @file picture.h
+ *  @brief Class @ref Picture
+ */
+
 #include <memory>
 #include <QBuffer>
 #include <QLabel>
@@ -22,34 +26,38 @@ class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
 
+
+/// Widget for displaying images and GIFs
 class Picture : public QLabel
 {
 	Q_OBJECT
 public:
-	/// Constructs Picture object and displays welcome text.
+	/// Construct Picture object and display welcome text.
 	explicit Picture(QWidget *parent = nullptr);
 
-	/**
-	 * \brief Loads and displays media.
+	/*!
+	 * \brief Load and display media.
 	 * \param filename Media file to show.
 	 * \retval true Loaded successfully.
 	 * \retval false Failed to load media.
 	 */
 	bool loadMedia(const QString& filename);
 
-	/// Returns whether loaded media has alpha channel.
+	/// Does the current media has alpha channel.
 	bool hasAlpha() const;
 
-	/// Returns dimensions of loaded media.
+	/// Dimensions of loaded media.
 	QSize mediaSize() const;
 
+	/// Size hint of the widget wrt. media size
 	QSize sizeHint() const override;
 
+	/// \ref ImageCache object
 	ImageCache cache;
 
 public slots:
 
-	/// Clears media and displays welcome text.
+	/// Clear media and display welcome text.
 	void clear();
 
 protected:
