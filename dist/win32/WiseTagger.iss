@@ -2,8 +2,8 @@
 [Setup]
 AppName=WiseTagger
 AppCopyright=Copyright (C) 2018 catgirl
-AppVersion=0.5.4
-VersionInfoVersion=0.5.4
+AppVersion=0.5.5
+VersionInfoVersion=0.5.5
 
 AppPublisher=catgirl
 AppPublisherURL=https://wolfgirl.org/

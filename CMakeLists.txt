@@ -15,7 +15,7 @@ endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(APP_VERSION "0.5.4")
+set(APP_VERSION "0.5.5")
 set(TARGET_PRODUCT "WiseTagger")
 set(TARGET_COMPANY "catgirl")
 
