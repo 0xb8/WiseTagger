@@ -294,11 +294,16 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 	auto allowed_in_tag = [](QChar c)
 	{
-		const char valid_chars[] = "`~!@$%^&*()[]_;.";
+		const char valid_chars[] = "`~!@$%^&*()[]_+;.";
 		return c.isLetterOrNumber() ||
 			std::find(std::begin(valid_chars),
 			          std::end(valid_chars),
 			          c.toLatin1()) != std::end(valid_chars);
+	};
+
+	auto allowed_within_tag = [](QChar c)
+	{
+		return c == '-';
 	};
 
 	auto allowed_in_file = [&allowed_in_tag](QChar c)
@@ -397,28 +402,28 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 			}
 
 			if(appending_main) {
-				if(allowed_in_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i]) || (!main_tag.isEmpty() && allowed_within_tag(current_line[i]))) {
 					main_tag.append(current_line[i]);
 					continue;
 				}
 			}
 
 			if(removing_main) {
-				if(allowed_in_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i]) || allowed_within_tag(current_line[i])) {
 					removed_tag.append(current_line[i]);
 					continue;
 				}
 			}
 
 			if(found_replace) {
-				if(allowed_in_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i]) || allowed_within_tag(current_line[i])) {
 					replaced_tag.append(current_line[i]);
 					continue;
 				}
 			}
 
 			if(found_mapped) {
-				if(allowed_in_tag(current_line[i])) {
+				if(allowed_in_tag(current_line[i]) || allowed_within_tag(current_line[i])) {
 					mapped_tag.append(current_line[i]);
 					continue;
 				}
