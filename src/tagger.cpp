@@ -641,7 +641,7 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 				tr("Could not rename file"),
 				tr("<p>Could not rename <b>%1</b></p>"
 				   "<p>File may have been renamed or removed by another application, "
-				   "or file with this name already exists in current directory.</p>")
+				   "file with this name may already exist in the current directory or exceed the character limit.</p>")
 					.arg(file.fileName()));
 			return RenameStatus::Failed;
 
