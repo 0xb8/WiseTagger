@@ -218,18 +218,23 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 		response.replace("<title>Multi-service image search - Search results</title>",
 				 "<title>WiseTagger Reverse Search Results</title>");
 
-        /* FIXME: another dirty hack: inserting this js function to one-click-copy tags
-         <th onclick="javascript:
-            var whew_tags = document.querySelectorAll('td.image a img')[0].getAttribute('title').split('Tags: ')[1];
-            const el = document.createElement('textarea');
-            el.value = whew_tags;
-            document.getElementById('pages').appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.getElementById('pages').removeChild(el);">Best match (click here to copy tags)</th>
-        */
-        response.replace("<th>Best match</th>",
-                         "<th onclick=\"javascript:var whew_tags = document.querySelectorAll('td.image a img')[0].getAttribute('title').split('Tags: ')[1];const el = document.createElement('textarea'); el.value = whew_tags; document.getElementById('pages').appendChild(el);el.select();document.execCommand('copy');document.getElementById('pages').removeChild(el);\">Best match (click here to copy tags)</th>");
+		// FIXME: another dirty hack: inserting this js function to one-click-copy tags
+		auto onclick = R"~(<th>Best match</br>(<a href="#" onclick="
+									javascript:
+										var tagsString = document.querySelectorAll('td.image a img')[0].getAttribute('title').split('Tags: ')[1];
+										if (tagsString.length > -1) {
+											const el = document.createElement('textarea');
+											el.value = tagsString;
+											document.getElementById('pages').appendChild(el);
+											el.select();
+											document.execCommand('copy');
+											document.getElementById('pages').removeChild(el);
+										} else { 
+											console.log('No tags to copy.');
+										};
+									">copy tags</a>)</th>)~";
+
+		response.replace("<th>Best match</th>", onclick);
 
 
 		QString response_filename = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
