@@ -218,6 +218,20 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 		response.replace("<title>Multi-service image search - Search results</title>",
 				 "<title>WiseTagger Reverse Search Results</title>");
 
+        /* FIXME: another dirty hack: inserting this js function to one-click-copy tags
+         <th onclick="javascript:
+            var whew_tags = document.querySelectorAll('td.image a img')[0].getAttribute('title').split('Tags: ')[1];
+            const el = document.createElement('textarea');
+            el.value = whew_tags;
+            document.getElementById('pages').appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.getElementById('pages').removeChild(el);">Best match (click here to copy tags)</th>
+        */
+        response.replace("<th>Best match</th>",
+                         "<th onclick=\"javascript:var whew_tags = document.querySelectorAll('td.image a img')[0].getAttribute('title').split('Tags: ')[1];const el = document.createElement('textarea'); el.value = whew_tags; document.getElementById('pages').appendChild(el);el.select();document.execCommand('copy');document.getElementById('pages').removeChild(el);\">Best match (click here to copy tags)</th>");
+
+
 		QString response_filename = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
 		response_filename.append(QStringLiteral("/WT_Search_Results_For_"));
 		response_filename.append(base_name.replace(' ', '_'));
