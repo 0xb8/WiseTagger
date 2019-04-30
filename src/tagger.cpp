@@ -595,11 +595,26 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	QString new_file_path;
 
 	m_input.fixTags();
+	auto filename = m_input.text();
+	filename.append('.');
+	filename.append(file.suffix());
+
+	// check if the filename is too long for most modern filesystems
+	const int path_limit = 255;
+	if (filename.size() > path_limit) {
+		QMessageBox::warning(this,
+			tr("Could not rename file"),
+			tr("<p>Could not rename <b>%1</b></p>"
+			   "<p>File name is too long: <b>%2</b> characters, but maximum allowed file name length is %3 characters.</p>"
+		           "<p>Please change some of your tags.</p>")
+				.arg(file.fileName())
+				.arg(filename.size())
+				.arg(path_limit));
+		return RenameStatus::Cancelled;
+	}
 
 	/* Make new file path from input text */
-	new_file_path += m_input.text();
-	new_file_path += QChar('.');
-	new_file_path += file.suffix();
+	new_file_path.append(filename);
 
 #ifdef Q_OS_WIN
 	auto tpos = std::remove_if(new_file_path.begin(), new_file_path.end(), [](QChar c)
