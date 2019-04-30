@@ -56,10 +56,13 @@ QByteArray              guess_image_format(const QString& filename);
 /// Join list of strings with \p separator
 QString                 join(const QStringList&, QChar separator = QChar(' '));
 
+/// Replace reserved special characters in a string.
+void                    replace_special(QString& str);
+
 /// Save current settings into \p path file
 bool                    backup_settings_to_file(const QString& path);
 
-/// Load settings from \p path 
+/// Load settings from \p path
 bool                    restore_settings_from_file(const QString& path);
 
 } // namespace util

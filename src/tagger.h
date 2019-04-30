@@ -22,13 +22,16 @@
 #include <memory>
 
 #include "util/unordered_map_qt.h"
+#include "util/tag_fetcher.h"
 #include "picture.h"
 #include "input.h"
 #include "file_queue.h"
 
+class ReverseSearch;
+
 /*!
- * \brief Main widget of the application. 
- * 
+ * \brief Main widget of the application.
+ *
  * Contains Picture viewer and TagInput.
  */
 class Tagger : public QWidget
@@ -134,6 +137,9 @@ public:
 	/// Reference to FileQueue.
 	FileQueue& queue();
 
+	/// Reference to TagFetcner.
+	TagFetcher& tag_fetcher();
+
 public slots:
 	/// Set Tag Input visibility.
 	void setInputVisible(bool visible);
@@ -143,6 +149,9 @@ public slots:
 
 	/// Applies tag transformations to current file name.
 	void fixTags();
+
+	/// Fetches tags from associated imageboard.
+	void fetchTags();
 
 	/// Find new set of tag files used for autocomplete.
 	void reloadTags();
@@ -207,6 +216,7 @@ private:
 	bool loadFile(size_t index, bool silent = false);
 	void updateNewTagsCounts();
 	void clear();
+	void tagsFetched(QString url, QString tags);
 
 	static constexpr int m_tag_input_layout_margin = 10;
 
@@ -216,6 +226,7 @@ private:
 	QFrame      m_separator;
 	Picture     m_picture;
 	TagInput    m_input;
+	TagFetcher  m_fetcher;
 
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;

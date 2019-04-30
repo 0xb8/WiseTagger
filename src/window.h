@@ -58,7 +58,7 @@ public slots:
 
 	/*!
 	 * \brief Submit new notification
-	 * 
+	 *
 	 * Notifications are queued and are shown in a submenu of main menu bar.
 	 * \param title Notification title
 	 * \param description Short description
@@ -80,6 +80,7 @@ protected:
 private slots:
 	void fileOpenDialog();
 	void directoryOpenDialog();
+	void updateProxySettings();
 	void about();
 	void help();
 
@@ -91,6 +92,7 @@ private:
 	void parseCommandLineArguments();
 
 	void initSettings();
+
 	void saveSettings();
 	void updateStyle();
 
@@ -122,6 +124,7 @@ private:
 	QAction a_open_session;
 	QAction a_save_session;
 	QAction a_fix_tags;
+	QAction a_fetch_tags;
 	QAction a_open_loc;
 	QAction a_reload_tags;
 	QAction a_open_tags;

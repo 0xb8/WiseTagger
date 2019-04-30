@@ -60,9 +60,25 @@ public:
 	void setText(const QString&);
 
 	/*!
+	 * \brief Set tags while keeping the imageboard id, if present.
+	 */
+	void setTags(const QString&);
+
+	/*!
+	 * \brief Returns tags without imageboard id, if present.
+	 */
+	QString tags() const;
+
+	/*!
 	 * \brief Imageboard post URL deduced from tags (might be empty).
 	 */
 	QString postURL() const;
+
+
+	/*!
+	 * \brief Imageboard post API url deduced from tags (might be empty).
+	 */
+	QString postTagsApiURL() const;
 
 
 	/*!

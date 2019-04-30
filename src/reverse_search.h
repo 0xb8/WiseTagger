@@ -16,7 +16,6 @@
 #include <QNetworkAccessManager>
 #include <QProgressDialog>
 #include <QHttpMultiPart>
-#include <QNetworkProxy>
 #include <QHttpPart>
 #include <QString>
 #include <QVector>
@@ -31,8 +30,8 @@ class QObject;
  * \brief Implements image reverse-search on the web
  *
  * The \ref ReverseSearch class uploads specified image file by uploading
- * it to to https://iqdb.org and retrieving the results HTML document, 
- * which can then be displayed in system-default browser. 
+ * it to to https://iqdb.org and retrieving the results HTML document,
+ * which can then be displayed in system-default browser.
  */
 class ReverseSearch : public QObject
 {
@@ -46,43 +45,7 @@ public slots:
 	 * \brief Reverse search file.
 	 * \param file Image to search for.
 	 */
-	void	search(const QString &file);
-
-
-	/*!
-	 * \brief Specify proxy URL to use.
-	 *
-	 * Proxy URL must start with valid scheme (\c http:// or \c socks://) and end
-	 * with valid port number \code (0 < port <= 65535) \endcode.
-	 *
-	 * \a Example: \c http://proxy.example.com:8080
-	 */
-	void	setProxy(const QUrl& proxy_url);
-
-
-	/*!
-	 * \brief Set whether the proxy is used for subsequent requests.
-	 */
-	void	setProxyEnabled(bool enable);
-
-	/*!
-	 * \brief Update proxy configuration from QSettings.
-	 */
-	void updateSettings();
-public:
-
-	/*!
-	 * \brief Is the proxy currently enabled
-	 * \retval true Proxy is enabled.
-	 * \retval false Proxy is disabled.
-	 */
-	bool	proxyEnabled() const;
-
-	/// Current proxy URL.
-	QString	proxyURL() const;
-
-	/// Current proxy object.
-	QNetworkProxy proxy() const;
+	void search(const QString &file);
 
 signals:
 
@@ -123,9 +86,6 @@ private:
 	QFile m_image_file;
 	QVector<QString> m_response_files;
 	QNetworkAccessManager m_nam;
-	QNetworkProxy m_proxy;
-	QUrl m_proxy_url;
-	bool m_proxy_enabled;
 };
 
 #endif // REVERSESEARCH_H

@@ -8,6 +8,7 @@
 #include "input.h"
 #include "global_enums.h"
 #include "util/imageboard.h"
+#include "util/misc.h"
 #include <algorithm>
 #include <QFileInfo>
 #include <QKeyEvent>
@@ -92,30 +93,47 @@ void TagInput::fixTags(bool sort)
 		std::sort(id, m_text_list.end());
 	}
 
-	QString newname;
-	for(const auto& tag : qAsConst(m_text_list)) {
-		newname.append(tag);
-		newname.append(QChar(' '));
-	}
-
-	newname.remove(newname.length()-1, 1); // remove trailing space
-
-#ifdef Q_OS_WIN
-
-	for(auto& c : newname) switch (c.unicode())
-	{
-		case '"':
-		case ':':
-		case '*':
-		case '<':
-		case '>':
-		case '?':
-		case '|':
-			c = '-';
-	}
-
-#endif
+	auto newname = m_text_list.join(' ');
+	util::replace_special(newname);
 	updateText(newname);
+}
+
+void TagInput::setTags(const QString& s)
+{
+	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
+
+	tag_iterator tag, id;
+	if(ib::find_imageboard_tags(text_list.begin(), text_list.end(),tag,id)) {
+		id = std::next(id);
+	}
+
+	QString res;
+	for (auto it = tag; it != id; ++it) {
+		res.append(*it);
+		res.append(' ');
+	}
+
+	res.append(s);
+	setText(res);
+}
+
+QString TagInput::tags() const
+{
+	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
+	tag_iterator tag, id;
+	if(ib::find_imageboard_tags(text_list.begin(), text_list.end(),tag,id)) {
+		id = std::next(id);
+	} else {
+		id = text_list.begin();
+	}
+
+	QString res;
+	for (auto it = id; it != text_list.end(); ++it) {
+		res.append(*it);
+		res.append(QChar(' '));
+	}
+	res.remove(res.length()-1, 1); // remove trailing space
+	return res;
 }
 
 void TagInput::keyPressEvent(QKeyEvent *m_event)
@@ -239,6 +257,11 @@ void TagInput::updateText(const QString &t)
 QString TagInput::postURL() const
 {
 	return ib::get_imageboard_meta(m_text_list.begin(), m_text_list.end()).post_url;
+}
+
+QString TagInput::postTagsApiURL() const
+{
+	return  ib::get_imageboard_meta(m_text_list.begin(), m_text_list.end()).post_api_url;
 }
 
 bool TagInput::hasTagFile() const

@@ -51,7 +51,8 @@ SOURCES +=                                           \
     src/window.cpp                                   \
     util/imagecache.cpp                              \
     util/misc.cpp                                    \
-    util/open_graphical_shell.cpp
+    util/open_graphical_shell.cpp                    \
+    util/tag_fetcher.cpp
 
 HEADERS  +=                                          \
     src/file_queue.h                                 \
@@ -68,9 +69,11 @@ HEADERS  +=                                          \
     util/imageboard.h                                \
     util/imagecache.h                                \
     util/misc.h                                      \
+    util/network.h                                   \
     util/open_graphical_shell.h                      \
     util/project_info.h                              \
     util/size.h                                      \
+    util/tag_fetcher.h                               \
     util/traits.h                                    \
     util/unordered_map_qt.h
 

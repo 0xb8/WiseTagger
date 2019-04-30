@@ -162,13 +162,7 @@ QStringList util::supported_image_formats_namefilter()
 
 QString util::join(const QStringList& list, QChar separator)
 {
-	QString ret;
-	for(const auto& s : list) {
-		ret.append(s);
-		ret.append(separator);
-	}
-	ret.truncate(ret.lastIndexOf(separator));
-	return ret;
+	return list.join(separator);
 }
 
 QByteArray util::guess_image_format(const QString& filename)
@@ -216,4 +210,23 @@ QByteArray util::guess_image_format(const QString& filename)
 	}
 
 	return res;
+}
+
+void util::replace_special(QString & str)
+{
+#ifdef Q_OS_WIN
+	for(auto& c : str) switch (c.unicode())
+	{
+		case '"':
+		case ':':
+		case '*':
+		case '<':
+		case '>':
+		case '?':
+		case '|':
+		case '/':
+		case '\\':
+			c = '_';
+	}
+#endif
 }

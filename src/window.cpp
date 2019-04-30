@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QNetworkAccessManager>
+#include <QNetworkProxyFactory>
 #include <QNetworkReply>
 #include <QProcess>
 #include <QProxyStyle>
@@ -38,6 +39,7 @@
 #include "util/command_placeholders.h"
 #include "util/size.h"
 #include "util/misc.h"
+#include "util/network.h"
 #include "statistics.h"
 
 namespace logging_category {
@@ -65,7 +67,7 @@ namespace logging_category {
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
 #define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
 #define VER_CHECK_URL           QUrl(QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt"))
-#define VER_CHECK_USERAGENT     QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:45.5) Gecko/20100101 Firefox/45.5")
+
 #endif
 
 //------------------------------------------------------------------------------
@@ -88,6 +90,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_open_session(    tr("Open Session"), nullptr)
 	, a_save_session(    tr("Save Session"), nullptr)
 	, a_fix_tags(        tr("&Apply Tag Fixes"), nullptr)
+      	, a_fetch_tags(      tr("Fetch Imageboard Tags..."), nullptr)
 	, a_open_loc(        tr("Open &Containing Folder"), nullptr)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
 	, a_open_tags(       tr("Open Tag File &Location"), nullptr)
@@ -168,6 +171,52 @@ void Window::directoryOpenDialog()
 	m_tagger.openDir(dir);
 }
 
+void Window::updateProxySettings()
+{
+	QSettings settings;
+	settings.beginGroup(QStringLiteral("proxy"));
+	bool proxy_enabled = settings.value(QStringLiteral("enabled"), false).toBool();
+	bool use_system_proxy = settings.value("use_system").toBool();
+
+	if(proxy_enabled) {
+		if (use_system_proxy) {
+			QNetworkProxyFactory::setUseSystemConfiguration(true);
+		} else {
+			QNetworkProxyFactory::setUseSystemConfiguration(false);
+			auto protocol = settings.value(QStringLiteral("protocol")).toString();
+			auto host = settings.value(QStringLiteral("host")).toString();
+			auto port = settings.value(QStringLiteral("port")).toInt();
+			QUrl proxy_url;
+			proxy_url.setScheme(protocol);
+			proxy_url.setHost(host);
+			proxy_url.setPort(port);
+
+			bool scheme_valid = (proxy_url.scheme() == QStringLiteral("http")
+					  || proxy_url.scheme() == QStringLiteral("socks5"));
+
+			if(!proxy_url.isValid() || proxy_url.port() == -1 || !scheme_valid)
+			{
+				QMessageBox::warning(nullptr,
+					tr("Invalid proxy"),
+					tr("<p>Proxy URL <em><code>%1</code></em> is invalid. Proxy <b>will not</b> be used!</p>").arg(proxy_url.toString()));
+				return;
+			}
+
+			QNetworkProxy::ProxyType type = QNetworkProxy::NoProxy;
+			if(proxy_url.scheme() == QStringLiteral("socks5"))
+				type = QNetworkProxy::Socks5Proxy;
+			else if(proxy_url.scheme() == QStringLiteral("http"))
+				type = QNetworkProxy::HttpProxy;
+
+			auto proxy = QNetworkProxy(type, proxy_url.host(), proxy_url.port());
+			QNetworkProxy::setApplicationProxy(proxy);
+		}
+	} else {
+		QNetworkProxyFactory::setUseSystemConfiguration(false);
+	}
+	settings.endGroup();
+}
+
 
 void Window::updateWindowTitle()
 {
@@ -221,6 +270,7 @@ void Window::updateStatusBarText()
 void Window::updateImageboardPostURL(QString url)
 {
 	a_open_post.setDisabled(url.isEmpty());
+	a_fetch_tags.setDisabled(url.isEmpty());
 	m_post_url = url;
 }
 
@@ -448,6 +498,8 @@ void Window::initSettings()
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
+
+	updateProxySettings();
 }
 
 void Window::saveSettings()
@@ -509,16 +561,23 @@ void Window::checkNewVersion()
 		vcdbg << (checking_disabled ? "vercheck disabled" : "vercheck enabled") << last_checked.toString();
 		return;
 	}
-	m_vernam.setProxy(m_reverse_search.proxy());
+
 	connect(&m_vernam, &QNetworkAccessManager::finished, this, &Window::processNewVersion);
 
 	QNetworkRequest req{VER_CHECK_URL};
-	req.setHeader(QNetworkRequest::UserAgentHeader, VER_CHECK_USERAGENT);
+	req.setHeader(QNetworkRequest::UserAgentHeader, WISETAGGER_USERAGENT);
 	m_vernam.get(req);
 }
 
 void Window::processNewVersion(QNetworkReply *r)
 {
+	// use unique_ptr with custom deleter to clean up the request object
+	auto guard = std::unique_ptr<QNetworkReply, std::function<void(QNetworkReply*)>>(r, [](auto ptr)
+	{
+		ptr->deleteLater();
+	});
+
+
 	if(r->error() != QNetworkReply::NoError) {
 		vcwarn << "could not access" << r->url() << "with error:" << r->errorString();
 		return;
@@ -659,6 +718,7 @@ void Window::createActions()
 	a_fix_tags.setShortcut(     QKeySequence(tr("Ctrl+A", "Fix tags")));
 	a_open_post.setShortcut(    QKeySequence(tr("Ctrl+P", "Open post")));
 	a_iqdb_search.setShortcut(  QKeySequence(tr("Ctrl+F", "Reverse search")));
+	a_fetch_tags.setShortcut(   QKeySequence(tr("Ctrl+Shift+F", "Fetch tags")));
 	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
 	a_help.setShortcut(         QKeySequence::HelpContents);
 	a_exit.setShortcut(         QKeySequence::Close);
@@ -700,6 +760,7 @@ void Window::createActions()
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
 	connect(&a_delete_file, &QAction::triggered, &m_tagger, &Tagger::deleteCurrentFile);
 	connect(&a_fix_tags,    &QAction::triggered, &m_tagger, &Tagger::fixTags);
+
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
 	connect(&a_open_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInShell);
 	connect(&a_edit_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInEditor);
@@ -913,7 +974,7 @@ void Window::createActions()
 	{
 		auto sd = new SettingsDialog(this);
 		connect(sd, &SettingsDialog::updated, this, &Window::updateSettings);
-		connect(sd, &SettingsDialog::updated, &m_reverse_search, &ReverseSearch::updateSettings);
+		connect(sd, &SettingsDialog::updated, this, &Window::updateProxySettings);
 		connect(sd, &SettingsDialog::updated, &m_tagger, &Tagger::updateSettings);
 		connect(sd, &SettingsDialog::finished, [sd](int){
 			sd->deleteLater();
@@ -924,6 +985,11 @@ void Window::createActions()
 	{
 		m_tagger.queue().setSortBy(a->data().value<SortQueueBy>());
 		m_tagger.queue().sort();
+	});
+	connect(&a_fetch_tags,  &QAction::triggered, &m_tagger, &Tagger::fetchTags);
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::ready, this, [this](QString, QString)
+	{
+		statusBar()->showMessage(tr("Tag Fetching Done."), 3000);
 	});
 }
 
@@ -952,6 +1018,7 @@ void Window::createMenus()
 	add_action(menu_file, a_delete_file);
 	add_separator(menu_file);
 	add_action(menu_file, a_open_post);
+	add_action(menu_file, a_fetch_tags);
 	add_action(menu_file, a_iqdb_search);
 	add_separator(menu_file);
 	add_action(menu_file, a_exit);
@@ -1077,6 +1144,7 @@ void Window::updateMenus()
 	a_save_prev.setDisabled(val);
 	a_delete_file.setDisabled(val);
 	a_fix_tags.setDisabled(val);
+	a_fetch_tags.setDisabled(val);
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);

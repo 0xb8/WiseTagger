@@ -62,6 +62,7 @@ Tagger::Tagger(QWidget *_parent) :
 	{
 		TaggerStatistics::instance().fileOpened(file, m_picture.mediaSize());
 	});
+	connect(&m_fetcher, &TagFetcher::ready, this, &Tagger::tagsFetched);
 	updateSettings();
 }
 
@@ -203,6 +204,49 @@ void Tagger::fixTags()
 	m_input.fixTags();
 }
 
+
+void Tagger::fetchTags()
+{
+	auto url = m_input.postTagsApiURL();
+	if (url.size() == 0)
+		return;
+
+	m_fetcher.fetch_tags(url);
+}
+
+void Tagger::tagsFetched(QString url, QString tags)
+{
+	util::replace_special(tags);
+
+	// Current file might have already changed since reply came
+	if (url == m_input.postTagsApiURL()) {
+		auto current_tags = m_input.tags();
+		if (current_tags != tags) {
+			// Ask user what to do with tags
+			QMessageBox mbox(QMessageBox::Question,
+			                 tr("Fetched tags mismatch"),
+			                 tr("<p>Imageboard tags do not match current tags:"
+			                    "<br/><pre>%1</pre></p>"
+			                    "<p>Please choose what to do:</p>").arg(tags),
+			                 QMessageBox::Save|QMessageBox::SaveAll);
+
+			mbox.addButton(QMessageBox::Cancel);
+			mbox.setButtonText(QMessageBox::Save, tr("Use just imageboard tags"));
+			mbox.setButtonText(QMessageBox::SaveAll, tr("Merge tags"));
+			int res = mbox.exec();
+
+			if (res == QMessageBox::Save) {
+				m_input.setTags(tags);
+			}
+			if (res == QMessageBox::SaveAll) {
+				current_tags.append(' ');
+				current_tags.append(tags);
+				m_input.setTags(current_tags);
+			}
+		}
+	}
+}
+
 //------------------------------------------------------------------------------
 
 QString Tagger::currentFile() const
@@ -262,6 +306,11 @@ QString Tagger::postURL() const
 FileQueue& Tagger::queue()
 {
 	return m_file_queue;
+}
+
+TagFetcher & Tagger::tag_fetcher()
+{
+	return m_fetcher;
 }
 
 bool Tagger::canExit(Tagger::RenameStatus status)

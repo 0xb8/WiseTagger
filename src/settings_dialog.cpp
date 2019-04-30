@@ -33,6 +33,7 @@
 #define S_VERCHECK      QStringLiteral("version-check-enabled")
 #define S_TRACK_TAGS    QStringLiteral("track-added-tags")
 #define S_PROXY_ENABLED QStringLiteral("proxy/enabled")
+#define S_PROXY_USE_SYS QStringLiteral("proxy/use_system")
 #define S_PROXY_HOST    QStringLiteral("proxy/host")
 #define S_PROXY_PORT    QStringLiteral("proxy/port")
 #define S_PROXY_PROTO   QStringLiteral("proxy/protocol")
@@ -49,6 +50,7 @@
 #define D_VERCHECK      true
 #define D_TRACK_TAGS    true
 #define D_PROXY_ENABLED false
+#define D_PROXY_USE_SYS false
 #define D_PROXY_HOST    QStringLiteral("")
 #define D_PROXY_PORT    9050
 #define D_PROXY_PROTO   QStringLiteral("SOCKS5")
@@ -85,6 +87,12 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 		if(qobject_cast<QPushButton*>(btn) == ui->dialogButtonBox->button(QDialogButtonBox::RestoreDefaults)) {
 			restoreDefaults();
 		}
+	});
+	connect(ui->useSystemProxy, &QCheckBox::toggled, this, [this](bool toggled)
+	{
+		ui->proxyHost->setDisabled(toggled);
+		ui->proxyPort->setDisabled(toggled);
+		ui->proxyProtocol->setDisabled(toggled);
 	});
 	connect(ui->exportSettingsBtn, &QPushButton::clicked, this, [this](){
 		QSettings settings;
@@ -277,6 +285,7 @@ void SettingsDialog::reset()
 	ui->vercheckEnabled->setChecked(  settings.value(S_VERCHECK,      D_VERCHECK).toBool());
 	ui->trackAddedTags->setChecked(   settings.value(S_TRACK_TAGS,    D_TRACK_TAGS).toBool());
 	ui->proxyGroup->   setChecked(    settings.value(S_PROXY_ENABLED, D_PROXY_ENABLED).toBool());
+	ui->useSystemProxy->setChecked(   settings.value(S_PROXY_USE_SYS, D_PROXY_USE_SYS).toBool());
 	ui->fontSize->     setValue(      settings.value(S_FONT_SIZE,     D_FONT_SIZE).toUInt());
 	ui->proxyPort->    setValue(      settings.value(S_PROXY_PORT,    D_PROXY_PORT).toUInt());
 	ui->proxyHost->    setText(       settings.value(S_PROXY_HOST,    D_PROXY_HOST).toString());
@@ -384,6 +393,7 @@ void SettingsDialog::apply()
 	settings.setValue(S_PROXY_PORT,    ui->proxyPort->text());
 	settings.setValue(S_PROXY_HOST,    ui->proxyHost->text());
 	settings.setValue(S_PROXY_ENABLED, ui->proxyGroup->isChecked());
+	settings.setValue(S_PROXY_USE_SYS, ui->useSystemProxy->isChecked());
 	settings.setValue(S_PRELOAD,       ui->preloadGroup->isChecked());
 	settings.setValue(S_PRELOAD_CNT,   ui->preloadCount->value());
 	settings.setValue(S_PRELOAD_MEM,   ui->cacheMemory->value());
@@ -447,6 +457,7 @@ void SettingsDialog::restoreDefaults()
 	ui->vercheckEnabled->setChecked(  D_VERCHECK);
 	ui->trackAddedTags->setChecked(   D_TRACK_TAGS);
 	ui->proxyGroup->   setChecked(    D_PROXY_ENABLED);
+	ui->useSystemProxy->setChecked(   D_PROXY_USE_SYS);
 	ui->preloadGroup-> setChecked(    D_PRELOAD);
 	ui->proxyHost->    setText(       D_PROXY_HOST);
 	ui->proxyPort->    setValue(      D_PROXY_PORT);
