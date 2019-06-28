@@ -782,8 +782,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
-	connect(&m_tagger,      &Tagger::tagFetchingStarted, this, &Window::showTagFetchProgress);
-	connect(&m_tagger,      &Tagger::tagFetchingFinished, this, &Window::hideUploadProgress);
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
 
 	connect(&m_tagger,      &Tagger::tagFileChanged, this, [this]()
 	{
@@ -984,6 +983,13 @@ void Window::createActions()
 		                                regex_source.toHtmlEscaped(),
 		                                arrow));
 	});
+	auto show_network_error_notification = [this](QUrl url, QString error)
+	{
+		addNotification(tr("Network error"), tr("Error connecting to %1: %2").arg(url.host(), error), QString());
+		hideUploadProgress();
+	};
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::error, this, show_network_error_notification);
+	connect(&m_reverse_search, &ReverseSearch::error, this, show_network_error_notification);
 	connect(&a_show_settings, &QAction::triggered, this, [this]()
 	{
 		auto sd = new SettingsDialog(this);
@@ -1003,6 +1009,7 @@ void Window::createActions()
 	connect(&a_fetch_tags,  &QAction::triggered, &m_tagger, &Tagger::fetchTags);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::ready, this, [this](QString, QString)
 	{
+		hideUploadProgress();
 		statusBar()->showMessage(tr("Tag Fetching Done."), 3000);
 	});
 }

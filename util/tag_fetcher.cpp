@@ -23,8 +23,26 @@ void TagFetcher::fetch_tags(const QString& url) {
 	QNetworkRequest req{url};
 	req.setHeader(QNetworkRequest::UserAgentHeader, WISETAGGER_USERAGENT);
 
-	m_nam.get(req);
+	if (m_reply) m_reply->deleteLater();
+	abort();
+	m_reply = m_nam.get(req);
+	connect(m_reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, [this](auto)
+	{
+		if (!m_reply) return;
+		emit error(m_reply->url(), m_reply->errorString());
+		m_reply->deleteLater();
+		m_reply = nullptr;
+	});
 	emit started(url);
+}
+
+void TagFetcher::abort()
+{
+	if (m_reply) {
+		m_reply->abort();
+		m_reply->deleteLater();
+		m_reply = nullptr;
+	}
 }
 
 void TagFetcher::open_reply(QNetworkReply * reply)
@@ -44,6 +62,7 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 	}
 	reply->close();
 	reply->deleteLater();
+	m_reply = nullptr;
 
 	if (!res.isEmpty())
 		emit ready(reply->url().toString(), res);

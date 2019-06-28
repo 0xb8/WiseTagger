@@ -25,7 +25,18 @@ public:
 	 */
 	void fetch_tags(const QString & url);
 
+	/*!
+	 * \brief Aborts the tag fetching request
+	 */
+	void abort();
+
 signals:
+
+	/*!
+	 * \brief Emitted when network error is detected while fetching tags
+	 * \param error Human-readable error description
+	 */
+	void error(QUrl url, QString error);
 
 	/*!
 	 * \brief Emitted when tag fetching is started
@@ -43,6 +54,7 @@ private:
 	void open_reply(QNetworkReply* reply);
 
 	QNetworkAccessManager m_nam;
+	QNetworkReply *m_reply = nullptr;
 };
 
 

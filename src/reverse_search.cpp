@@ -129,6 +129,11 @@ void ReverseSearch::upload_file()
 	multipart->setParent(r);
 	multipart.release();
 	connect(r, &QNetworkReply::uploadProgress, this, &ReverseSearch::uploadProgress);
+	connect(r, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, [this](auto)
+	{
+		auto r = qobject_cast<QNetworkReply*>(sender());
+		emit error(r->url(), r->errorString());
+	});
 	connect(r, &QNetworkReply::finished, this, [this, r]()
 	{
 		open_reply(r);

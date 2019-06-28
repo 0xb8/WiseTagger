@@ -49,6 +49,13 @@ public slots:
 
 signals:
 
+	/*!
+	 * \brief Emitted when network error is detected while uploading image.
+	 * \param url Request URL
+	 * \param error Human-readable error description
+	 */
+	void error(QUrl url, QString error);
+
 	/// Emitted when upload has finished.
 	void finished();
 

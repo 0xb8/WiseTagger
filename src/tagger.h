@@ -209,17 +209,6 @@ signals:
 	 */
 	void parseError(QString regex_source, QString error, int column);
 
-	/*!
-	 * \brief Emitted when tag fetching is started
-	 * \param url URL of imageboard
-	 */
-	void tagFetchingStarted(QString url);
-
-	/*!
-	 * \brief Emitted when tag fetching finished
-	 */
-	void tagFetchingFinished();
-
 private:
 	void findTagsFiles(bool force = false);
 	void reloadTagsContents();
