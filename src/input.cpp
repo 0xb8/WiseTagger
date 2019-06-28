@@ -87,6 +87,9 @@ void TagInput::fixTags(bool sort)
 	tag_iterator tag, id;
 	if(!ib::find_imageboard_tags(m_text_list.begin(), m_text_list.end(),tag,id)) {
 		id = m_text_list.begin();
+	} else {
+		// sorting should begin from next tag
+		std::advance(id, 1);
 	}
 
 	if(sort) {
