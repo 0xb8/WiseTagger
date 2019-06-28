@@ -131,8 +131,10 @@ void ReverseSearch::upload_file()
 	connect(r, &QNetworkReply::uploadProgress, this, &ReverseSearch::uploadProgress);
 	connect(r, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, [this](auto)
 	{
-		auto r = qobject_cast<QNetworkReply*>(sender());
-		emit error(r->url(), r->errorString());
+		auto r = qobject_cast<QNetworkReply*>(this->sender());
+		if (r) {
+			emit this->error(r->url(), r->errorString());
+		}
 	});
 	connect(r, &QNetworkReply::finished, this, [this, r]()
 	{

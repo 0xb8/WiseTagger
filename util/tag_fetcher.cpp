@@ -29,7 +29,7 @@ void TagFetcher::fetch_tags(const QString& url) {
 	connect(m_reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, [this](auto)
 	{
 		if (!m_reply) return;
-		emit error(m_reply->url(), m_reply->errorString());
+		emit this->error(m_reply->url(), m_reply->errorString());
 		m_reply->deleteLater();
 		m_reply = nullptr;
 	});
