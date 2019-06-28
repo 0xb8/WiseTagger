@@ -63,6 +63,7 @@ Tagger::Tagger(QWidget *_parent) :
 		TaggerStatistics::instance().fileOpened(file, m_picture.mediaSize());
 	});
 	connect(&m_fetcher, &TagFetcher::ready, this, &Tagger::tagsFetched);
+	connect(&m_fetcher, &TagFetcher::started, this, &Tagger::tagFetchingStarted);
 	updateSettings();
 }
 
@@ -216,6 +217,7 @@ void Tagger::fetchTags()
 
 void Tagger::tagsFetched(QString url, QString tags)
 {
+	emit tagFetchingFinished();
 	util::replace_special(tags);
 
 	// Current file might have already changed since reply came

@@ -41,6 +41,9 @@ public slots:
 	/// Display current upload progress in window title
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
+	/// Display current tag fetching progress
+	void showTagFetchProgress(QString url);
+
 	/// Hide current upload progress
 	void hideUploadProgress();
 

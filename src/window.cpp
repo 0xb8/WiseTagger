@@ -348,7 +348,19 @@ void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 	statusBar()->showMessage(
 		tr("Uploading %1 to iqdb.org...  %2% complete").arg(
 			m_tagger.currentFileName(),
-			QString::number(util::size::percent(bytesSent, bytesTotal))));
+	                                QString::number(util::size::percent(bytesSent, bytesTotal))));
+}
+
+void Window::showTagFetchProgress(QString url_str)
+{
+#ifdef Q_OS_WIN32
+	auto progress = m_win_taskbar_button.progress();
+	progress->setVisible(true);
+	progress->setMaximum(0);
+	progress->setValue(0);
+#endif
+	auto url = QUrl(url_str);
+	statusBar()->showMessage(tr("Fetching tags from %1...").arg(url.host()));
 }
 
 void Window::hideUploadProgress()
@@ -770,6 +782,8 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
+	connect(&m_tagger,      &Tagger::tagFetchingStarted, this, &Window::showTagFetchProgress);
+	connect(&m_tagger,      &Tagger::tagFetchingFinished, this, &Window::hideUploadProgress);
 
 	connect(&m_tagger,      &Tagger::tagFileChanged, this, [this]()
 	{

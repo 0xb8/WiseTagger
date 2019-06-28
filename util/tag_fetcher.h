@@ -26,9 +26,15 @@ public:
 	void fetch_tags(const QString & url);
 
 signals:
+
+	/*!
+	 * \brief Emitted when tag fetching is started
+	 */
+	void started(QString url);
+
 	/*!
 	 * \brief Emitted when valid tags were found for
-	 * \param tags
+	 * \param tags Fetched tags
 	 */
 	void ready(QString url, QString tags);
 

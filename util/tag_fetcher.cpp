@@ -24,6 +24,7 @@ void TagFetcher::fetch_tags(const QString& url) {
 	req.setHeader(QNetworkRequest::UserAgentHeader, WISETAGGER_USERAGENT);
 
 	m_nam.get(req);
+	emit started(url);
 }
 
 void TagFetcher::open_reply(QNetworkReply * reply)
