@@ -1,12 +1,12 @@
 
 [Setup]
 AppName=WiseTagger
-AppCopyright=Copyright (C) 2018 catgirl
-AppVersion=0.5.5
-VersionInfoVersion=0.5.5
+AppCopyright=Copyright (C) 2019 catgirl
+AppVersion=0.5.6
+VersionInfoVersion=0.5.6
 
 AppPublisher=catgirl
-AppPublisherURL=https://wolfgirl.org/
+AppPublisherURL=https://github.com/0xb8/WiseTagger
 AppReadmeFile=https://github.com/0xb8/WiseTagger
 AppSupportURL=https://github.com/0xb8/WiseTagger
 
@@ -20,7 +20,7 @@ PrivilegesRequired=lowest
 OutputDir=..\
 LicenseFile=LICENSE.txt
 SetupIconFile=..\icon.ico
-
+WizardStyle=modern
 
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
@@ -31,10 +31,15 @@ MinVersion=6.0
 Source: "WiseTagger.exe"; DestDir: "{app}"; DestName: "WiseTagger.exe"
 Source: *; Excludes: "*.iss"; DestDir: "{app}" ; Flags: recursesubdirs
 
-
 [Icons]
 Name: "{group}\WiseTagger"; Filename: "{app}\WiseTagger.exe"
 Name: "{group}\Uninstall WiseTagger"; Filename: "{uninstallexe}"
+
+[InstallDelete]
+Type: files; Name: "{app}\libicudt62.dll"
+Type: files; Name: "{app}\libicuin62.dll"
+Type: files; Name: "{app}\libicuuc62.dll"
+Type: files; Name: "{app}\imageformats\qmng.dll"
 
  [Registry]
 Root: HKCU; Subkey: "Software\Classes\.wt-session"; ValueType: string; ValueName: ""; ValueData: "WiseTaggerSessionFile"; Flags: uninsdeletevalue
