@@ -118,6 +118,7 @@ private:
 	QAction a_open_post;
 	QAction a_iqdb_search;
 	QAction a_exit;
+	QAction a_hide;
 	QAction a_next_file;
 	QAction a_prev_file;
 	QAction a_save_file;
@@ -136,6 +137,7 @@ private:
 	QAction a_ib_replace;
 	QAction a_ib_restore;
 	QAction a_show_settings;
+	QAction a_view_normal;
 	QAction a_view_minimal;
 	QAction a_view_statusbar;
 	QAction a_view_fullscreen;

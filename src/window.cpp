@@ -66,7 +66,7 @@ namespace logging_category {
 #ifdef Q_OS_WIN
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
 #define SETT_VER_CHECK_ENABLED  QStringLiteral("version-check-enabled")
-#define VER_CHECK_URL           QUrl(QStringLiteral("https://bitbucket.org/catgirl/wisetagger/raw/version/current.txt"))
+#define VER_CHECK_URL           QUrl(QStringLiteral("https://raw.githubusercontent.com/0xb8/WiseTagger/version/current.txt"))
 
 #endif
 
@@ -81,6 +81,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_open_post(       tr("Open Imageboard &Post..."), nullptr)
 	, a_iqdb_search(     tr("&Reverse Search Image..."), nullptr)
 	, a_exit(            tr("&Exit"), nullptr)
+	, a_hide(            tr("Hide to tray"), nullptr)
 	, a_next_file(       tr("&Next Image"), nullptr)
 	, a_prev_file(       tr("&Previous Image"), nullptr)
 	, a_save_file(       tr("&Save"), nullptr)
@@ -99,6 +100,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_show_settings(   tr("P&references..."), nullptr)
+	, a_view_normal(     tr("Show &WiseTagger"), nullptr)
 	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
 	, a_view_statusbar(  tr("&Statusbar"), nullptr)
 	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
@@ -311,7 +313,7 @@ void Window::removeNotification(QString title) {
 	if(m_notification_count <= 0) {
 		hideNotificationsMenu();
 	}
-	m_tray_icon.setVisible(false);
+	m_tray_icon.setVisible(!isVisible());
 }
 
 void Window::showNotificationsMenu()
@@ -435,7 +437,10 @@ void Window::closeEvent(QCloseEvent *e)
 			QMainWindow::closeEvent(e);
 			return;
 		}
+		bool was_hidden = !isVisible();
+		if (was_hidden) show(); // BUG: ignore() doesn't work if the window is hidden.
 		e->ignore();
+		if (was_hidden) hide();
 		return;
 	}
 	saveSettings();
@@ -734,6 +739,7 @@ void Window::createActions()
 	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
 	a_help.setShortcut(         QKeySequence::HelpContents);
 	a_exit.setShortcut(         QKeySequence::Close);
+	a_hide.setShortcut(         QKeySequence(Qt::Key_Escape));
 	a_view_fullscreen.setShortcut(QKeySequence::FullScreen);
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
@@ -767,6 +773,9 @@ void Window::createActions()
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
 	connect(&a_open_dir,    &QAction::triggered, this, &Window::directoryOpenDialog);
 	connect(&a_exit,        &QAction::triggered, this, &Window::close);
+	connect(&a_hide,        &QAction::triggered, this, &Window::hide);
+	connect(&a_hide,        &QAction::triggered, &m_tray_icon, &QSystemTrayIcon::show);
+	connect(&a_view_normal, &QAction::triggered, this, &Window::show);
 	connect(&a_about,       &QAction::triggered, this, &Window::about);
 	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
@@ -1042,9 +1051,11 @@ void Window::createMenus()
 	add_action(menu_file, a_fetch_tags);
 	add_action(menu_file, a_iqdb_search);
 	add_separator(menu_file);
+	add_action(menu_file, a_hide);
 	add_action(menu_file, a_exit);
 
 	// Tray context menu actions
+	add_action(menu_tray, a_view_normal);
 	add_action(menu_tray, a_view_fullscreen);
 	add_action(menu_tray, a_view_minimal);
 	add_separator(menu_tray);
