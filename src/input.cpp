@@ -170,6 +170,22 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 	m_index = 0;
 }
 
+void TagInput::focusInEvent(QFocusEvent * event)
+{
+	QLineEdit::focusInEvent(event);
+	QSettings settings;
+	bool space = event->isAccepted() && event->gotFocus() && event->reason() == Qt::TabFocusReason;
+	if (space && settings.value("window/focus-append", true).toBool()) {
+		// add a space to text and move fursor forward
+		auto tmp_text = text().trimmed();
+		if (!tmp_text.isEmpty())
+			tmp_text.append(' ');
+
+		updateText(tmp_text);
+		cursorForward(false);
+	}
+}
+
 static void update_model(QStandardItemModel& model, const QStringList& tags, const std::unordered_map<QString,QString>& comments)
 {
 	model.clear();
