@@ -8,10 +8,11 @@ shallow_clone: true
 clone_depth: 1
 
 environment:
-  QTDIR: C:\Qt\5.12.2\mingw73_64
+  QTDIR: C:\Qt\5.13.2\mingw73_64
+  MINGWDIR: C:\Qt\Tools\mingw730_64
 
 install:
-  - set PATH=%QTDIR%\bin;C:\Qt\Tools\mingw730_64\bin;%PATH%
+  - set PATH=%QTDIR%\bin;%MINGWDIR%\bin;%PATH%
 
 build_script:
   - qmake CONFIG+=release Wisetagger.pro
