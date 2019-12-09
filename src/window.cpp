@@ -62,6 +62,7 @@ namespace logging_category {
 
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
+#define SETT_FORCE_AUTHOR_FIRST	QStringLiteral("imageboard/force-author-first")
 
 #ifdef Q_OS_WIN
 #define SETT_LAST_VER_CHECK     QStringLiteral("last-version-check")
@@ -99,6 +100,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_edit_temp_tags(  tr("Edit Temporary Tags..."), nullptr)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
+	, a_tag_forcefirst(  tr("&Force Author Tags First"), nullptr)
 	, a_show_settings(   tr("P&references..."), nullptr)
 	, a_view_normal(     tr("Show &WiseTagger"), nullptr)
 	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
@@ -514,6 +516,8 @@ void Window::initSettings()
 
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
+	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
+	
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
 	updateProxySettings();
@@ -745,17 +749,19 @@ void Window::createActions()
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
 
-	a_open_post.setStatusTip(  tr("Open imageboard post of this image."));
-	a_iqdb_search.setStatusTip(tr("Upload this image to iqdb.org and open search results page in default browser."));
-	a_open_loc.setStatusTip(   tr("Open folder where this image is located."));
-	a_open_tags.setStatusTip(  tr("Open folder where current tag file is located."));
-	a_reload_tags.setStatusTip(tr("Reload changes in tag files and search for newly added tag files."));
-	a_edit_tags.setStatusTip(  tr("Open current tag file in default text editor."));
-	a_ib_replace.setStatusTip( tr("Toggle replacing certain imageboard tags with their shorter version."));
-	a_ib_restore.setStatusTip( tr("Toggle restoring imageboard tags back to their original version."));
+	a_open_post.setStatusTip(     tr("Open imageboard post of this image."));
+	a_iqdb_search.setStatusTip(   tr("Upload this image to iqdb.org and open search results page in default browser."));
+	a_open_loc.setStatusTip(      tr("Open folder where this image is located."));
+	a_open_tags.setStatusTip(     tr("Open folder where current tag file is located."));
+	a_reload_tags.setStatusTip(   tr("Reload changes in tag files and search for newly added tag files."));
+	a_edit_tags.setStatusTip(     tr("Open current tag file in default text editor."));
+	a_ib_replace.setStatusTip(    tr("Toggle replacing certain imageboard tags with their shorter version."));
+	a_ib_restore.setStatusTip(    tr("Toggle restoring imageboard tags back to their original version."));
+	a_tag_forcefirst.setStatusTip(tr("Toggle forcing the author tag to be the first tag in the filename."));
 
 	a_ib_replace.setCheckable(true);
 	a_ib_restore.setCheckable(true);
+	a_tag_forcefirst.setCheckable(true);
 	a_view_statusbar.setCheckable(true);
 	a_view_fullscreen.setCheckable(true);
 	a_view_minimal.setCheckable(true);
@@ -844,6 +850,11 @@ void Window::createActions()
 	{
 		QSettings s; s.setValue(SETT_RESTORE_TAGS, checked);
 	});
+	connect(&a_tag_forcefirst,  &QAction::triggered, [](bool checked)
+	{
+		QSettings s; s.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
+	});
+	
 	connect(&a_view_statusbar, &QAction::triggered, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
@@ -1065,6 +1076,7 @@ void Window::createMenus()
 	add_separator(menu_tray);
 	add_action(menu_tray, a_ib_replace);
 	add_action(menu_tray, a_ib_restore);
+	add_action(menu_tray, a_tag_forcefirst);
 	add_separator(menu_tray);
 	add_action(menu_tray, a_show_settings);
 	add_action(menu_tray, a_exit);
@@ -1116,6 +1128,8 @@ void Window::createMenus()
 	// Options menu actions
 	add_action(menu_options, a_ib_replace);
 	add_action(menu_options, a_ib_restore);
+	add_separator(menu_options);
+	add_action(menu_options, a_tag_forcefirst);
 	add_separator(menu_options);
 	add_action(menu_options, a_show_settings);
 
