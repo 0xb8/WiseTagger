@@ -101,9 +101,7 @@ void TagInput::fixTags(bool sort)
 		// due to C++ literal strings rules all backslashes inside the pattern string needs escaping with another backslash
 		// the pattern matches to (not-a-space-tab-newline)@AA - (not-a-space-tab-newline)@ZZ;
 		// the list is then prepended by those having ↑ and original entries of ↑ are removed
-		m_text_list = m_text_list.filter(QRegularExpression(R"~(
-									\[?[^ \t\n\r]+@[A-Z]{2}\]?
-									)~")) + m_text_list;
+		m_text_list = m_text_list.filter(QRegularExpression(R"~(\[?[^ \t\n\r]+@[A-Z]{2}\]?)~")) + m_text_list;
 		m_text_list.removeDuplicates();
 	}
 
