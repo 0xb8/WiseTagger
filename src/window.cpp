@@ -516,7 +516,7 @@ void Window::initSettings()
 
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
-	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, true).toBool());
+	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
 	
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
