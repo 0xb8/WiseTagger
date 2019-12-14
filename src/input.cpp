@@ -98,7 +98,6 @@ void TagInput::fixTags(bool sort)
 
 	// if the author tag is present and should be forced to be first, move it first
 	if(settings.value(QStringLiteral("imageboard/force-author-first"), false).toBool()) {
-		// due to C++ literal strings rules all backslashes inside the pattern string needs escaping with another backslash
 		// the pattern matches to (not-a-space-tab-newline)@AA - (not-a-space-tab-newline)@ZZ;
 		// the list is then prepended by those having ↑ and original entries of ↑ are removed
 		m_text_list = m_text_list.filter(QRegularExpression(R"~(\[?[^ \t\n\r]+@[A-Z]{2}\]?)~")) + m_text_list;
@@ -395,7 +394,7 @@ QStringList TagInput::parse_tags_file(QTextStream *input)
 
 
 		// if first symbol on line is a single quote, it's a regular expression
-		if (current_line.front() == '\'') {
+        if (current_line.at(0) == '\'') {
 
 			int from = -1;
 			int idx = -1;
