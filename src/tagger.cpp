@@ -466,8 +466,10 @@ void Tagger::findTagsFiles(bool force)
 		search_paths_list.push_back(dir.path());
 		if(!dir.exists()) continue;
 
-		auto list_override = dir.entryInfoList({override});
-		auto list_normal   = dir.entryInfoList({tagsfile});
+		auto filter = QDir::Files | QDir::Hidden;
+		auto sort_by = QDir::Name;
+		auto list_override = dir.entryInfoList({override}, filter, sort_by);
+		auto list_normal   = dir.entryInfoList({tagsfile}, filter, sort_by);
 
 		add_tag_files(list_override);
 
