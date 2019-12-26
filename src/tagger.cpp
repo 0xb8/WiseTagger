@@ -66,7 +66,7 @@ Tagger::Tagger(QWidget *_parent) :
 	});
 	connect(&m_fetcher, &TagFetcher::ready, this, &Tagger::tagsFetched);
 	updateSettings();
-	setFocusPolicy(Qt::StrongFocus);
+	setFocusPolicy(Qt::ClickFocus);
 }
 
 void Tagger::clear()
@@ -629,7 +629,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 
 	m_input.setText(f.completeBaseName());
 	findTagsFiles();
-	setFocus(Qt::TabFocusReason);
+	setFocus(Qt::MouseFocusReason);
 	return true;
 }
 
