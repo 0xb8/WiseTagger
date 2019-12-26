@@ -99,7 +99,7 @@ void TagInput::fixTags(bool sort)
 	// if the author tag is present and should be forced to be first, move it first
 	if(settings.value(QStringLiteral("imageboard/force-author-first"), false).toBool()) {
 		// the pattern matches to (not-a-space-tab-newline)@AA - (not-a-space-tab-newline)@ZZ;
-		// the list is then prepended by those having ↑ and original entries of ↑ are removed
+		// the list is then prepended by those having ↑ and original entries of ↑ are removed
 		m_text_list = m_text_list.filter(QRegularExpression(R"~(\[?[^ \t\n\r]+@[A-Z]{2}\]?)~")) + m_text_list;
 		m_text_list.removeDuplicates();
 	}
@@ -157,14 +157,16 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 	}
 
 	if(m_event->key() == Qt::Key_Escape) {
-		clearFocus();
+		releaseKeyboard();
+		parentWidget()->setFocus();
 		return;
 	}
 
 	if(m_event->key() == Qt::Key_Enter || m_event->key()== Qt::Key_Return)
 	{
 		fixTags();
-		clearFocus();
+		releaseKeyboard();
+		parentWidget()->setFocus();
 		return;
 	}
 	// NOTE: Shift+Space - workaround for space not working as expected when typing in the middle of the word.

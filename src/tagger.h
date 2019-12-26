@@ -19,6 +19,7 @@
 #include <QWidget>
 #include <QStringList>
 #include <QFileSystemWatcher>
+#include <QBasicTimer>
 #include <memory>
 
 #include "util/unordered_map_qt.h"
@@ -209,6 +210,16 @@ signals:
 	 */
 	void parseError(QString regex_source, QString error, int column);
 
+	/*!
+	 * \brief Emitted on double Escape combination to hide the window to tray.
+	 */
+	void hideRequested();
+
+protected:
+	void keyPressEvent(QKeyEvent* e) override;
+	void timerEvent(QTimerEvent* e) override;
+	void focusInEvent(QFocusEvent* e) override;
+
 private:
 	void findTagsFiles(bool force = false);
 	void reloadTagsContents();
@@ -227,6 +238,7 @@ private:
 	Picture     m_picture;
 	TagInput    m_input;
 	TagFetcher  m_fetcher;
+	QBasicTimer m_hide_request_timer;
 
 	FileQueue   m_file_queue;
 	QString     m_previous_dir;

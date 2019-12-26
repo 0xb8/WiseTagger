@@ -31,6 +31,7 @@ namespace logging_category {
 }
 #define pdbg qCDebug(logging_category::tagger)
 #define pwarn qCWarning(logging_category::tagger)
+#define ESCAPE_HIDE_TIMEOUT_MS 600
 
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)
@@ -65,6 +66,7 @@ Tagger::Tagger(QWidget *_parent) :
 	});
 	connect(&m_fetcher, &TagFetcher::ready, this, &Tagger::tagsFetched);
 	updateSettings();
+	setFocusPolicy(Qt::StrongFocus);
 }
 
 void Tagger::clear()
@@ -340,6 +342,36 @@ void Tagger::updateSettings()
 	m_picture.cache.setMaxConcurrentTasks(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2);
 }
 
+void Tagger::keyPressEvent(QKeyEvent * e)
+{
+	if (e->key() == Qt::Key_Escape) {
+		// escape already been pressed once
+		if (m_hide_request_timer.isActive()) {
+			m_hide_request_timer.stop();
+			emit hideRequested();
+		} else {
+			// start timer to detect second escape press
+			m_hide_request_timer.start(ESCAPE_HIDE_TIMEOUT_MS, this);
+		}
+	}
+	QWidget::keyPressEvent(e);
+}
+
+void Tagger::timerEvent(QTimerEvent*)
+{
+	// timer is single shot
+	m_hide_request_timer.stop();
+}
+
+void Tagger::focusInEvent(QFocusEvent * e)
+{
+	if (e->reason() == Qt::OtherFocusReason) {
+		// we've been focused by tag input escape or enter keypress
+		m_hide_request_timer.start(ESCAPE_HIDE_TIMEOUT_MS, this);
+	}
+	QWidget::focusInEvent(e);
+}
+
 void Tagger::setInputVisible(bool visible)
 {
 	m_input.setVisible(visible);
@@ -597,7 +629,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 
 	m_input.setText(f.completeBaseName());
 	findTagsFiles();
-	m_picture.setFocus();
+	setFocus(Qt::TabFocusReason);
 	return true;
 }
 

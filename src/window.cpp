@@ -517,7 +517,7 @@ void Window::initSettings()
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
-	
+
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
 	updateProxySettings();
@@ -743,8 +743,9 @@ void Window::createActions()
 	a_open_loc.setShortcut(	    QKeySequence(tr("Ctrl+L", "Open file location")));
 	a_help.setShortcut(         QKeySequence::HelpContents);
 	a_exit.setShortcut(         QKeySequence::Close);
-	a_hide.setShortcut(         QKeySequence(Qt::Key_Escape));
 	a_view_fullscreen.setShortcut(QKeySequence::FullScreen);
+	a_hide.setShortcut(QKeySequence{Qt::Key_Escape, Qt::Key_Escape});
+	a_hide.setShortcutContext(Qt::WidgetShortcut);
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
@@ -781,6 +782,13 @@ void Window::createActions()
 	connect(&a_exit,        &QAction::triggered, this, &Window::close);
 	connect(&a_hide,        &QAction::triggered, this, &Window::hide);
 	connect(&a_hide,        &QAction::triggered, &m_tray_icon, &QSystemTrayIcon::show);
+	connect(&m_tray_icon,   &QSystemTrayIcon::activated, this, [this](auto reason)
+	{
+		if (reason == QSystemTrayIcon::DoubleClick) {
+			a_view_normal.trigger();
+		}
+	});
+	connect(&m_tagger,      &Tagger::hideRequested, &a_hide, &QAction::trigger);
 	connect(&a_view_normal, &QAction::triggered, this, &Window::show);
 	connect(&a_about,       &QAction::triggered, this, &Window::about);
 	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
@@ -854,7 +862,7 @@ void Window::createActions()
 	{
 		QSettings s; s.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
 	});
-	
+
 	connect(&a_view_statusbar, &QAction::triggered, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
