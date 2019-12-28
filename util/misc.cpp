@@ -214,7 +214,6 @@ QByteArray util::guess_image_format(const QString& filename)
 
 void util::replace_special(QString & str)
 {
-#ifdef Q_OS_WIN
 	for(auto& c : str) switch (c.unicode())
 	{
 		case '"':
@@ -228,5 +227,4 @@ void util::replace_special(QString & str)
 		case '\\':
 			c = '_';
 	}
-#endif
 }
