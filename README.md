@@ -2,7 +2,10 @@
 Simple picture tagging tool
 
 [![Build Status](https://travis-ci.org/0xb8/WiseTagger.svg?branch=master)](https://travis-ci.org/0xb8/WiseTagger)
-[![Build status](https://ci.appveyor.com/api/projects/status/h7kpn21xadcxsab1?svg=true)](https://ci.appveyor.com/project/catgirl/wisetagger)
+[![Build Status](https://ci.appveyor.com/api/projects/status/h7kpn21xadcxsab1?svg=true)](https://ci.appveyor.com/project/catgirl/wisetagger)
+[![Documentation](https://img.shields.io/badge/docs-doxygen-blue.svg)](https://wolfgirl.org/software/wisetagger/documentation)
+[![GitHub Releases](https://img.shields.io/github/v/release/0xb8/WiseTagger.svg)](https://github.com/0xb8/WiseTagger/releases)
+
 
 ## Features ##
 * Tag autocomplete

@@ -1,9 +1,9 @@
 
 [Setup]
 AppName=WiseTagger
-AppCopyright=Copyright (C) 2019 catgirl
-AppVersion=0.5.6
-VersionInfoVersion=0.5.6
+AppCopyright=Copyright (C) 2020 catgirl
+AppVersion=0.5.7
+VersionInfoVersion=0.5.7
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -39,6 +39,9 @@ Name: "{group}\Uninstall WiseTagger"; Filename: "{uninstallexe}"
 Type: files; Name: "{app}\libicudt62.dll"
 Type: files; Name: "{app}\libicuin62.dll"
 Type: files; Name: "{app}\libicuuc62.dll"
+Type: files; Name: "{app}\libicudt64.dll"
+Type: files; Name: "{app}\libicuin64.dll"
+Type: files; Name: "{app}\libicuuc64.dll"
 Type: files; Name: "{app}\imageformats\qmng.dll"
 
  [Registry]

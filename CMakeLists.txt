@@ -1,21 +1,10 @@
 project(WiseTagger)
 cmake_minimum_required(VERSION 3.4)
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-	message(STATUS "Source Directory: " ${CMAKE_SOURCE_DIR})
-	message(STATUS "Build Directory:  " ${CMAKE_BINARY_DIR})
-	message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
-endif()
-
-if (NOT CMAKE_BUILD_TYPE)
-	message(STATUS "Build type not set, using \"Release\"")
-	set(CMAKE_BUILD_TYPE "Release")
-endif()
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(APP_VERSION "0.5.5")
+set(APP_VERSION "0.5.7")
 set(TARGET_PRODUCT "WiseTagger")
 set(TARGET_COMPANY "catgirl")
 

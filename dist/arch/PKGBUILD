@@ -6,7 +6,7 @@ pkgver=r149.cb6c034
 pkgrel=1
 pkgdesc='A simple picture tagger'
 arch=('i686' 'x86_64')
-url='https://bitbicket.org/catgirl/wisetagger/'
+url='https://github.com/0xb8/WiseTagger'
 license=('custom:wtfpl')
 depends=('qt5-base'
          'hicolor-icon-theme')
@@ -19,7 +19,7 @@ makedepends=('qt5-tools'
              'make'
              'git')
 
-source=('git+https://catgirl@bitbucket.org/catgirl/wisetagger.git')
+source=('git+https://github.com/0xb8/WiseTagger.git')
 sha256sums=('SKIP')
 
 pkgver() {
