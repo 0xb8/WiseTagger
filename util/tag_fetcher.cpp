@@ -57,6 +57,9 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 			auto tags = post.find("tags");
 			if (tags != post.end()) {
 				res = tags->toString();
+			} else if (post.find("tag_string") != post.end()) {
+				tags = post.find("tag_string");
+				res = tags->toString();
 			}
 		}
 	}

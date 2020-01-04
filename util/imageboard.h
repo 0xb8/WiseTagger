@@ -42,7 +42,7 @@ namespace detail {
 		string_t	post_meta_url;
 	};
 
-	const std::array<imageboard_tag,2> imageboard_tags = {
+	const std::array<imageboard_tag,6> imageboard_tags = {
 		imageboard_tag {
 			IB_STRING_LITERAL("yande.re"),
 			IB_STRING_LITERAL("yandere_"),
@@ -56,6 +56,38 @@ namespace detail {
 			IB_STRING_LITERAL("Konachan.com -"),
 			IB_STRING_LITERAL("https://konachan.net/post/show/%1"),
 			IB_STRING_LITERAL("https://konachan.net/post.json?tags=id:%1")
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("dbru.com"), // 2010 suggestion, not implemented
+			IB_STRING_LITERAL("danbooru_"),
+			IB_STRING_LITERAL("danbooru.donmai.us -"),
+			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1"),
+			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1.json") // FIXME: somewhy returns JSON-object with "tag_string" on browser yet replies nothing to WiseTagger 
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("drawfriends"),
+			IB_STRING_LITERAL("drawfriends_"),
+			IB_STRING_LITERAL("drawfriends"),
+			IB_STRING_LITERAL("https://drawfriends.booru.org/index.php?page=post&s=view&id=%1"),
+			IB_STRING_LITERAL("") // FIXME: dirty stub, drawfiends have API disabled
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("pixiv"),
+			IB_STRING_LITERAL("pixiv_"),
+			IB_STRING_LITERAL("pixiv"),
+			IB_STRING_LITERAL("https://www.pixiv.net/artworks/%1"),
+			IB_STRING_LITERAL("https://public-api.secure.pixiv.net/v1/works/%1.json") // TODO: requires oauth, so this is just a stub - see https://github.com/tombfix/core/commit/4a00148 & https://danbooru.donmai.us/wiki_pages/help:pixiv_api
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("deviantart"),
+			IB_STRING_LITERAL("deviant_"),
+			IB_STRING_LITERAL("deviantart.com - "),
+			IB_STRING_LITERAL("https://www.deviantart.com/view/%1"),
+			IB_STRING_LITERAL("https://www.deviantart.com/api/v1/oauth2/deviation/metadata?deviationids%5B%5D=4A30FF08-3703-3034-C875-C901845E6184&ext_submission=false&ext_camera=false&ext_stats=false&ext_collection=false&mature_content=true") 
+			/* TODO: To connect to this endpoint, you need an Oauth2 Access Token - see https://www.deviantart.com/developers/authentication
+				%1 (deviation_id) won't work here - one needs to know UUID - see https://stackoverflow.com/questions/28581350/obtain-deviantart-deviation-id-uuid-from-page-url
+				Currently shown 4A30FF08-3703-3034-C875-C901845E6184 is a stub - ID 827871497. On success the endpoint provides JSON object metadata with sub-array tags  
+			*/ 
 		}
 	};
 
