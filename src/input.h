@@ -15,14 +15,13 @@
 #include <QStringList>
 #include <QLineEdit>
 #include <QStandardItemModel>
-#include <QRegularExpression>
 #include <memory>
 
 #include "multicompleter.h"
-#include "util/unordered_map_qt.h"
+#include "tag_parser.h"
+
 
 class QKeyEvent;
-class QTextStream;
 
 
 /// Provides a Line Edit widget designed for tagging.
@@ -117,47 +116,19 @@ private:
 	static constexpr int m_minimum_height         = 30;
 	static constexpr int m_minimum_height_minmode = 25;
 
+	/// Tag file parser and tag fixer
+	TagParser   m_tag_parser;
+
+	/// Editing state for current text.
+	TagEditState m_edit_state;
 
 	bool        next_completer();
 
-	/*!
-	 * \brief Parse tags and set up necessary internal state.
-	 * \param input Text stream with tags.
-	 * \return List of top-level tags
-	 */
-	QStringList parse_tags_file(QTextStream* input);
-
-	/*!
-	 * \brief List of tags that are related to specified tag.
-	 *
-	 * If specified tag was alredy processed by this function, it will not
-	 * be processed again to allow user to delete unwanted related tags.
-	 */
-	QStringList related_tags(const QString& tag);
-
-	/*!*
-	 * \brief List of replacement tags for specified tag.
-	 *
-	 * If there are replacement tags, original tag is removed (cleared).
-	 * If specified tag was alredy processed by this function, it will not
-	 * be processed again to allow user to restore original tag.
-	 */
-	QStringList replacement_tags(QString& tag);
-
-	/*!
-	 * \brief Remove \p tag if it was marked as autoremoved.
-	 *
-	 * If specified tag was already processed by this function, it will not
-	 * be processed again to allow user to restore autoremoved tag.
-	 */
-	void        remove_if_unwanted(QString& tag);
 	void        updateText(const QString &t);
 
 	int         m_index;
 	QStringList m_text_list;
-	QStringList m_tags_from_file;
 	QString     m_initial_text;
-	QString     m_post_url;
 
 	/*!
 	 * \brief A model used to display completions with comments.
@@ -168,50 +139,7 @@ private:
 	 */
 	QStandardItemModel m_tags_model;
 
-	/*!
-	 * \brief Map used to collect tag comments.
-	 *
-	 * Key is original tag, value is a string with comma-separated comments
-	 * (same tag may appear in multiple files with different comments).
-	 */
-	std::unordered_map<QString,QString> m_comment_tooltips;
-
-	/*!
-	 * \brief Multimap used to keep track of related tags.
-	 *
-	 * Key is original tag, value is corresponding related tag.
-	 * Special marker value (equal to key) is used to mark tag as processed.
-	 */
-	std::unordered_multimap <QString,QString> m_related_tags;
-
-	/*!
-	 * \brief Multimap used to keep track of replacement tags.
-	 *
-	 * Key is original tag, value is corresponding replacement tag.
-	 * Special marker value (equal to key) is used to mark tag as processed.
-	 */
-	std::unordered_multimap <QString,QString> m_replaced_tags;
-
-	/*!
-	 * \brief Map used to keep track of autoremoved tags.
-	 *
-	 * Key is original tag, value is boolean that is set to true if tag was
-	 * already processed.
-	 */
-	std::unordered_map      <QString, bool>   m_removed_tags;
-
-
-	/*!
-	 * \brief List of regular expressions to be checked on first tag fix.
-	 *
-	 * \c .first - regular expression
-	 * \c .second - id for related tags search.
-	 */
-	QVector<QPair<QRegularExpression, QString>> m_regexps;
-
-
 	std::unique_ptr<MultiSelectCompleter>     m_completer;
-
 	using tag_iterator = decltype(std::begin(m_text_list));
 };
 #endif // TAGINPUT_H

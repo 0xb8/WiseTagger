@@ -48,6 +48,7 @@ SOURCES +=                                           \
     src/settings_dialog.cpp                          \
     src/statistics.cpp                               \
     src/tagger.cpp                                   \
+    src/tag_parser.cpp                               \
     src/window.cpp                                   \
     util/imagecache.cpp                              \
     util/misc.cpp                                    \
@@ -64,6 +65,7 @@ HEADERS  +=                                          \
     src/settings_dialog.h                            \
     src/statistics.h                                 \
     src/tagger.h                                     \
+    src/tag_parser.h                                 \
     src/window.h                                     \
     util/command_placeholders.h                      \
     util/imageboard.h                                \

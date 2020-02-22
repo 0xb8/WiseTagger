@@ -13,8 +13,12 @@
  * \brief Support for QStrings in std::unordered_map
  */
 
-#include <unordered_map>
 #include <QString>
+#include <unordered_map>
+
+// Qt 5.14 already includes std::hash specialization
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+
 
 namespace std {
 	/// std::hash specialization to support QString
@@ -33,5 +37,7 @@ namespace std {
 		}
 	};
 }
+
+#endif // if QT_VERSION
 
 #endif // UNORDERED_MAP_QT_H

@@ -11,18 +11,19 @@
 #include <algorithm>
 #include <cctype>
 #include <stdexcept>
+#include <array>
 #include <QString>
-#include <QLoggingCategory>
 
-namespace logging_category {
-	Q_LOGGING_CATEGORY(imageboard, "Imageboard")
-}
-#define pdbg qCDebug(logging_category::imageboard)
-#define pwarn qCWarning(logging_category::imageboard)
+#ifndef pdbg
+#include <QtDebug>
+#define pdbg qDebug()
+#define pwarn qWarning()
+#define IMAGEBOARD_LOG_DEFINES
+#endif
 
 namespace std {
 	template<>
-	bool isdigit(QChar c, const locale&) {
+	inline bool isdigit(QChar c, const locale&) {
 		return c.isDigit();
 	}
 }
@@ -62,7 +63,7 @@ namespace detail {
 			IB_STRING_LITERAL("danbooru_"),
 			IB_STRING_LITERAL("danbooru.donmai.us -"),
 			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1"),
-			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1.json") // FIXME: somewhy returns JSON-object with "tag_string" on browser yet replies nothing to WiseTagger 
+			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1.json") // FIXME: somewhy returns JSON-object with "tag_string" on browser yet replies nothing to WiseTagger
 		},
 		imageboard_tag {
 			IB_STRING_LITERAL("drawfriends"),
@@ -83,11 +84,11 @@ namespace detail {
 			IB_STRING_LITERAL("deviant_"),
 			IB_STRING_LITERAL("deviantart.com - "),
 			IB_STRING_LITERAL("https://www.deviantart.com/view/%1"),
-			IB_STRING_LITERAL("https://www.deviantart.com/api/v1/oauth2/deviation/metadata?deviationids%5B%5D=4A30FF08-3703-3034-C875-C901845E6184&ext_submission=false&ext_camera=false&ext_stats=false&ext_collection=false&mature_content=true") 
+			IB_STRING_LITERAL("https://www.deviantart.com/api/v1/oauth2/deviation/metadata?deviationids%5B%5D=4A30FF08-3703-3034-C875-C901845E6184&ext_submission=false&ext_camera=false&ext_stats=false&ext_collection=false&mature_content=true")
 			/* TODO: To connect to this endpoint, you need an Oauth2 Access Token - see https://www.deviantart.com/developers/authentication
 				%1 (deviation_id) won't work here - one needs to know UUID - see https://stackoverflow.com/questions/28581350/obtain-deviantart-deviation-id-uuid-from-page-url
-				Currently shown 4A30FF08-3703-3034-C875-C901845E6184 is a stub - ID 827871497. On success the endpoint provides JSON object metadata with sub-array tags  
-			*/ 
+				Currently shown 4A30FF08-3703-3034-C875-C901845E6184 is a stub - ID 827871497. On success the endpoint provides JSON object metadata with sub-array tags
+			*/
 		}
 	};
 
@@ -304,6 +305,9 @@ auto get_imageboard_meta(IteratorT ibegin, IteratorT iend)
 
 } // namespace imageboard
 
+#ifdef IMAGEBOARD_LOG_DEFINES
 #undef pdbg
 #undef pwarn
-#endif
+#endif // IMAGEBOARD_LOG_DEFINES
+
+#endif // UTIL_IMAGEBOARD_H

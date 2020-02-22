@@ -19,6 +19,7 @@ set(wt_srcs
 	src/settings_dialog.cpp
 	src/statistics.cpp
 	src/tagger.cpp
+	src/tag_parser.cpp
 	src/window.cpp
 	util/imagecache.cpp
 	util/misc.cpp
