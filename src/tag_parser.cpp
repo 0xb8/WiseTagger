@@ -197,6 +197,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		replaced_tag.clear();
 		mapped_tag.clear();
 		comment.clear();
+		regex_source.clear();
 
 		removed_tags_list.clear();
 		replaced_tags_list.clear();
@@ -243,7 +244,6 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 					emit parseError(regex_source, regex.errorString(), regex.patternErrorOffset() + 1);
 					continue;
 				}
-
 			}
 		}
 
