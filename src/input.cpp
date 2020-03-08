@@ -31,12 +31,7 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 
 void TagInput::fixTags(bool sort)
 {
-	QSettings s;
-
-	TagParser::FixOptions opts;
-	opts.replace_imageboard_tags = s.value(QStringLiteral("imageboard/replace-tags"), false).toBool();
-	opts.restore_imageboard_tags = s.value(QStringLiteral("imageboard/restore-tags"), true).toBool();
-	opts.force_author_handle_first = s.value(QStringLiteral("imageboard/force-author-first"), false).toBool();
+	auto opts = TagParser::FixOptions::from_settings();
 	opts.sort = sort;
 	m_text_list = m_tag_parser.fixTags(m_edit_state, text(), opts);
 
@@ -81,6 +76,11 @@ QString TagInput::tags() const
 	}
 	res.remove(res.length()-1, 1); // remove trailing space
 	return res;
+}
+
+const TagParser & TagInput::tag_parser() const
+{
+	return m_tag_parser;
 }
 
 void TagInput::keyPressEvent(QKeyEvent *m_event)

@@ -79,6 +79,9 @@ public:
 
 		/// Do tag sorting.
 		bool sort = true;
+
+		/// Returns FixOptions from settings.
+		static FixOptions from_settings();
 	};
 
 	/*!

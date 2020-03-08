@@ -274,7 +274,6 @@ void Window::updateStatusBarText()
 void Window::updateImageboardPostURL(QString url)
 {
 	a_open_post.setDisabled(url.isEmpty());
-	a_fetch_tags.setDisabled(url.isEmpty());
 	m_post_url = url;
 }
 

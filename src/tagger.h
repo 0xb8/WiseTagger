@@ -227,7 +227,7 @@ private:
 	bool loadFile(size_t index, bool silent = false);
 	void updateNewTagsCounts();
 	void clear();
-	void tagsFetched(QString url, QString tags);
+	void tagsFetched(QString file, QString tags);
 
 	static constexpr int m_tag_input_layout_margin = 10;
 

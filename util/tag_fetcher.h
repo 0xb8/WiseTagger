@@ -23,7 +23,7 @@ public:
 	 * \brief Fetches tags using imageboard JSON API
 	 * \param url Imageboard API url for the post
 	 */
-	void fetch_tags(const QString & url);
+	void fetch_tags(const QString& file, QString url);
 
 	/*!
 	 * \brief Aborts the tag fetching request
@@ -47,7 +47,7 @@ signals:
 	 * \brief Emitted when valid tags were found for
 	 * \param tags Fetched tags
 	 */
-	void ready(QString url, QString tags);
+	void ready(QString file, QString tags);
 
 
 private:

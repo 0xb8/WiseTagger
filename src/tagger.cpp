@@ -210,19 +210,22 @@ void Tagger::fixTags()
 
 void Tagger::fetchTags()
 {
-	auto url = m_input.postTagsApiURL();
-	if (url.size() == 0)
-		return;
-
-	m_fetcher.fetch_tags(url);
+	m_fetcher.fetch_tags(currentFile(), m_input.postTagsApiURL());
 }
 
-void Tagger::tagsFetched(QString url, QString tags)
+void Tagger::tagsFetched(QString file, QString tags)
 {
-	util::replace_special(tags);
-
 	// Current file might have already changed since reply came
-	if (url == m_input.postTagsApiURL()) {
+	if (currentFile() == file) {
+		TagEditState state;
+		auto options = TagParser::FixOptions::from_settings();
+		options.sort = true;
+
+		// Autofix imageboard tags before comparing and assigning
+		util::replace_special(tags);
+		tags = m_input.tag_parser().fixTags(state, tags, options).join(' ');
+
+		util::replace_special(tags);
 		auto current_tags = m_input.tags();
 		if (current_tags != tags) {
 			// Ask user what to do with tags

@@ -69,6 +69,12 @@ public:
 	QString tags() const;
 
 	/*!
+	 * \brief Returns constant reference to current tag parser.
+	 */
+	const TagParser& tag_parser() const;
+
+
+	/*!
 	 * \brief Imageboard post URL deduced from tags (might be empty).
 	 */
 	QString postURL() const;
