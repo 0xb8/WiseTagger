@@ -217,6 +217,7 @@ void util::replace_special(QString & str)
 	for(auto& c : str) switch (c.unicode())
 	{
 		case '"':
+		case '\'':
 		case ':':
 		case '*':
 		case '<':
