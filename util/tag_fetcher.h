@@ -36,7 +36,7 @@ signals:
 	 * \brief Emitted when network error is detected while fetching tags
 	 * \param error Human-readable error description
 	 */
-	void error(QUrl url, QString error);
+	void net_error(QUrl url, QString net_error);
 
 	/*!
 	 * \brief Emitted when tag fetching is started
@@ -48,6 +48,13 @@ signals:
 	 * \param tags Fetched tags
 	 */
 	void ready(QString file, QString tags);
+
+	/*!
+	 * \brief Emitted when non-network failure occured.
+	 *
+	 * For example, no such image exists on the imageboard, or MD5 mismatched.
+	 */
+	void failed(QString file, QString reason);
 
 
 private:

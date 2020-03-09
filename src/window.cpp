@@ -212,7 +212,8 @@ void Window::updateProxySettings()
 			else if(proxy_url.scheme() == QStringLiteral("http"))
 				type = QNetworkProxy::HttpProxy;
 
-			auto proxy = QNetworkProxy(type, proxy_url.host(), proxy_url.port());
+			auto port_value = static_cast<uint16_t>(proxy_url.port());
+			auto proxy = QNetworkProxy(type, proxy_url.host(), port_value);
 			QNetworkProxy::setApplicationProxy(proxy);
 		}
 	} else {
@@ -332,11 +333,12 @@ void Window::hideNotificationsMenu()
 
 void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 {
+	int percent_done = static_cast<int>(util::size::percent(bytesSent, bytesTotal));
 #ifdef Q_OS_WIN32
 	auto progress = m_win_taskbar_button.progress();
 	progress->setVisible(true);
-	progress->setMaximum(bytesTotal);
-	progress->setValue(bytesSent);
+	progress->setMaximum(100);
+	progress->setValue(percent_done);
 
 	if(bytesSent == bytesTotal) {
 		// set indicator to indeterminate mode
@@ -347,11 +349,10 @@ void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 	if(bytesTotal == 0)
 		return;
 
-	updateWindowTitleProgress(util::size::percent(bytesSent, bytesTotal));
+	updateWindowTitleProgress(percent_done);
 	statusBar()->showMessage(
 		tr("Uploading %1 to iqdb.org...  %2% complete").arg(
-			m_tagger.currentFileName(),
-	                                QString::number(util::size::percent(bytesSent, bytesTotal))));
+			m_tagger.currentFileName(), QString::number(percent_done)));
 }
 
 void Window::showTagFetchProgress(QString url_str)
@@ -805,6 +806,14 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::failed, this, [this](auto file, auto reason)
+	{
+		if (file == m_tagger.currentFile()) {
+			hideUploadProgress();
+			addNotification(tr("Tag fetching failed"), reason, QStringLiteral(""));
+			statusBar()->showMessage(tr("Tag fetching failed:  %1").arg(reason), 3000);
+		}
+	});
 
 	connect(&m_tagger,      &Tagger::tagFileChanged, this, [this]()
 	{
@@ -930,7 +939,9 @@ void Window::createActions()
 		auto number = QInputDialog::getInt(this,
 			tr("Enter Number"),
 			tr("Enter file number to open:"),
-			m_tagger.queue().currentIndex()+1, 1, m_tagger.queue().size());
+			static_cast<int>(m_tagger.queue().currentIndex()+1), // value
+			1,                                                   // min
+			static_cast<int>(m_tagger.queue().size()));          // max
 		m_tagger.openFileInQueue(number-1);
 	});
 	connect(&m_notification_display_timer, &QTimer::timeout, this, [this]()
@@ -1012,10 +1023,12 @@ void Window::createActions()
 	});
 	auto show_network_error_notification = [this](QUrl url, QString error)
 	{
-		addNotification(tr("Network error"), tr("Error connecting to %1: %2").arg(url.host(), error), QString());
+		auto error_str = tr("Error connecting to %1: %2").arg(url.host(), error);
+		addNotification(tr("Network error"), error_str, QStringLiteral(""));
+		statusBar()->showMessage(tr("Network error: %1").arg(error_str), 3000);
 		hideUploadProgress();
 	};
-	connect(&m_tagger.tag_fetcher(), &TagFetcher::error, this, show_network_error_notification);
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::net_error, this, show_network_error_notification);
 	connect(&m_reverse_search, &ReverseSearch::error, this, show_network_error_notification);
 	connect(&a_show_settings, &QAction::triggered, this, [this]()
 	{

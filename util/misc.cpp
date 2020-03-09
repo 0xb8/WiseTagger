@@ -228,3 +228,16 @@ void util::replace_special(QString & str)
 			c = '_';
 	}
 }
+
+bool util::is_hex_string(const QString & str)
+{
+	const char valid_chars[] = "1234567890abcdef";
+	for (auto c : str) {
+		auto pos = std::find(std::begin(valid_chars),
+		                     std::end(valid_chars),
+		                     c.toLower().toLower().toLatin1());
+		if (pos == std::end(valid_chars))
+			return false;
+	}
+	return true;
+}

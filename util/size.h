@@ -53,7 +53,7 @@ namespace size {
 	inline std::int64_t percent(std::int64_t value, std::int64_t max, std::int64_t min = 0ll)
 	{
 		if(value == 0 || max == 0 || max == min) return 0;
-		return static_cast<double>(value-min) * 100.0 / max - min;
+		return static_cast<int64_t>(static_cast<double>(value-min) * 100.0 / (max - min));
 	}
 }
 }

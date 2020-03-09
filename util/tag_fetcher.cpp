@@ -45,7 +45,7 @@ void TagFetcher::fetch_tags(const QString & filename, QString url) {
 	connect(m_reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, [this](auto)
 	{
 		if (!m_reply) return;
-		emit this->error(m_reply->url(), m_reply->errorString());
+		emit this->net_error(m_reply->url(), m_reply->errorString());
 		m_reply->deleteLater();
 		m_reply = nullptr;
 	});
@@ -105,19 +105,20 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 			}
 		}
 	}
-	QUrl reply_url = reply->url();
 	reply->close();
 	reply->deleteLater();
 	m_reply = nullptr;
 
+	auto file = reply->request().attribute(QNetworkRequest::User).toString();
 	if (!res.isEmpty()) {
-		auto file = reply->request().attribute(QNetworkRequest::User).toString();
 		auto src_md5 = reply->request().attribute(QNetworkRequest::Attribute(QNetworkRequest::User+1)).toString();
 		if (src_md5 != res_md5) {
-			emit error(reply_url, tr("Image MD5 mismatch! Perhaps the file is corrupted?"));
+			emit failed(file, tr("Image MD5 mismatch! Perhaps the file is corrupted?"));
 		} else {
 			emit ready(file, res);
 		}
+	} else {
+		emit failed(file, tr("Image not found on the imageboard."));
 	}
 }
 
