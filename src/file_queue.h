@@ -128,7 +128,7 @@ public:
 	 * resulting file index is determined as follows: 
 	 * \code index % queue_size \endcode.
 	 */
-	const QString& nth(ssize_t index) noexcept;
+	const QString& nth(ptrdiff_t index) noexcept;
 
 
 	/*!

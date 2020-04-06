@@ -360,7 +360,7 @@ const QString& FileQueue::backward() noexcept
 	return m_files[m_current];
 }
 
-const QString &FileQueue::nth(ssize_t index) noexcept
+const QString &FileQueue::nth(ptrdiff_t index) noexcept
 {
 	static_assert(noexcept(m_files[m_current]), "");
 

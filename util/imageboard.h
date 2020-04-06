@@ -21,13 +21,6 @@
 #define IMAGEBOARD_LOG_DEFINES
 #endif
 
-namespace std {
-	template<>
-	inline bool isdigit(QChar c, const locale&) {
-		return c.isDigit();
-	}
-}
-
 namespace ib {
 
 namespace detail {
@@ -123,10 +116,8 @@ namespace detail {
 	T get_id_from_short_tag(const T& tag) {
 		T res;
 
-		auto is_digit = [](const auto& c)
-		{
-			static const std::locale loc;
-			return std::isdigit(c, loc);
+		auto is_digit = [](QChar c) {
+			return c.isDigit();
 		};
 
 		auto underscore = std::find(std::begin(tag), std::end(tag), '_');
