@@ -127,6 +127,7 @@ bool Picture::loadMedia(const QString &filename)
 			clear();
 			return false;
 		}
+		m_pixmap.setDevicePixelRatio(devicePixelRatioF());
 
 		m_media_size = m_pixmap.size();
 		m_has_alpha  = m_pixmap.hasAlpha();
@@ -157,8 +158,8 @@ bool Picture::hasAlpha() const
 
 void Picture::resizeMedia()
 {
-	m_widget_size.setWidth( std::min(size().width(),  m_media_size.width()));
-	m_widget_size.setHeight(std::min(size().height(), m_media_size.height()));
+	m_widget_size.setWidth( std::min(int(size().width() * devicePixelRatioF()),  m_media_size.width()));
+	m_widget_size.setHeight(std::min(int(size().height() * devicePixelRatioF()), m_media_size.height()));
 	float ratio = std::min(m_widget_size.width()  / static_cast<float>(m_media_size.width()),
 	                       m_widget_size.height() / static_cast<float>(m_media_size.height()));
 	m_widget_size = QSize(m_media_size.width() * ratio, m_media_size.height() * ratio);
@@ -172,8 +173,8 @@ void Picture::resizeMedia()
 			} else {
 				pdbg << "resizing pixmap from" << m_pixmap.size() << "to" << m_widget_size;
 				QLabel::setPixmap(m_pixmap.scaled(m_widget_size,
-				Qt::IgnoreAspectRatio,
-				Qt::SmoothTransformation));
+				                                  Qt::IgnoreAspectRatio,
+							          Qt::SmoothTransformation));
 			}
 			break;
 		case Type::AnimatedImage:

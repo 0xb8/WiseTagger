@@ -32,6 +32,10 @@ int main(int argc, char *argv[])
 	                                  "%{if-category}<%{category}> %{endif}"
 					  "%{if-debug}%{function} %{threadid} %{endif}"
 	                                  "    %{message}"));
+
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
 	QApplication a(argc, argv);
 	a.setApplicationVersion(QStringLiteral(APP_VERSION));
 	a.setApplicationName(QStringLiteral(TARGET_PRODUCT));

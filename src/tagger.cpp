@@ -677,7 +677,7 @@ bool Tagger::loadCurrentFile()
 		if(i == 0)
 			continue;
 		auto idx = ptrdiff_t(m_file_queue.currentIndex())+i;
-		m_picture.cache.addFile(m_file_queue.nth(idx), m_picture.size());
+		m_picture.cache.addFile(m_file_queue.nth(idx), m_picture.size(), m_picture.devicePixelRatioF());
 	}
 
 	return true;

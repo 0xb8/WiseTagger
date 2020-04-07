@@ -87,9 +87,10 @@ struct LoadResizeImageTask : public QRunnable
 	ImageCache* cache;
 	QString     filename;
 	QSize       window_size;
+	double      device_pixel_ratio = 1.0;
 
-	LoadResizeImageTask(ImageCache* cache_, const QString& filename_, QSize window_size_) :
-	        cache(cache_), filename(filename_), window_size(window_size_)
+	LoadResizeImageTask(ImageCache* cache_, const QString& filename_, QSize window_size_, double dpr_) :
+	        cache(cache_), filename(filename_), window_size(window_size_), device_pixel_ratio(dpr_)
 	{
 		Q_ASSERT(cache);
 		setAutoDelete(true);
@@ -105,7 +106,7 @@ struct LoadResizeImageTask : public QRunnable
 
 		filename.detach();
 		auto addFileThreadFn = &ImageCache::addFileThreadFunc;
-		(cache->*addFileThreadFn)(filename, window_size);
+		(cache->*addFileThreadFn)(filename, window_size, device_pixel_ratio);
 	}
 };
 
@@ -157,12 +158,12 @@ void ImageCache::setMaxConcurrentTasks(int num)
 	}
 }
 
-void ImageCache::addFile(const QString& filename, QSize window_size)
+void ImageCache::addFile(const QString& filename, QSize window_size, double device_pixel_ratio)
 {
 	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
 		return;
 
-	auto task = std::make_unique<LoadResizeImageTask>(this, filename, window_size);
+	auto task = std::make_unique<LoadResizeImageTask>(this, filename, window_size, device_pixel_ratio);
 	if(m_thread_pool.tryStart(task.get())) {
 		(void)task.release();
 	}
@@ -222,7 +223,7 @@ ImageCache::QueryResult ImageCache::getImage(const QString& filename, QSize wind
 	return res;
 }
 
-void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size)
+void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size, double device_pixel_ratio)
 {
 	auto image_id = getUniqueImageID(filename, window_size);
 
@@ -280,8 +281,10 @@ void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size)
 	}
 
 	QSize original_size = image.size();
-	float ratio = std::min(window_size.width()  / static_cast<float>(image.width()),
+	window_size *= device_pixel_ratio;
+	float ratio = std::min(window_size.width() / static_cast<float>(image.width()),
 	                       window_size.height() / static_cast<float>(image.height()));
+
 	QSize new_size(image.width() * ratio, image.height() * ratio);
 
 	QImage resimage;
@@ -290,6 +293,7 @@ void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size)
 	} else {
 		resimage = image;
 	}
+	resimage.setDevicePixelRatio(device_pixel_ratio);
 	pdbg << "loaded" << (ratio < 1.0f ? "and resized" : "")
 	     << "image for" << filename.mid(filename.lastIndexOf('/')+1) << "/" << image_id << "of" << new_size;
 

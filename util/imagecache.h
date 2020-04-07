@@ -23,7 +23,7 @@
 /*!
  * \brief Threaded image prefetcher and resizer.
  *
- * Class \ref ImageCache provides multi-threaded image file preloading and resizing 
+ * Class \ref ImageCache provides multi-threaded image file preloading and resizing
  * to requested display size.
  *
  * After an image file has been added to cache, users can query if that file is
@@ -79,6 +79,7 @@ public:
 	 * \brief Schedule file for preloading with respect to \p window_size.
 	 * \param filename File to preload
 	 * \param window_size Used to determine the resulting size of image.
+	 * \param device_pixel_ratio Used to calculate image size with respect to Hi-DPI scaling.
 	 *
 	 * Schedules image load/resize task in a thread pool.
 	 *
@@ -87,10 +88,10 @@ public:
 	 *
 	 * \note Otherwise, the cache will be polluted with multiple versions of
 	 * the same image. Increasing the size generally requires complete reload
-	 * anyway (for image quality), so you should \ref clear() the cache on 
+	 * anyway (for image quality), so you should \ref clear() the cache on
 	 * any size change.
 	 */
-	void    addFile(const QString& filename, QSize window_size);
+	void    addFile(const QString& filename, QSize window_size, double device_pixel_ratio);
 
 	/*!
 	 * \brief Try to retrieve image from cache.
@@ -104,7 +105,7 @@ public:
 private:
 	friend struct LoadResizeImageTask;
 
-	void addFileThreadFunc(const QString & filename, QSize window_size);
+	void addFileThreadFunc(const QString & filename, QSize window_size, double dpr);
 	void setFileInvalid(uint64_t unique_id);
 	void insertResizedImage(uint64_t unique_id, QImage&& image, QSize original_size);
 
