@@ -44,6 +44,9 @@ public slots:
 	/// Collects the time taken to display animated image.
 	void movieLoadedDirectly(double time_ms);
 
+	/// Collects how many times tags were fetched and overall tag count.
+	void tagsFetched(int count_overall, int count_processed);
+
 	/// Displays dialog with all collected statistics.
 	void showStatsDialog();
 

@@ -18,25 +18,28 @@ namespace logging_category {Q_LOGGING_CATEGORY(stats, "Statistics")}
 #define pdbg qCDebug(logging_category::stats)
 #define pwarn qCWarning(logging_category::stats)
 
-#define SETT_STATISTICS         QStringLiteral("stats/enabled")
-#define NUM_TIMES_LAUNCHED      QStringLiteral("stats/num_times_launched")
-#define NUM_REVERSE_SEARCHED    QStringLiteral("stats/num_reverse_searched")
-#define NUM_FILES_OPENED        QStringLiteral("stats/num_files/opened")
-#define NUM_FILES_RENAMED       QStringLiteral("stats/num_files/renamed")
-#define NUM_TAGS_TOTAL          QStringLiteral("stats/num_tags/total")
-#define NUM_TAGS_MAX            QStringLiteral("stats/num_tags/maximum")
-#define NUM_TAGS_AVG            QStringLiteral("stats/num_tags/average")
-#define NUM_TAGS_TOTAL          QStringLiteral("stats/num_tags/total")
+#define SETT_STATISTICS            QStringLiteral("stats/enabled")
+#define NUM_TIMES_LAUNCHED         QStringLiteral("stats/num_times_launched")
+#define NUM_REVERSE_SEARCHED       QStringLiteral("stats/num_reverse_searched")
+#define NUM_TAG_FETCH_EVENTS       QStringLiteral("stats/num_tag_fetch_events")
+#define NUM_FILES_OPENED           QStringLiteral("stats/num_files/opened")
+#define NUM_FILES_RENAMED          QStringLiteral("stats/num_files/renamed")
+#define NUM_TAGS_TOTAL             QStringLiteral("stats/num_tags/total")
+#define NUM_TAGS_MAX               QStringLiteral("stats/num_tags/maximum")
+#define NUM_TAGS_AVG               QStringLiteral("stats/num_tags/average")
+#define NUM_TAGS_TOTAL             QStringLiteral("stats/num_tags/total")
+#define NUM_TAGS_FETCHED_OVERALL   QStringLiteral("stats/num_tags/fetched_overall")
+#define NUM_TAGS_FETCHED_PROCESSED QStringLiteral("stats/num_tags/fetched_processed")
 
-#define IMG_DIMENSIONS_SUM_W    QStringLiteral("stats/img_dimensions/sum/width")
-#define IMG_DIMENSIONS_SUM_H    QStringLiteral("stats/img_dimensions/sum/height")
-#define IMG_DIMENSIONS_MAX      QStringLiteral("stats/img_dimensions/max")
-#define IMG_DIMENSIONS_AVG      QStringLiteral("stats/img_dimensions/avg")
+#define IMG_DIMENSIONS_SUM_W       QStringLiteral("stats/img_dimensions/sum/width")
+#define IMG_DIMENSIONS_SUM_H       QStringLiteral("stats/img_dimensions/sum/height")
+#define IMG_DIMENSIONS_MAX         QStringLiteral("stats/img_dimensions/max")
+#define IMG_DIMENSIONS_AVG         QStringLiteral("stats/img_dimensions/avg")
 
-#define NUM_FILES_EXT           QStringLiteral("stats/num_files/extensions/%1")
-#define NUM_FILES_EXT_DIR       QStringLiteral("stats/num_files/extensions")
-#define TIME_SPENT              QStringLiteral("stats/time_spent_seconds")
-#define DATE_FIRST_LAUNCHED     QStringLiteral("stats/date_first_launched")
+#define NUM_FILES_EXT              QStringLiteral("stats/num_files/extensions/%1")
+#define NUM_FILES_EXT_DIR          QStringLiteral("stats/num_files/extensions")
+#define TIME_SPENT                 QStringLiteral("stats/time_spent_seconds")
+#define DATE_FIRST_LAUNCHED        QStringLiteral("stats/date_first_launched")
 
 TaggerStatistics &TaggerStatistics::instance()
 {
@@ -148,6 +151,18 @@ void TaggerStatistics::movieLoadedDirectly(double time_ms)
 	direct_movie_minmax.addSample(time_ms);
 }
 
+void TaggerStatistics::tagsFetched(int count_overall, int count_processed)
+{
+	auto events = m_settings.value(NUM_TAG_FETCH_EVENTS, 0ll).toLongLong();
+	m_settings.setValue(NUM_TAG_FETCH_EVENTS, events + 1);
+
+	auto overall = m_settings.value(NUM_TAGS_FETCHED_OVERALL, 0ll).toLongLong();
+	m_settings.setValue(NUM_TAGS_FETCHED_OVERALL, overall + count_overall);
+
+	auto processed = m_settings.value(NUM_TAGS_FETCHED_PROCESSED, 0ll).toLongLong();
+	m_settings.setValue(NUM_TAGS_FETCHED_PROCESSED, processed + count_processed);
+}
+
 void TaggerStatistics::showStatsDialog()
 {
 	auto time_spent = m_settings.value(TIME_SPENT, 0).toLongLong();
@@ -168,6 +183,9 @@ void TaggerStatistics::showStatsDialog()
 	const auto tags_total_s     = m_settings.value(NUM_TAGS_TOTAL, 0ll).toString();
 	const auto tags_max_s       = m_settings.value(NUM_TAGS_MAX, 0ll).toString();
 	const auto tags_avg_s       = m_settings.value(NUM_TAGS_AVG, 0ll).toString();
+	const auto tag_fetches      = m_settings.value(NUM_TAG_FETCH_EVENTS, 0ll).toString();
+	const auto tags_fetched_all = m_settings.value(NUM_TAGS_FETCHED_OVERALL, 0ll).toString();
+	const auto tags_fetchd_proc = m_settings.value(NUM_TAGS_FETCHED_PROCESSED, 0ll).toString();
 	const auto rev_searched_s   = m_settings.value(NUM_REVERSE_SEARCHED, 0).toString();
 	const auto files_opened_s   = QString::number(files_opened);
 
@@ -206,8 +224,10 @@ void TaggerStatistics::showStatsDialog()
 		     tags_max_s,	// 10
 		     tags_avg_s,	// 11
 		     first_launch_s,	// 12
-		     first_launch_dts	// 13
-		);
+		     first_launch_dts)	// 13
+		.arg(tag_fetches,	// 14
+		     tags_fetched_all,	// 15
+		     tags_fetchd_proc);	// 16
 
 	if(!m_settings.value(SETT_STATISTICS, true).toBool()) {
 		desc.append(tr("<br/><p><b>Note:</b> statistics collection is currently disabled. "

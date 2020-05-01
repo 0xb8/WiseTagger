@@ -215,6 +215,10 @@ void Tagger::fetchTags()
 
 void Tagger::tagsFetched(QString file, QString tags)
 {
+	// fetched usually have only single space separator
+	int overall_tags_count = tags.count(' ') + (tags.isEmpty() ? 0 : 1);
+	int processed_tags_count = 0;
+
 	// Current file might have already changed since reply came
 	if (currentFile() == file) {
 		TagEditState state;
@@ -223,7 +227,9 @@ void Tagger::tagsFetched(QString file, QString tags)
 
 		// Autofix imageboard tags before comparing and assigning
 		util::replace_special(tags);
-		tags = m_input.tag_parser().fixTags(state, tags, options).join(' ');
+		auto fixed_tags_list = m_input.tag_parser().fixTags(state, tags, options);
+		tags = fixed_tags_list.join(' ');
+		processed_tags_count = fixed_tags_list.size();
 
 		util::replace_special(tags);
 		auto current_tags = m_input.tags();
@@ -261,6 +267,8 @@ void Tagger::tagsFetched(QString file, QString tags)
 			}
 		}
 	}
+
+	TaggerStatistics::instance().tagsFetched(overall_tags_count, processed_tags_count);
 }
 
 //------------------------------------------------------------------------------

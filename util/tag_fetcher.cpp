@@ -79,9 +79,9 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 				auto tags = post.find("tags");
 				if (tags != post.end()) {
 
-					if (tags->isString())
+					if (tags->isString()) {
 						res = tags->toString();
-					else if (tags->isArray()) {
+					} else if (tags->isArray()) {
 						// parse sankaku API
 						auto arr = tags->toArray();
 						for (auto val : arr) {
@@ -92,7 +92,7 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 									if (!res.isEmpty()) {
 										res.append(' ');
 									}
-									res.append(tag->toString());
+									res.append(tag->toString().replace(' ', '_'));
 								}
 							}
 						}
