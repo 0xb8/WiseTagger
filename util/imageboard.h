@@ -36,7 +36,7 @@ namespace detail {
 		string_t	post_meta_url;
 	};
 
-	const std::array<imageboard_tag,6> imageboard_tags = {
+	const std::array<imageboard_tag,10> imageboard_tags = {
 		imageboard_tag {
 			IB_STRING_LITERAL("yande.re"),
 			IB_STRING_LITERAL("yandere_"),
@@ -54,34 +54,62 @@ namespace detail {
 		imageboard_tag {
 			IB_STRING_LITERAL("dbru.com"), // 2010 suggestion, not implemented
 			IB_STRING_LITERAL("danbooru_"),
-			IB_STRING_LITERAL("danbooru.donmai.us -"),
+			IB_STRING_LITERAL("danbooru.donmai.us"),
 			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1"),
 			IB_STRING_LITERAL("https://danbooru.donmai.us/posts/%1.json") // FIXME: somewhy returns JSON-object with "tag_string" on browser yet replies nothing to WiseTagger
 		},
 		imageboard_tag {
 			IB_STRING_LITERAL("drawfriends"),
 			IB_STRING_LITERAL("drawfriends_"),
-			IB_STRING_LITERAL("drawfriends"),
+			IB_STRING_LITERAL("drawfriends.booru.org"),
 			IB_STRING_LITERAL("https://drawfriends.booru.org/index.php?page=post&s=view&id=%1"),
 			IB_STRING_LITERAL("") // FIXME: dirty stub, drawfiends have API disabled
 		},
 		imageboard_tag {
 			IB_STRING_LITERAL("pixiv"),
 			IB_STRING_LITERAL("pixiv_"),
-			IB_STRING_LITERAL("pixiv"),
+			IB_STRING_LITERAL("pixiv.net"),
 			IB_STRING_LITERAL("https://www.pixiv.net/artworks/%1"),
 			IB_STRING_LITERAL("https://public-api.secure.pixiv.net/v1/works/%1.json") // TODO: requires oauth, so this is just a stub - see https://github.com/tombfix/core/commit/4a00148 & https://danbooru.donmai.us/wiki_pages/help:pixiv_api
 		},
 		imageboard_tag {
 			IB_STRING_LITERAL("deviantart"),
-			IB_STRING_LITERAL("deviant_"),
-			IB_STRING_LITERAL("deviantart.com - "),
-			IB_STRING_LITERAL("https://www.deviantart.com/view/%1"),
+			IB_STRING_LITERAL("deviantart_"),
+			IB_STRING_LITERAL("deviantart.com"),
+			IB_STRING_LITERAL("https://fav.me/%1"), //fav.me is usually used with shortened alphanumeric urls (ex. ddow5qh → 827871497), but strangely, decoded ones are accepted too. In any case, https://www.deviantart.com/view/%1 would deal with numeric
 			IB_STRING_LITERAL("https://www.deviantart.com/api/v1/oauth2/deviation/metadata?deviationids%5B%5D=4A30FF08-3703-3034-C875-C901845E6184&ext_submission=false&ext_camera=false&ext_stats=false&ext_collection=false&mature_content=true")
 			/* TODO: To connect to this endpoint, you need an Oauth2 Access Token - see https://www.deviantart.com/developers/authentication
 				%1 (deviation_id) won't work here - one needs to know UUID - see https://stackoverflow.com/questions/28581350/obtain-deviantart-deviation-id-uuid-from-page-url
 				Currently shown 4A30FF08-3703-3034-C875-C901845E6184 is a stub - ID 827871497. On success the endpoint provides JSON object metadata with sub-array tags
 			*/
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("artstation"),
+			IB_STRING_LITERAL("artstation_"),
+			IB_STRING_LITERAL("artstation.com"),
+			IB_STRING_LITERAL("https://www.artstation.com/artwork/%1"), //FIXME: artstation uniqueIDs are case-sensitive alphanumeric, probably won't work with current implementation
+			IB_STRING_LITERAL("")
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("hentai-foundry"),
+			IB_STRING_LITERAL("hfoundry_"),
+			IB_STRING_LITERAL("hentai-foundry.com"),
+			IB_STRING_LITERAL("https://www.hentai-foundry.com/pictures/%1"),
+			IB_STRING_LITERAL("")
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("medicalwhiskey"),
+			IB_STRING_LITERAL("medicalwhiskey_"),
+			IB_STRING_LITERAL("medicalwhiskey.com"),
+			IB_STRING_LITERAL("http://medicalwhiskey.com/?p=%1"),
+			IB_STRING_LITERAL("")
+		},
+		imageboard_tag {
+			IB_STRING_LITERAL("vidyart"),
+			IB_STRING_LITERAL("vidyart_"),
+			IB_STRING_LITERAL("vidyart.booru.org"),
+			IB_STRING_LITERAL("https://vidyart.booru.org/index.php?page=post&s=view&id=%1"),
+			IB_STRING_LITERAL("")
 		}
 	};
 
