@@ -112,6 +112,8 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_view_sort_type(  tr("By File &Type"), nullptr)
 	, a_view_sort_date(  tr("By Modification &Date"), nullptr)
 	, a_view_sort_size(  tr("By File &Size"), nullptr)
+	, a_play_pause(      tr("Play/Pause"))
+	, a_play_mute(       tr("Mute"))
 	, a_about(           tr("&About..."), nullptr)
 	, a_about_qt(        tr("About &Qt..."), nullptr)
 	, a_help(            tr("&Help..."), nullptr)
@@ -120,6 +122,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, menu_file(         tr("&File"))
 	, menu_navigation(   tr("&Navigation"))
 	, menu_view(         tr("&View"))
+	, menu_play(         tr("&Play"))
 	, menu_sort(         tr("&Sort Queue"))
 	, menu_options(      tr("&Options"))
 	, menu_commands(     tr("&Commands"))
@@ -150,11 +153,17 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 //------------------------------------------------------------------------------
 void Window::fileOpenDialog()
 {
+
+	const auto supported_image_formats = util::supported_image_formats_namefilter();
+	const auto supported_video_formats = util::supported_video_formats_namefilter();
+
 	auto fileNames = QFileDialog::getOpenFileNames(this,
 		tr("Open File"),
 		m_last_directory,
-		tr("Image Files (%1)")
-			.arg(util::join(util::supported_image_formats_namefilter())));
+		tr("All Supported Files (%1);;Image Files (%2);;Video Files (%3)")
+			.arg(util::join(supported_image_formats + supported_video_formats))
+			.arg(util::join(supported_image_formats))
+			.arg(util::join(supported_video_formats)));
 
 	if(fileNames.size() == 1) {
 		m_tagger.open(fileNames.first());
@@ -230,13 +239,27 @@ void Window::updateWindowTitle()
 			.arg(qApp->applicationVersion()));
 		return;
 	}
-	setWindowTitle(tr(Window::MainWindowTitle).arg(
-		m_tagger.currentFileName(),
-		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
-		QString::number(m_tagger.mediaDimensions().width()),
-		QString::number(m_tagger.mediaDimensions().height()),
-		util::size::printable(m_tagger.mediaFileSize()),
-		qApp->applicationVersion()));
+
+	const auto media_dimensions = m_tagger.mediaDimensions();
+
+	if (m_tagger.mediaIsVideo() || m_tagger.mediaIsAnimatedImage()) {
+		setWindowTitle(tr(Window::MainWindowTitleFrameRate).arg(
+			m_tagger.currentFileName(),
+			m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+			QString::number(media_dimensions.width()),
+			QString::number(media_dimensions.height()),
+			util::size::printable(m_tagger.mediaFileSize()),
+			qApp->applicationVersion(),
+			QString::number(m_tagger.mediaFramerate(), 'g', 2)));
+	} else {
+		setWindowTitle(tr(Window::MainWindowTitle).arg(
+			m_tagger.currentFileName(),
+			m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+			QString::number(media_dimensions.width()),
+			QString::number(media_dimensions.height()),
+			util::size::printable(m_tagger.mediaFileSize()),
+			qApp->applicationVersion()));
+	}
 }
 
 void Window::updateWindowTitleProgress(int progress)
@@ -455,6 +478,13 @@ void Window::showEvent(QShowEvent *e)
 	// NOTE: workaround for taskbar button not working.
 	m_win_taskbar_button.setWindow(this->windowHandle());
 #endif
+	m_tagger.playMedia();
+	e->accept();
+}
+
+void Window::hideEvent(QHideEvent *e)
+{
+	m_tagger.pauseMedia();
 	e->accept();
 }
 
@@ -748,6 +778,8 @@ void Window::createActions()
 	a_hide.setShortcutContext(Qt::WidgetShortcut);
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
+	a_play_pause.setShortcut(   QKeySequence(Qt::Key_Space));
+	a_play_mute.setShortcut(    QKeySequence(Qt::Key_M));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
 
 	a_open_post.setStatusTip(     tr("Open imageboard post of this image."));
@@ -768,6 +800,8 @@ void Window::createActions()
 	a_view_minimal.setCheckable(true);
 	a_view_menu.setCheckable(true);
 	a_view_input.setCheckable(true);
+	a_play_pause.setCheckable(true);
+	a_play_mute.setCheckable(true);
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
@@ -828,7 +862,7 @@ void Window::createActions()
 	});
 	connect(&a_save_file,   &QAction::triggered, this, [this]()
 	{
-		m_tagger.rename();
+		m_tagger.rename(Tagger::RenameOption::ReopenFile);
 	});
 	connect(&a_next_file,   &QAction::triggered, this, [this]()
 	{
@@ -906,6 +940,8 @@ void Window::createActions()
 		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
 		this->m_tagger.setInputVisible(checked);
 	});
+	connect(&a_play_pause, &QAction::triggered, &m_tagger, &Tagger::setMediaPlaying);
+	connect(&a_play_mute, &QAction::triggered, &m_tagger, &Tagger::setMediaMuted);
 	connect(&a_save_session, &QAction::triggered, this, [this]()
 	{
 		auto filename = QFileDialog::getSaveFileName(this,
@@ -1126,6 +1162,10 @@ void Window::createMenus()
 	add_separator(menu_view);
 	menu_view.addMenu(&menu_sort);
 
+	// Play menu actions
+	add_action(menu_play, a_play_pause);
+	add_action(menu_play, a_play_mute);
+
 	// Sort menu actions
 	add_action(menu_sort, a_view_sort_name);
 	add_action(menu_sort, a_view_sort_type);
@@ -1183,7 +1223,7 @@ void Window::createMenus()
 	menuBar()->addMenu(&menu_file);
 	menuBar()->addMenu(&menu_navigation);
 	menuBar()->addMenu(&menu_view);
-	menuBar()->addMenu(&menu_commands);
+	a_menu_commands_action = menuBar()->addMenu(&menu_commands);
 	menuBar()->addMenu(&menu_options);
 	menuBar()->addMenu(&menu_help);
 	menuBar()->addSeparator();
@@ -1220,6 +1260,23 @@ void Window::updateMenus()
 	for(auto action : menu_commands.actions()) {
 		action->setDisabled(val);
 	}
+
+	bool is_playable = m_tagger.mediaIsVideo() || m_tagger.mediaIsAnimatedImage();
+	if (is_playable) {
+		// create play menu if needed
+		if (!a_menu_play_action) {
+			a_menu_play_action = menuBar()->insertMenu(a_menu_commands_action, &menu_play);
+		}
+	} else {
+		// remove play menu if needed
+		if (a_menu_play_action) {
+			menuBar()->removeAction(a_menu_play_action);
+			a_menu_play_action = nullptr;
+		}
+	}
+
+	a_play_pause.setEnabled(!val && is_playable);
+	a_play_mute.setEnabled(!val && m_tagger.mediaIsVideo());
 
 	val = m_tagger.hasTagFile();
 	a_reload_tags.setEnabled(val);

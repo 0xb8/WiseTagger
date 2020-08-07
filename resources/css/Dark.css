@@ -5,7 +5,7 @@
  * published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
  */
 
-QMainWindow, #Tagger > QFrame {
+QMainWindow, #Tagger > QFrame, QVideoWidget {
     background-color: #232323;
     color: #eee;
 }

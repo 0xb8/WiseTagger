@@ -22,6 +22,10 @@
 #include <QBasicTimer>
 #include <memory>
 
+#include <QtMultimediaWidgets/QVideoWidget>
+#include <QtMultimedia/QMediaPlayer>
+#include <QtMultimedia/QMediaPlaylist>
+
 #include "util/unordered_map_qt.h"
 #include "util/tag_fetcher.h"
 #include "picture.h"
@@ -72,7 +76,8 @@ public:
 	enum class RenameOption
 	{
 		NoOption    = 0x0,  ///< Default UI behavior.
-		ForceRename = 0x1   ///< Force rename - do not show rename dialog.
+		ForceRename = 0x1,  ///< Force rename - do not show rename dialog.
+		ReopenFile  = 0x2   ///< Reopen this file after renaming.
 	};
 	using RenameOptions = QFlags<RenameOption>;
 	Q_FLAG(RenameOptions)
@@ -114,8 +119,17 @@ public:
 	/// Are tag file(s) present.
 	bool    hasTagFile() const;
 
+	/// Is current media a video.
+	bool    mediaIsVideo() const;
+
+	/// Is current media an animated image, eg. a GIF.
+	bool    mediaIsAnimatedImage() const;
+
 	/// Dimensions of current media.
 	QSize   mediaDimensions() const;
+
+	/// Framerate of current media. 0 if not a video.
+	float   mediaFramerate() const;
 
 	/// File size of current media.
 	size_t  mediaFileSize()     const;
@@ -168,6 +182,18 @@ public slots:
 
 	/// Update configuration from QSettings.
 	void updateSettings();
+
+	/// Pause media playback.
+	void pauseMedia();
+
+	/// Resume media playback.
+	void playMedia();
+
+	/// Set media playback state (playing/paused).
+	void setMediaPlaying(bool playing);
+
+	/// Set media mute state.
+	void setMediaMuted(bool muted);
 
 signals:
 	/// Emitted when media file has been successfully opened.
@@ -225,6 +251,9 @@ private:
 	void reloadTagsContents();
 	bool loadCurrentFile();
 	bool loadFile(size_t index, bool silent = false);
+	bool loadVideo(const QFileInfo& file);
+	void hideVideo();
+	void stopVideo();
 	void updateNewTagsCounts();
 	void clear();
 	void tagsFetched(QString file, QString tags);
@@ -234,13 +263,17 @@ private:
 	QVBoxLayout m_main_layout;
 	QVBoxLayout m_tag_input_layout;
 
-	QFrame      m_separator;
-	Picture     m_picture;
-	TagInput    m_input;
-	TagFetcher  m_fetcher;
-	QBasicTimer m_hide_request_timer;
+	QFrame       m_separator;
+	Picture      m_picture;
+	QVideoWidget m_video;
+	TagInput     m_input;
+	TagFetcher   m_fetcher;
+	QBasicTimer  m_hide_request_timer;
 
 	FileQueue   m_file_queue;
+	QMediaPlaylist m_playlist;
+	QMediaPlayer m_player;
+
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
 	QString     m_temp_tags;

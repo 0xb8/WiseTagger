@@ -38,7 +38,8 @@ Tagger::Tagger(QWidget *_parent) :
 {
 	installEventFilter(_parent);
 	m_picture.installEventFilter(_parent);
-	m_file_queue.setNameFilter(util::supported_image_formats_namefilter());
+	m_file_queue.setNameFilter(util::supported_image_formats_namefilter() +
+	                           util::supported_video_formats_namefilter());
 
 	m_main_layout.setMargin(0);
 	m_main_layout.setSpacing(0);
@@ -47,10 +48,15 @@ Tagger::Tagger(QWidget *_parent) :
 
 	m_separator.setFrameStyle(QFrame::HLine | QFrame::Sunken);
 	m_main_layout.addWidget(&m_picture);
+	m_main_layout.addWidget(&m_video);
 	m_main_layout.addWidget(&m_separator);
 	m_main_layout.addLayout(&m_tag_input_layout);
 	setLayout(&m_main_layout);
 	setAcceptDrops(true);
+
+	m_playlist.setPlaybackMode(QMediaPlaylist::PlaybackMode::CurrentItemInLoop);
+	m_player.setPlaylist(&m_playlist);
+	m_player.setVideoOutput(&m_video);
 
 	setObjectName(QStringLiteral("Tagger"));
 	m_input.setObjectName(QStringLiteral("Input"));
@@ -65,12 +71,28 @@ Tagger::Tagger(QWidget *_parent) :
 		TaggerStatistics::instance().fileOpened(file, m_picture.mediaSize());
 	});
 	connect(&m_fetcher, &TagFetcher::ready, this, &Tagger::tagsFetched);
+	connect(&m_player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), this, [this](QMediaPlayer::Error) {
+		hideVideo();
+		QMessageBox::critical(this,
+			tr("Error opening media"),
+			tr("<p>Could not open <b>%1</b></p>"
+			   "<p>File format is not supported or file corrupted.</p>"
+		           "<p>Media player error: %2</p>")
+				.arg(currentFileName()).arg(m_player.errorString()));
+	});
+	connect(&m_player, &QMediaPlayer::metaDataAvailableChanged, this, [this](bool){
+		emit fileOpened(currentFile());
+	});
+
+
 	updateSettings();
 	setFocusPolicy(Qt::ClickFocus);
+	clear();
 }
 
 void Tagger::clear()
 {
+	hideVideo();
 	m_file_queue.clear();
 	m_picture.clear();
 	m_picture.cache.clear();
@@ -190,6 +212,9 @@ void Tagger::deleteCurrentFile()
 	const auto reply = delete_msgbox.exec();
 
 	if(reply == QMessageBox::Save) {
+		if (mediaIsVideo()) {
+			hideVideo();
+		}
 		if(!m_file_queue.deleteCurrentFile()) {
 			QMessageBox::warning(this,
 				tr("Could not delete file"),
@@ -312,9 +337,42 @@ bool Tagger::hasTagFile() const
 	return m_input.hasTagFile();
 }
 
+bool Tagger::mediaIsVideo() const
+{
+	return !m_playlist.isEmpty();
+}
+
+bool Tagger::mediaIsAnimatedImage() const
+{
+	return m_picture.movie() != nullptr;
+}
+
 QSize Tagger::mediaDimensions() const
 {
+	if (mediaIsVideo()) {
+		if (m_player.isMetaDataAvailable()) {
+			return m_player.metaData("Resolution").toSize();
+		}
+	}
+
 	return m_picture.mediaSize();
+}
+
+float Tagger::mediaFramerate() const
+{
+	if (mediaIsVideo()) {
+		if (m_player.isMetaDataAvailable()) {
+			return m_player.metaData("VideoFrameRate").toFloat();
+		}
+	}
+
+	if (mediaIsAnimatedImage()) {
+		auto delay = m_picture.movie()->nextFrameDelay();
+		if (delay > 0.0f)
+			return 1000.0f / delay;
+	}
+
+	return 0.0f;
 }
 
 size_t Tagger::mediaFileSize() const
@@ -362,6 +420,39 @@ void Tagger::updateSettings()
 	m_picture.cache.setMemoryLimitKiB(s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024);
 	m_picture.cache.setMaxConcurrentTasks(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2);
 }
+
+void Tagger::pauseMedia()
+{
+	if (mediaIsVideo())
+		m_player.pause();
+
+	if (mediaIsAnimatedImage())
+		m_picture.movie()->setPaused(true);
+}
+
+void Tagger::setMediaPlaying(bool playing)
+{
+	if (playing)
+		playMedia();
+	else
+		pauseMedia();
+}
+
+void Tagger::playMedia()
+{
+	if (mediaIsVideo())
+		m_player.play();
+
+	if (mediaIsAnimatedImage())
+		m_picture.movie()->setPaused(false);
+}
+
+void Tagger::setMediaMuted(bool muted)
+{
+	if (mediaIsVideo())
+		m_player.setMuted(muted);
+}
+
 
 void Tagger::keyPressEvent(QKeyEvent * e)
 {
@@ -639,19 +730,72 @@ bool Tagger::loadFile(size_t index, bool silent)
 		return false;
 	}
 
-	if(!m_picture.loadMedia(f.absoluteFilePath())) {
-		QMessageBox::critical(this,
-			tr("Error opening media"),
-			tr("<p>Could not open <b>%1</b></p>"
-			   "<p>File format is not supported or file corrupted.</p>")
-				.arg(f.fileName()));
-		return false;
+	if (QDir::match(util::supported_video_formats_namefilter(), f.fileName())) {
+
+		if (!loadVideo(f))
+			return false;
+
+	} else {
+		hideVideo();
+		if(!m_picture.loadMedia(f.absoluteFilePath())) {
+			QMessageBox::critical(this,
+				tr("Error opening media"),
+				tr("<p>Could not open <b>%1</b></p>"
+				   "<p>File format is not supported or file corrupted.</p>")
+					.arg(f.fileName()));
+			return false;
+		}
 	}
 
 	m_input.setText(f.completeBaseName());
 	findTagsFiles();
 	setFocus(Qt::MouseFocusReason);
 	return true;
+}
+
+bool Tagger::loadVideo(const QFileInfo & file)
+{
+	const auto abs_path = file.absoluteFilePath();
+
+#ifdef Q_OS_WIN
+	if (abs_path.length() >= 260) { // video files cannot be played on windows if file path is too long
+		QMessageBox::critical(this,
+			tr("Error opening media"),
+			tr("<p>Could not open <b>%1</b></p>"
+			   "<p>File path is too long: %2 characters, max 259.</p>")
+				.arg(file.fileName())
+				.arg(abs_path.length()));
+		return false;
+	}
+#endif
+	stopVideo();
+	bool res = m_playlist.addMedia(QUrl::fromLocalFile(abs_path));
+	if (!res) {
+		QMessageBox::critical(this,
+			tr("Error opening media"),
+			tr("<p>Could not open <b>%1</b></p>"
+			   "<p>Could not add media to playlist.</p>")
+				.arg(file.fileName()));
+		return false;
+	}
+
+	m_picture.hide();
+	m_video.show();
+	m_player.play();
+	return true;
+}
+
+void Tagger::hideVideo()
+{
+	stopVideo();
+	m_video.hide();
+	m_picture.show();
+}
+
+void Tagger::stopVideo()
+{
+	m_player.stop();
+	m_playlist.clear();
 }
 
 /* just load picture into tagger */
@@ -668,7 +812,7 @@ bool Tagger::loadCurrentFile()
 		clear();
 		return false;
 	}
-	emit fileOpened(m_file_queue.current());
+	emit fileOpened(currentFile());
 	findTagsFiles();
 
 	if(m_file_queue.size() < 2)
@@ -685,7 +829,13 @@ bool Tagger::loadCurrentFile()
 		if(i == 0)
 			continue;
 		auto idx = ptrdiff_t(m_file_queue.currentIndex())+i;
-		m_picture.cache.addFile(m_file_queue.nth(idx), m_picture.size(), m_picture.devicePixelRatioF());
+
+		auto filepath = m_file_queue.nth(idx);
+		if (QDir::match(util::supported_image_formats_namefilter(),
+		                QFileInfo(filepath).fileName())) {
+
+			m_picture.cache.addFile(filepath, m_picture.size(), m_picture.devicePixelRatioF());
+		}
 	}
 
 	return true;
@@ -734,6 +884,20 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 
 	new_file_path = QFileInfo(QDir(file.canonicalPath()), new_file_path).filePath();
 
+#ifdef Q_OS_WIN
+	if (mediaIsVideo()) { // video files cannot be played on windows if file path is too long
+		if (new_file_path.length() >= 260) {
+			QMessageBox::critical(this,
+				tr("Error opening media"),
+				tr("<p>Could not open <b>%1</b></p>"
+				   "<p>File path is too long: %2 characters, max 259.</p>")
+					.arg(filename)
+					.arg(new_file_path.length()));
+			return RenameStatus::Cancelled;
+		}
+	}
+#endif
+
 	if(new_file_path == m_file_queue.current() || m_input.text().isEmpty())
 		return RenameStatus::Failed;
 
@@ -751,11 +915,23 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	int reply;
 	if(options.testFlag(RenameOption::ForceRename) || (reply = renameMessageBox.exec()) == QMessageBox::Save ) {
 
+		const bool media_is_video = mediaIsVideo();
+		if(media_is_video) {
+			// Unlike images, the whole video file is NOT loaded into memory, so we have to stop playback
+			// to rename video file on windows.
+			// TODO: don't stop playback on linux.
+			stopVideo();
+		}
+
 		auto result = m_file_queue.renameCurrentFile(new_file_path);
 
 		switch (result) {
 		case FileQueue::RenameResult::SourceFileMissing:
 		case FileQueue::RenameResult::GenericFailure:
+			// see above comment; restart playback.
+			if (media_is_video) {
+				loadVideo(currentFile());
+			}
 
 			QMessageBox::warning(this,
 				tr("Could not rename file"),
@@ -763,9 +939,14 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 				   "<p>File may have been renamed or removed by another application, "
 				   "file with this name may already exist in the current directory or exceed the character limit.</p>")
 					.arg(file.fileName()));
+
 			return RenameStatus::Failed;
 
 		case FileQueue::RenameResult::TargetFileExists:
+			// see above comment; restart playback.
+			if (media_is_video) {
+				loadVideo(currentFile());
+			}
 
 			QMessageBox::critical(this,
 				tr("Cannot rename file"),
@@ -773,11 +954,16 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 				   "<p>File with this name already exists in <b>%2</b></p>"
 				   "<p>Please change some of your tags.</p>")
 					.arg(file.fileName(), file.canonicalPath()));
+
 			return RenameStatus::Cancelled;
 
 		case FileQueue::RenameResult::Success:
 			if(settings.value(QStringLiteral("track-added-tags"), true).toBool()) {
 				updateNewTagsCounts();
+			}
+			// see above comment; restart playback if necessary.
+			if (media_is_video && options.testFlag(RenameOption::ReopenFile)) {
+				loadVideo(currentFile());
 			}
 			emit fileRenamed(m_input.text());
 			return RenameStatus::Renamed;

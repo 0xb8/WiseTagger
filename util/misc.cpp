@@ -142,7 +142,7 @@ bool util::restore_settings_from_file(const QString & path)
 
 QStringList util::supported_image_formats_namefilter()
 {
-	static thread_local QStringList ret;
+	static QStringList ret;
 	if(ret.isEmpty()) {
 		QString tmp;
 		for(auto& ext : QImageReader::supportedImageFormats()) {
@@ -156,6 +156,28 @@ QStringList util::supported_image_formats_namefilter()
 			tmp.append(ext);
 			ret.push_back(tmp);
 		}
+	}
+	return ret;
+}
+
+QStringList util::supported_video_formats_namefilter()
+{
+	static QStringList ret;
+	if(ret.isEmpty()) {
+		ret.push_back(QStringLiteral("*.avi"));
+		ret.push_back(QStringLiteral("*.mp4"));
+		ret.push_back(QStringLiteral("*.m4v"));
+		ret.push_back(QStringLiteral("*.mkv"));
+		ret.push_back(QStringLiteral("*.webm"));
+		ret.push_back(QStringLiteral("*.wmv"));
+		ret.push_back(QStringLiteral("*.3gp"));
+		ret.push_back(QStringLiteral("*.mov"));
+		ret.push_back(QStringLiteral("*.mpg"));
+		ret.push_back(QStringLiteral("*.mpeg"));
+		ret.push_back(QStringLiteral("*.mpe"));
+		ret.push_back(QStringLiteral("*.ts"));
+		ret.push_back(QStringLiteral("*.flv"));
+		ret.push_back(QStringLiteral("*.f4v"));
 	}
 	return ret;
 }

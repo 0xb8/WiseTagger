@@ -50,6 +50,9 @@ QIcon                   get_icon_from_executable(const QString& path);
 /// All supported image formats filter list
 QStringList             supported_image_formats_namefilter();
 
+/// All supported video formats filter list
+QStringList             supported_video_formats_namefilter();
+
 /// Guessed image format for \p filename
 QByteArray              guess_image_format(const QString& filename);
 

@@ -79,6 +79,7 @@ protected:
 	bool eventFilter(QObject*, QEvent *) override;
 	void closeEvent(QCloseEvent*) override;
 	void showEvent(QShowEvent*) override;
+	void hideEvent(QHideEvent*) override;
 
 private slots:
 	void fileOpenDialog();
@@ -103,6 +104,7 @@ private:
 	void hideNotificationsMenu();
 
 	static constexpr const char* MainWindowTitle = "%1%2 [%3x%4] (%5)  –  " TARGET_PRODUCT " v%6";
+	static constexpr const char* MainWindowTitleFrameRate = "%1%2 [%3x%4, %7 FPS] (%5)  –  " TARGET_PRODUCT " v%6";
 	static constexpr const char* MainWindowTitleEmpty = TARGET_PRODUCT " v%1";
 	static constexpr const char* MainWindowTitleProgress = "%7%  –  %1%2 [%3x%4] (%5)  –  " TARGET_PRODUCT " v%6";
 
@@ -148,15 +150,21 @@ private:
 	QAction a_view_sort_type;
 	QAction a_view_sort_date;
 	QAction a_view_sort_size;
+	QAction a_play_pause;
+	QAction a_play_mute;
 	QAction a_about;
 	QAction a_about_qt;
 	QAction a_help;
 	QAction a_stats;
 	QActionGroup ag_sort_criteria;
 
+	QAction* a_menu_commands_action = nullptr;
+	QAction* a_menu_play_action = nullptr;
+
 	QMenu menu_file;
 	QMenu menu_navigation;
 	QMenu menu_view;
+	QMenu menu_play;
 	QMenu menu_sort;
 	QMenu menu_options;
 	QMenu menu_commands;
