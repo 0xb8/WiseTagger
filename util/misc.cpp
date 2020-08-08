@@ -12,6 +12,7 @@
 #include <QImageReader>
 #include <QSettings>
 #include <QMetaEnum>
+#include <stdexcept>
 #include "misc.h"
 #include "size.h"
 
