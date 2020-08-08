@@ -125,6 +125,9 @@ public:
 	/// Is current media an animated image, eg. a GIF.
 	bool    mediaIsAnimatedImage() const;
 
+	/// Is current media playing.
+	bool    mediaIsPlaying() const;
+
 	/// Dimensions of current media.
 	QSize   mediaDimensions() const;
 
@@ -280,6 +283,8 @@ private:
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
 	unsigned    m_overall_new_tag_counts = 0u;
+
+	bool        m_media_muted = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Tagger::RenameOptions)

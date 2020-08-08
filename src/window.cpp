@@ -60,6 +60,8 @@ namespace logging_category {
 #define SETT_STYLE              QStringLiteral("window/style")
 #define SETT_VIEW_MODE          QStringLiteral("window/view-mode")
 
+#define SETT_PLAY_MUTE          QStringLiteral("window/video_mute")
+
 #define SETT_REPLACE_TAGS       QStringLiteral("imageboard/replace-tags")
 #define SETT_RESTORE_TAGS       QStringLiteral("imageboard/restore-tags")
 #define SETT_FORCE_AUTHOR_FIRST	QStringLiteral("imageboard/force-author-first")
@@ -544,6 +546,9 @@ void Window::initSettings()
 	a_view_menu.setChecked(show_menu);
 	a_view_input.setChecked(show_input);
 
+	a_play_mute.setChecked(sett.value(SETT_PLAY_MUTE, false).toBool());
+	m_tagger.setMediaMuted(a_play_mute.isChecked());
+
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
@@ -941,7 +946,10 @@ void Window::createActions()
 		this->m_tagger.setInputVisible(checked);
 	});
 	connect(&a_play_pause, &QAction::triggered, &m_tagger, &Tagger::setMediaPlaying);
-	connect(&a_play_mute, &QAction::triggered, &m_tagger, &Tagger::setMediaMuted);
+	connect(&a_play_mute, &QAction::triggered, this, [this](bool checked) {
+		QSettings s; s.setValue(SETT_PLAY_MUTE, checked);
+		m_tagger.setMediaMuted(checked);
+	});
 	connect(&a_save_session, &QAction::triggered, this, [this]()
 	{
 		auto filename = QFileDialog::getSaveFileName(this,
@@ -1267,6 +1275,8 @@ void Window::updateMenus()
 		if (!a_menu_play_action) {
 			a_menu_play_action = menuBar()->insertMenu(a_menu_commands_action, &menu_play);
 		}
+		// video plays by default on new file open
+		a_play_pause.setChecked(m_tagger.mediaIsPlaying());
 	} else {
 		// remove play menu if needed
 		if (a_menu_play_action) {

@@ -347,6 +347,17 @@ bool Tagger::mediaIsAnimatedImage() const
 	return m_picture.movie() != nullptr;
 }
 
+bool Tagger::mediaIsPlaying() const
+{
+	if (mediaIsVideo()) {
+		return m_player.state() == QMediaPlayer::State::PlayingState;
+	}
+	if (mediaIsAnimatedImage()) {
+		return m_picture.movie()->state() == QMovie::MovieState::Running;
+	}
+	return false;
+}
+
 QSize Tagger::mediaDimensions() const
 {
 	if (mediaIsVideo()) {
@@ -440,17 +451,22 @@ void Tagger::setMediaPlaying(bool playing)
 
 void Tagger::playMedia()
 {
-	if (mediaIsVideo())
+	if (mediaIsVideo()) {
+		m_player.setMuted(m_media_muted);
 		m_player.play();
+	}
 
-	if (mediaIsAnimatedImage())
+	if (mediaIsAnimatedImage()) {
 		m_picture.movie()->setPaused(false);
+	}
 }
 
 void Tagger::setMediaMuted(bool muted)
 {
 	if (mediaIsVideo())
 		m_player.setMuted(muted);
+
+	m_media_muted = muted;
 }
 
 
@@ -781,7 +797,7 @@ bool Tagger::loadVideo(const QFileInfo & file)
 
 	m_picture.hide();
 	m_video.show();
-	m_player.play();
+	playMedia();
 	return true;
 }
 
