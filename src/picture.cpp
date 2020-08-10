@@ -158,8 +158,12 @@ bool Picture::hasAlpha() const
 
 void Picture::resizeMedia()
 {
-	m_widget_size.setWidth( std::min(int(size().width() * devicePixelRatioF()),  m_media_size.width()));
-	m_widget_size.setHeight(std::min(int(size().height() * devicePixelRatioF()), m_media_size.height()));
+	// Pixmaps use separate scaling factor set when loading image, so we compensate here to be pixel-perfect.
+	// GIFs don't have such scaling (and thus are not actually pixel-perfect), hence this check.
+	const float device_pixel_ratio = (m_type == Type::Image) ? devicePixelRatioF() : 1.0f;
+
+	m_widget_size.setWidth( std::min(int(size().width() * device_pixel_ratio),  m_media_size.width()));
+	m_widget_size.setHeight(std::min(int(size().height() * device_pixel_ratio), m_media_size.height()));
 	float ratio = std::min(m_widget_size.width()  / static_cast<float>(m_media_size.width()),
 	                       m_widget_size.height() / static_cast<float>(m_media_size.height()));
 	m_widget_size = QSize(m_media_size.width() * ratio, m_media_size.height() * ratio);
