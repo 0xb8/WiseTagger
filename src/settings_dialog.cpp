@@ -54,7 +54,7 @@
 #define D_PROXY_HOST    QStringLiteral("")
 #define D_PROXY_PORT    9050
 #define D_PROXY_PROTO   QStringLiteral("SOCKS5")
-#define D_PRELOAD       false
+#define D_PRELOAD       true
 #define D_PRELOAD_CNT   std::max(QThread::idealThreadCount() / 2, 1)
 #define D_PRELOAD_MEM   64
 

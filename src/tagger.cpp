@@ -835,7 +835,7 @@ bool Tagger::loadCurrentFile()
 		return true;
 
 	QSettings s;
-	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), false).toBool())
+	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), true).toBool())
 		return true;
 
 	int preloadcount = abs(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
