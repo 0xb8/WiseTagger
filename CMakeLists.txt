@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.4)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(APP_VERSION "0.5.7")
+set(APP_VERSION "0.5.8")
 set(TARGET_PRODUCT "WiseTagger")
 set(TARGET_COMPANY "catgirl")
 
@@ -55,13 +55,13 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 	target_compile_options(WiseTagger PRIVATE -Wall -Wextra)
 endif()
 
-set_target_properties(WiseTagger PROPERTIES 
+set_target_properties(WiseTagger PROPERTIES
 	CXX_STANDARD 14
 	CXX_STANDARD_REQUIRED ON
 	CXX_EXTENSIONS OFF
 )
 
-install(TARGETS WiseTagger 
+install(TARGETS WiseTagger
 	RUNTIME DESTINATION bin
 )
 

@@ -2,8 +2,8 @@
 [Setup]
 AppName=WiseTagger
 AppCopyright=Copyright (C) 2020 catgirl
-AppVersion=0.5.7
-VersionInfoVersion=0.5.7
+AppVersion=0.5.8
+VersionInfoVersion=0.5.8
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -42,10 +42,13 @@ Type: files; Name: "{app}\libicuuc62.dll"
 Type: files; Name: "{app}\libicudt64.dll"
 Type: files; Name: "{app}\libicuin64.dll"
 Type: files; Name: "{app}\libicuuc64.dll"
+Type: files; Name: "{app}\libicudt65.dll"
+Type: files; Name: "{app}\libicuin65.dll"
+Type: files; Name: "{app}\libicuuc65.dll"
 Type: files; Name: "{app}\imageformats\qmng.dll"
 
  [Registry]
 Root: HKCU; Subkey: "Software\Classes\.wt-session"; ValueType: string; ValueName: ""; ValueData: "WiseTaggerSessionFile"; Flags: uninsdeletevalue
 Root: HKCU; Subkey: "Software\Classes\WiseTaggerSessionFile"; ValueType: string; ValueName: ""; ValueData: "WiseTagger Session File"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\WiseTaggerSessionFile\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\WiseTagger.exe,0"
-Root: HKCU; Subkey: "Software\Classes\WiseTaggerSessionFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\WiseTagger.exe"" ""%1""" 
+Root: HKCU; Subkey: "Software\Classes\WiseTaggerSessionFile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\WiseTagger.exe"" ""%1"""
