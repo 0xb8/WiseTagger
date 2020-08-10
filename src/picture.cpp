@@ -55,7 +55,7 @@ Picture::Picture(QWidget *parent) :
 	{
 		cache.clear();
 		if(!m_pixmap.isNull()) {
-			if(m_pixmap.size() != m_media_size) {
+			if(m_pixmap.size() != m_media_size || std::abs(m_pixmap.devicePixelRatioF() - devicePixelRatioF()) > 0.05f) {
 				pwarn << "pixmap not suitable for resize, reloading...";
 				loadMedia(m_current_file);
 				return;
