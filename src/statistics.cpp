@@ -202,12 +202,13 @@ void TaggerStatistics::showStatsDialog()
 		return m_settings.value(a).toInt() > m_settings.value(b).toInt();
 	});
 
-	const auto exts_html = util::read_resource_html("statistics_extensions.html");
 	QString exts_str;
 	for(auto& key : qAsConst(ext_list)) {
 		const auto num_exts = m_settings.value(key, 0).toInt();
 		const auto percent_ext = QString::number(util::size::percent(num_exts, files_opened));
-		exts_str += exts_html.arg(key.toUpper(), QString::number(num_exts), percent_ext);
+
+		exts_str += tr("<li>&nbsp;&nbsp;%1&nbsp;&ndash; <strong>&nbsp;%n</strong> files (%2%)</li>",
+		               "extensions", num_exts).arg(key.toUpper(), percent_ext);
 	}
 	m_settings.endGroup();
 

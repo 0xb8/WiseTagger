@@ -771,13 +771,23 @@
 </context>
 <context>
     <name>TaggerStatistics</name>
+    <message numerus="yes">
+        <location filename="../../src/statistics.cpp" line="210"/>
+        <source>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; files (%2%)&lt;/li&gt;</source>
+        <comment>extensions</comment>
+        <translation>
+            <numerusform>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; файл (%2%)&lt;/li&gt;</numerusform>
+            <numerusform>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; файла (%2%)&lt;/li&gt;</numerusform>
+            <numerusform>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; файлов (%2%)&lt;/li&gt;</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../../src/statistics.cpp" line="233"/>
+        <location filename="../../src/statistics.cpp" line="234"/>
         <source>&lt;br/&gt;&lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; statistics collection is currently disabled. The stats displayed here are from previous launches.&lt;/p&gt;</source>
         <translation>&lt;br/&gt;&lt;p&gt;&lt;b&gt;Примечание:&lt;/b&gt; Сбор статистики выключен. Отображаемая здесь информация была собрана при предыдущих запусках программы.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/statistics.cpp" line="275"/>
+        <location filename="../../src/statistics.cpp" line="276"/>
         <source>Statistics</source>
         <translation>Статистика</translation>
     </message>

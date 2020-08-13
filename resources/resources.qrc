@@ -9,7 +9,6 @@
 	<file>html/English/performance_direct_pixmap.html</file>
 	<file>html/English/performance_cached_pixmap.html</file>
 	<file>html/English/statistics.html</file>
-	<file>html/English/statistics_extensions.html</file>
 	<file>html/English/welcome.html</file>
 	<file>html/Russian/help.html</file>
 	<file>html/Russian/performance.html</file>
@@ -17,7 +16,6 @@
 	<file>html/Russian/performance_direct_pixmap.html</file>
 	<file>html/Russian/performance_cached_pixmap.html</file>
 	<file>html/Russian/statistics.html</file>
-	<file>html/Russian/statistics_extensions.html</file>
 	<file>html/Russian/welcome.html</file>
 	<file>i18n/English.qm</file>
 	<file>i18n/Russian.qm</file>

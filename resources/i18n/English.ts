@@ -71,12 +71,12 @@
     <message>
         <location filename="../../util/size.h" line="48"/>
         <source>%1 KiB</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../../util/size.h" line="49"/>
         <source>%1 MiB</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -764,13 +764,22 @@
 </context>
 <context>
     <name>TaggerStatistics</name>
+    <message numerus="yes">
+        <location filename="../../src/statistics.cpp" line="210"/>
+        <source>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; files (%2%)&lt;/li&gt;</source>
+        <comment>extensions</comment>
+        <translation>
+            <numerusform>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; file (%2%)&lt;/li&gt;</numerusform>
+            <numerusform>&lt;li&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;ndash; &lt;strong&gt;&amp;nbsp;%n&lt;/strong&gt; files (%2%)&lt;/li&gt;</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../../src/statistics.cpp" line="233"/>
+        <location filename="../../src/statistics.cpp" line="234"/>
         <source>&lt;br/&gt;&lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; statistics collection is currently disabled. The stats displayed here are from previous launches.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/statistics.cpp" line="275"/>
+        <location filename="../../src/statistics.cpp" line="276"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
