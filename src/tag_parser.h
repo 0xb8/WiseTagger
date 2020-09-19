@@ -106,6 +106,12 @@ public:
 	QString getComment(const QString& tag) const;
 
 	/*!
+	 * \brief Get replacement for a tag.
+	 * \retval Empty string if replacement was not found.
+	 */
+	QString getReplacement(const QString& tag) const;
+
+	/*!
 	 * \brief Returns list of all known tags.
 	 */
 	const QStringList& getAllTags() const;
@@ -119,6 +125,11 @@ public:
 	 * \brief Are tag file(s) present.
 	 */
 	bool hasTagFile() const;
+
+	/*!
+	 * \brief Is \p tag autoremoved removed
+	 */
+	bool isTagRemoved(const QString& tag) const;
 
 signals:
 

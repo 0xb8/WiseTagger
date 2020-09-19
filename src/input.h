@@ -68,6 +68,12 @@ public:
 	 */
 	QString tags() const;
 
+
+	/*!
+	 * \brief Returns list of tags without imageboard id, if present.
+	 */
+	QStringList tags_list() const;
+
 	/*!
 	 * \brief Returns constant reference to current tag parser.
 	 */

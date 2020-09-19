@@ -625,72 +625,77 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="268"/>
+        <location filename="../../src/tagger.cpp" line="308"/>
+        <source>&lt;p style=&quot;margin-top: 1.6em;&quot;&gt;Tags that would be added:&lt;p style=&quot;margin-left: 1em; line-height: 130%;&quot;&gt;&lt;code style=&quot;color:green;&quot;&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="313"/>
+        <source>&lt;p style=&quot;margin-top: 1.6em;&quot;&gt;Tags that would be removed:&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;small&gt;(press &lt;i&gt;Merge tags&lt;/i&gt; to keep)&lt;/small&gt;&lt;p style=&quot;margin-left: 1em; line-height: 130%;&quot;&gt;&lt;code style=&quot;color:red;&quot;&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="321"/>
         <source>Fetched tags mismatch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="269"/>
-        <source>&lt;p&gt;Imageboard tags do not match current tags:&lt;br/&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/p&gt;&lt;p&gt;Please choose what to do:&lt;/p&gt;</source>
+        <location filename="../../src/tagger.cpp" line="322"/>
+        <source>&lt;p&gt;Imageboard tags do not match current tags:&lt;p style=&quot;margin-left: 1em; line-height: 130%;&quot;&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;/p&gt;%2%3&lt;p&gt;Please choose what to do:&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="275"/>
-        <source>Use just imageboard tags</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/tagger.cpp" line="276"/>
+        <location filename="../../src/tagger.cpp" line="333"/>
         <source>Merge tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="534"/>
+        <location filename="../../src/tagger.cpp" line="591"/>
         <source>Error opening tag file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="535"/>
+        <location filename="../../src/tagger.cpp" line="592"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="560"/>
+        <location filename="../../src/tagger.cpp" line="617"/>
         <source>Edit temporary tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="561"/>
+        <location filename="../../src/tagger.cpp" line="618"/>
         <source>Temporary tags:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="77"/>
-        <location filename="../../src/tagger.cpp" line="758"/>
-        <location filename="../../src/tagger.cpp" line="779"/>
-        <location filename="../../src/tagger.cpp" line="791"/>
-        <location filename="../../src/tagger.cpp" line="907"/>
+        <location filename="../../src/tagger.cpp" line="815"/>
+        <location filename="../../src/tagger.cpp" line="836"/>
+        <location filename="../../src/tagger.cpp" line="848"/>
+        <location filename="../../src/tagger.cpp" line="964"/>
         <source>Error opening media</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="878"/>
+        <location filename="../../src/tagger.cpp" line="935"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File name is too long: &lt;b&gt;%2&lt;/b&gt; characters, but maximum allowed file name length is %3 characters.&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="954"/>
+        <location filename="../../src/tagger.cpp" line="1011"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application, file with this name may already exist in the current directory or exceed the character limit.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="969"/>
+        <location filename="../../src/tagger.cpp" line="1026"/>
         <source>&lt;p&gt;Cannot rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File with this name already exists in &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="730"/>
-        <location filename="../../src/tagger.cpp" line="741"/>
+        <location filename="../../src/tagger.cpp" line="787"/>
+        <location filename="../../src/tagger.cpp" line="798"/>
         <source>Error opening file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -705,59 +710,64 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="731"/>
+        <location filename="../../src/tagger.cpp" line="332"/>
+        <source>Use only imageboard tags</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="788"/>
         <source>&lt;p&gt;Directory &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;File from another directory will be opened instead.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="742"/>
+        <location filename="../../src/tagger.cpp" line="799"/>
         <source>&lt;p&gt;File &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="759"/>
+        <location filename="../../src/tagger.cpp" line="816"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File format is not supported or file corrupted.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="780"/>
-        <location filename="../../src/tagger.cpp" line="908"/>
+        <location filename="../../src/tagger.cpp" line="837"/>
+        <location filename="../../src/tagger.cpp" line="965"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File path is too long: %2 characters, max 259.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="792"/>
+        <location filename="../../src/tagger.cpp" line="849"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Could not add media to playlist.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="968"/>
+        <location filename="../../src/tagger.cpp" line="1025"/>
         <source>Cannot rename file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="922"/>
+        <location filename="../../src/tagger.cpp" line="979"/>
         <source>Rename file?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="923"/>
+        <location filename="../../src/tagger.cpp" line="980"/>
         <source>Rename &lt;b&gt;%1&lt;/b&gt;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="927"/>
+        <location filename="../../src/tagger.cpp" line="984"/>
         <source>Rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="928"/>
+        <location filename="../../src/tagger.cpp" line="985"/>
         <source>Discard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="877"/>
-        <location filename="../../src/tagger.cpp" line="953"/>
+        <location filename="../../src/tagger.cpp" line="934"/>
+        <location filename="../../src/tagger.cpp" line="1010"/>
         <source>Could not rename file</source>
         <translation type="unfinished"></translation>
     </message>

@@ -61,21 +61,22 @@ void TagInput::setTags(const QString& s)
 
 QString TagInput::tags() const
 {
+	return tags_list().join(QChar(' '));
+}
+
+QStringList TagInput::tags_list() const
+{
 	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
 	tag_iterator tag, id;
-	if(ib::find_imageboard_tags(text_list.begin(), text_list.end(),tag,id)) {
+	if(ib::find_imageboard_tags(text_list.begin(), text_list.end(), tag, id)) {
 		id = std::next(id);
 	} else {
 		id = text_list.begin();
 	}
 
-	QString res;
-	for (auto it = id; it != text_list.end(); ++it) {
-		res.append(*it);
-		res.append(QChar(' '));
-	}
-	res.remove(res.length()-1, 1); // remove trailing space
-	return res;
+	// remove imageboard id tags
+	text_list.erase(text_list.begin(), id);
+	return text_list;
 }
 
 const TagParser & TagInput::tag_parser() const

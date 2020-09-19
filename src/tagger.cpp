@@ -263,16 +263,73 @@ void Tagger::tagsFetched(QString file, QString tags)
 
 			if (!util::is_hex_string(current_tags)) {
 
+				auto current_list = m_input.tags_list();
+				// sort current tags in case they were being edited and unsorted.
+				// imageboard tags are already sorted.
+				current_list.sort();
+
+				QStringList tags_removed; // find tags that are in current tags but not in imageboard tags
+				std::set_difference(current_list.begin(), current_list.end(),
+				                    fixed_tags_list.begin(), fixed_tags_list.end(),
+				                    std::back_inserter(tags_removed));
+
+				QStringList tags_added; // find tags that are in imageboard tags but not in current tags
+				std::set_difference(fixed_tags_list.begin(), fixed_tags_list.end(),
+				                    current_list.begin(), current_list.end(),
+				                    std::back_inserter(tags_added));
+
+				// set of all known tags
+				const auto all_tags_set = QSet<QString>::fromList(m_input.tag_parser().getAllTags());
+				const auto& parser = m_input.tag_parser();
+
+				// make known tag bold
+				auto mark_existing_tags = [&all_tags_set, &parser](const auto& tag)
+				{
+					if (all_tags_set.contains(tag)) {
+						return QStringLiteral("<b>%1</b>").arg(tag);
+					}
+					if (parser.isTagRemoved(tag)) {
+						return QStringLiteral("<s>%1</s>").arg(tag);
+					}
+					auto replacement = parser.getReplacement(tag);
+					if (!replacement.isEmpty()) {
+						return QStringLiteral("<i>%1</i>").arg(tag);
+					}
+					return tag;
+				};
+
+				// make all known tags bold
+				std::transform(fixed_tags_list.begin(), fixed_tags_list.end(), fixed_tags_list.begin(), mark_existing_tags);
+				std::transform(tags_added.begin(), tags_added.end(), tags_added.begin(), mark_existing_tags);
+				std::transform(tags_removed.begin(), tags_removed.end(), tags_removed.begin(), mark_existing_tags);
+
+				QString added_tags_str, removed_tags_str;
+				if (!tags_added.empty()) {
+					added_tags_str = tr("<p style=\"margin-top: 1.6em;\">Tags that would be added:"
+					                    "<p style=\"margin-left: 1em; line-height: 130%;\">"
+					                    "<code style=\"color:green;\">%1</code></p></p>").arg(tags_added.join(' '));
+				}
+				if (!tags_removed.empty()) {
+					removed_tags_str = tr("<p style=\"margin-top: 1.6em;\">Tags that would be removed:"
+					                      "&nbsp;&nbsp;&nbsp;&nbsp;<small>(press <i>Merge tags</i> to keep)</small>"
+					                      "<p style=\"margin-left: 1em; line-height: 130%;\">"
+					                      "<code style=\"color:red;\">%1</code></p></p>").arg(tags_removed.join(' '));
+				}
+
 				// Ask user what to do with tags
 				QMessageBox mbox(QMessageBox::Question,
-						 tr("Fetched tags mismatch"),
-						 tr("<p>Imageboard tags do not match current tags:"
-						    "<br/><pre>%1</pre></p>"
-						    "<p>Please choose what to do:</p>").arg(tags),
-						 QMessageBox::Save|QMessageBox::SaveAll);
+				                 tr("Fetched tags mismatch"),
+				                 tr("<p>Imageboard tags do not match current tags:"
+				                    "<p style=\"margin-left: 1em; line-height: 130%;\">"
+				                    "<code>%1</code></p></p>"
+				                    "%2%3"
+				                    "<p>Please choose what to do:</p>").arg(fixed_tags_list.join(' '))
+				                                                       .arg(added_tags_str)
+				                                                       .arg(removed_tags_str),
+				                 QMessageBox::Save|QMessageBox::SaveAll);
 
 				mbox.addButton(QMessageBox::Cancel);
-				mbox.setButtonText(QMessageBox::Save, tr("Use just imageboard tags"));
+				mbox.setButtonText(QMessageBox::Save, tr("Use only imageboard tags"));
 				mbox.setButtonText(QMessageBox::SaveAll, tr("Merge tags"));
 
 				int res = mbox.exec();

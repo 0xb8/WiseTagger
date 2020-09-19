@@ -126,6 +126,17 @@ QString TagParser::getComment(const QString & tag) const
 }
 
 
+QString TagParser::getReplacement(const QString & tag) const
+{
+	QString ret;
+	auto it = m_replaced_tags.find(tag);
+	if (it != m_replaced_tags.end()) {
+		ret = it->second;
+	}
+	return ret;
+}
+
+
 const QStringList & TagParser::getAllTags() const
 {
 	return m_tags_from_file;
@@ -157,6 +168,12 @@ bool TagParser::loadTagData(const QByteArray& data)
 bool TagParser::hasTagFile() const
 {
 	return !m_tags_from_file.isEmpty();
+}
+
+
+bool TagParser::isTagRemoved(const QString & tag) const
+{
+	return m_removed_tags.find(tag) != m_removed_tags.end();
 }
 
 
