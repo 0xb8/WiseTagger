@@ -842,8 +842,11 @@ void Window::createActions()
 	connect(&a_stats,       &QAction::triggered, &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
+	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateMenus);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
+	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
+	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateStatusBarText);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::failed, this, [this](auto file, auto reason)
 	{

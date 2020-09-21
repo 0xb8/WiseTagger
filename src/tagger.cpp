@@ -97,6 +97,7 @@ void Tagger::clear()
 	m_picture.clear();
 	m_picture.cache.clear();
 	m_input.clear();
+	emit cleared();
 }
 
 bool Tagger::open(const QString& filename)

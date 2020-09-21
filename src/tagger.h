@@ -205,6 +205,9 @@ signals:
 	/// Emitted when session file has been sucessfully opened.
 	void sessionOpened(const QString& sfile);
 
+	/// Emitted when \fn clear() is called.
+	void cleared();
+
 	/*!
 	 * \brief Emitted when file name has been modified by user.
 	 * \param newname New file name.
