@@ -269,53 +269,8 @@ void Tagger::tagsFetched(QString file, QString tags)
 				// imageboard tags are already sorted.
 				current_list.sort();
 
-				QStringList tags_removed; // find tags that are in current tags but not in imageboard tags
-				std::set_difference(current_list.begin(), current_list.end(),
-				                    fixed_tags_list.begin(), fixed_tags_list.end(),
-				                    std::back_inserter(tags_removed));
-
-				QStringList tags_added; // find tags that are in imageboard tags but not in current tags
-				std::set_difference(fixed_tags_list.begin(), fixed_tags_list.end(),
-				                    current_list.begin(), current_list.end(),
-				                    std::back_inserter(tags_added));
-
-				// set of all known tags
-				const auto all_tags_set = QSet<QString>::fromList(m_input.tag_parser().getAllTags());
-				const auto& parser = m_input.tag_parser();
-
-				// make known tag bold
-				auto mark_existing_tags = [&all_tags_set, &parser](const auto& tag)
-				{
-					if (all_tags_set.contains(tag)) {
-						return QStringLiteral("<b>%1</b>").arg(tag);
-					}
-					if (parser.isTagRemoved(tag)) {
-						return QStringLiteral("<s>%1</s>").arg(tag);
-					}
-					auto replacement = parser.getReplacement(tag);
-					if (!replacement.isEmpty()) {
-						return QStringLiteral("<i>%1</i>").arg(tag);
-					}
-					return tag;
-				};
-
-				// make all known tags bold
-				std::transform(fixed_tags_list.begin(), fixed_tags_list.end(), fixed_tags_list.begin(), mark_existing_tags);
-				std::transform(tags_added.begin(), tags_added.end(), tags_added.begin(), mark_existing_tags);
-				std::transform(tags_removed.begin(), tags_removed.end(), tags_removed.begin(), mark_existing_tags);
-
 				QString added_tags_str, removed_tags_str;
-				if (!tags_added.empty()) {
-					added_tags_str = tr("<p style=\"margin-top: 1.6em;\">Tags that would be added:"
-					                    "<p style=\"margin-left: 1em; line-height: 130%;\">"
-					                    "<code style=\"color:green;\">%1</code></p></p>").arg(tags_added.join(' '));
-				}
-				if (!tags_removed.empty()) {
-					removed_tags_str = tr("<p style=\"margin-top: 1.6em;\">Tags that would be removed:"
-					                      "&nbsp;&nbsp;&nbsp;&nbsp;<small>(press <i>Merge tags</i> to keep)</small>"
-					                      "<p style=\"margin-left: 1em; line-height: 130%;\">"
-					                      "<code style=\"color:red;\">%1</code></p></p>").arg(tags_removed.join(' '));
-				}
+				getTagDifference(current_list, fixed_tags_list, added_tags_str, removed_tags_str, true);
 
 				// Ask user what to do with tags
 				QMessageBox mbox(QMessageBox::Question,
@@ -352,6 +307,67 @@ void Tagger::tagsFetched(QString file, QString tags)
 	}
 
 	TaggerStatistics::instance().tagsFetched(overall_tags_count, processed_tags_count);
+}
+
+void Tagger::getTagDifference(QStringList current_list,
+                              QStringList fixed_tags_list,
+                              QString & added_tags_str,
+                              QString & removed_tags_str,
+                              bool show_merge_hint)
+{
+
+	QStringList tags_removed; // find tags that are in current tags but not in imageboard tags
+	std::set_difference(current_list.begin(), current_list.end(),
+	                    fixed_tags_list.begin(), fixed_tags_list.end(),
+	                    std::back_inserter(tags_removed));
+
+	QStringList tags_added; // find tags that are in imageboard tags but not in current tags
+	std::set_difference(fixed_tags_list.begin(), fixed_tags_list.end(),
+	                    current_list.begin(), current_list.end(),
+	                    std::back_inserter(tags_added));
+
+	// set of all known tags
+	const auto all_tags_set = QSet<QString>::fromList(m_input.tag_parser().getAllTags());
+	const auto& parser = m_input.tag_parser();
+
+	// make known tag bold
+	auto mark_existing_tags = [&all_tags_set, &parser](const auto& tag)
+	{
+		if (all_tags_set.contains(tag)) {
+			return QStringLiteral("<b>%1</b>").arg(tag);
+		}
+		if (parser.isTagRemoved(tag)) {
+			return QStringLiteral("<s>%1</s>").arg(tag);
+		}
+		auto replacement = parser.getReplacement(tag);
+		if (!replacement.isEmpty()) {
+			return QStringLiteral("<i>%1</i>").arg(tag);
+		}
+		return tag;
+	};
+
+	// make all known tags bold
+	std::transform(fixed_tags_list.begin(), fixed_tags_list.end(), fixed_tags_list.begin(), mark_existing_tags);
+	std::transform(tags_added.begin(), tags_added.end(), tags_added.begin(), mark_existing_tags);
+	std::transform(tags_removed.begin(), tags_removed.end(), tags_removed.begin(), mark_existing_tags);
+
+	if (!tags_added.empty()) {
+		added_tags_str = QStringLiteral("<p style=\"margin-top: 1.6em;\">");
+		added_tags_str.append(tr("Tags that will be added:"));
+		added_tags_str.append(QStringLiteral("<p style=\"margin-left: 1em; line-height: 130%;\">"
+		                                     "<code style=\"color:green;\">%1</code></p></p>").arg(tags_added.join(' ')));
+	}
+	if (!tags_removed.empty()) {
+		removed_tags_str = QStringLiteral("<p style=\"margin-top: 1.6em;\">");
+		removed_tags_str.append(tr("Tags that will be removed:"));
+		if (show_merge_hint) {
+			removed_tags_str.append(QStringLiteral("&nbsp;&nbsp;&nbsp;&nbsp;<small>("));
+			removed_tags_str.append(tr("press <i>Merge tags</i> to keep"));
+			removed_tags_str.append(QStringLiteral(")</small>"));
+		}
+		removed_tags_str.append(QStringLiteral("<p style=\"margin-left: 1em; line-height: 130%;\">"
+		                                       "<code style=\"color:red;\">%2</code></p></p>").arg(tags_removed.join(' ')));
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -822,6 +838,9 @@ bool Tagger::loadFile(size_t index, bool silent)
 	}
 
 	m_input.setText(f.completeBaseName());
+	// remember original tags so we can show the difference when renaming
+	m_original_tags = m_input.tags_list();
+	m_original_tags.sort();
 	findTagsFiles();
 	setFocus(Qt::MouseFocusReason);
 	return true;
@@ -975,19 +994,37 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	if(new_file_path == m_file_queue.current() || m_input.text().isEmpty())
 		return RenameStatus::Failed;
 
-	/* Show save dialog */
-	QMessageBox renameMessageBox(QMessageBox::Question,
-		tr("Rename file?"),
-		tr("Rename <b>%1</b>?").arg(file.completeBaseName()),
-		QMessageBox::Save|QMessageBox::Discard);
 
-	renameMessageBox.addButton(QMessageBox::Cancel);
-	renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
-	renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
+	int messagebox_reply = 0;
+	bool force_rename = options.testFlag(RenameOption::ForceRename);
+	if (!force_rename) {
+
+		// these should already be sorted by fixTags() call above.
+		// original tags list is sorted when initially created.
+		auto current_tags = m_input.tags_list();
+
+		QString added_tags, removed_tags;
+		getTagDifference(m_original_tags, current_tags, added_tags, removed_tags, false);
+
+		// only show removed tags diff when it wasn't just the hash filename
+		if (m_original_tags.size() == 1 && util::is_hex_string(m_original_tags[0])) {
+			removed_tags.clear();
+		}
+
+		/* Show save dialog */
+		QMessageBox renameMessageBox(QMessageBox::Question,
+			tr("Rename file?"),
+			tr("<p>Rename <b>%1</b>?</p>").arg(file.completeBaseName()) + added_tags + removed_tags,
+			QMessageBox::Save|QMessageBox::Discard);
+
+		renameMessageBox.addButton(QMessageBox::Cancel);
+		renameMessageBox.setButtonText(QMessageBox::Save, tr("Rename"));
+		renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
+		messagebox_reply = renameMessageBox.exec();
+	}
 
 	QSettings settings;
-	int reply;
-	if(options.testFlag(RenameOption::ForceRename) || (reply = renameMessageBox.exec()) == QMessageBox::Save ) {
+	if(force_rename || messagebox_reply == QMessageBox::Save) {
 
 		const bool media_is_video = mediaIsVideo();
 		if(media_is_video) {
@@ -1045,11 +1082,11 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 		}
 	}
 
-	if(reply == QMessageBox::Cancel) {
+	if(messagebox_reply == QMessageBox::Cancel) {
 		return RenameStatus::Cancelled;
 	}
 
-	if(reply == QMessageBox::Discard) {
+	if(messagebox_reply == QMessageBox::Discard) {
 		// NOTE: restore to initial state to prevent multiple rename dialogs
 		m_input.setText(file.completeBaseName());
 		return RenameStatus::NotModified;

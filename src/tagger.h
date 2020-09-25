@@ -263,6 +263,7 @@ private:
 	void updateNewTagsCounts();
 	void clear();
 	void tagsFetched(QString file, QString tags);
+	void getTagDifference(QStringList current_tags, QStringList new_tags, QString& added, QString& removed, bool show_merge_hint);
 
 	static constexpr int m_tag_input_layout_margin = 10;
 
@@ -283,6 +284,7 @@ private:
 	QString     m_previous_dir;
 	QStringList m_current_tag_files;
 	QString     m_temp_tags;
+	QStringList m_original_tags;
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
 	unsigned    m_overall_new_tag_counts = 0u;
