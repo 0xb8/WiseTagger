@@ -43,18 +43,27 @@ void TagInput::fixTags(bool sort)
 void TagInput::setTags(const QString& s)
 {
 	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
+	QStringList imageboard_ids;
 
-	tag_iterator tag, id;
-	if(ib::find_imageboard_tags(text_list.begin(), text_list.end(),tag,id)) {
+	tag_iterator tag_begin = text_list.begin(), id = tag_begin;
+
+	// find long imageboard id tag
+	if (ib::find_imageboard_tags(tag_begin, text_list.end(), tag_begin, id)) {
 		id = std::next(id);
+		for (auto it = tag_begin; it != id; ++it) {
+			imageboard_ids.append(*it);
+		}
 	}
 
-	QString res;
-	for (auto it = tag; it != id; ++it) {
-		res.append(*it);
-		res.append(' ');
+	// find all short imageboard id tags
+	tag_begin = text_list.begin();
+	while (ib::find_short_imageboard_tag(tag_begin, text_list.end(), tag_begin)) {
+		imageboard_ids.append(*tag_begin);
+		tag_begin = std::next(tag_begin);
 	}
 
+	QString res = imageboard_ids.join(' ');
+	res.append(' ');
 	res.append(s);
 	setText(res);
 }
@@ -67,15 +76,27 @@ QString TagInput::tags() const
 QStringList TagInput::tags_list() const
 {
 	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
-	tag_iterator tag, id;
-	if(ib::find_imageboard_tags(text_list.begin(), text_list.end(), tag, id)) {
-		id = std::next(id);
-	} else {
-		id = text_list.begin();
+
+	tag_iterator tag_begin = text_list.begin(), id = tag_begin;
+
+	// clear long imageboard id tag
+	if (ib::find_imageboard_tags(tag_begin, text_list.end(), tag_begin, id)) {
+		for (auto it = tag_begin; it != std::next(id); ++it)
+			it->clear();
 	}
 
-	// remove imageboard id tags
-	text_list.erase(text_list.begin(), id);
+	// clear short imageboard id tags
+	tag_begin = text_list.begin();
+	while (ib::find_short_imageboard_tag(tag_begin, text_list.end(), tag_begin)) {
+		tag_begin->clear();
+		tag_begin = std::next(tag_begin);
+	}
+
+	// remove empty strings from list
+	text_list.erase(std::remove_if(text_list.begin(), text_list.end(), [](const auto& str){
+		return str.isEmpty();
+	}), text_list.end());
+
 	return text_list;
 }
 
