@@ -12,6 +12,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QFile>
+#include <QBuffer>
+#include <QGuiApplication>
 #include <QCryptographicHash>
 
 
@@ -25,7 +27,29 @@ void TagFetcher::fetch_tags(const QString & filename, QString url) {
 	QCryptographicHash hash{QCryptographicHash::Md5};
 	QFile file{filename};
 	file.open(QIODevice::ReadOnly);
-	hash.addData(&file);
+	const auto file_size = file.size();
+	if (file_size < m_progress_threshold) {
+		hash.addData(&file);
+	} else {
+		auto data = reinterpret_cast<const char*>(file.map(0, file_size));
+		if (!data) {
+			emit failed(filename, tr("Could not map file."));
+			return;
+		}
+
+		const auto chunk_size = file_size / 100;
+		int64_t offset = 0;
+		for (int i = 0; i < 100; ++i) {
+			hash.addData(data + offset, chunk_size);
+			offset += chunk_size;
+			emit hashing_progress(filename, i+1);
+			qApp->processEvents();
+		}
+		auto remaining = file_size - offset;
+		if (remaining > 0)
+			hash.addData(data + offset, remaining);
+
+	}
 	auto hash_hex = hash.result().toHex();
 
 	if (url.isEmpty()) {

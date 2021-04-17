@@ -583,12 +583,17 @@
 <context>
     <name>TagFetcher</name>
     <message>
-        <location filename="../../util/tag_fetcher.cpp" line="116"/>
+        <location filename="../../util/tag_fetcher.cpp" line="36"/>
+        <source>Could not map file.</source>
+        <translation>Не удалось отобразить файл в память.</translation>
+    </message>
+    <message>
+        <location filename="../../util/tag_fetcher.cpp" line="140"/>
         <source>Image MD5 mismatch! Perhaps the file is corrupted?</source>
         <translation>Несовпадение MD5-суммы изображения! Возможно, файл поврежден?</translation>
     </message>
     <message>
-        <location filename="../../util/tag_fetcher.cpp" line="121"/>
+        <location filename="../../util/tag_fetcher.cpp" line="145"/>
         <source>Image not found on the imageboard.</source>
         <translation>Изображение не найдено на имиджборде.</translation>
     </message>
@@ -866,13 +871,13 @@
     </message>
     <message>
         <location filename="../../src/window.cpp" line="95"/>
-        <location filename="../../src/window.cpp" line="959"/>
+        <location filename="../../src/window.cpp" line="972"/>
         <source>Save Session</source>
         <translation>Сохранить сессию</translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="94"/>
-        <location filename="../../src/window.cpp" line="979"/>
+        <location filename="../../src/window.cpp" line="992"/>
         <source>Open Session</source>
         <translation>Открыть сессию</translation>
     </message>
@@ -1052,126 +1057,126 @@
         <translation>Загрузка тегов с %1...</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="677"/>
+        <location filename="../../src/window.cpp" line="689"/>
         <source>Version %1 is available.</source>
         <translation>Доступна версия %1.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="678"/>
+        <location filename="../../src/window.cpp" line="690"/>
         <source>&lt;h3&gt;Updated version available: v%1&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;%2&quot;&gt;Click here to download new version&lt;/a&gt;.&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Доступна новая версия: v%1&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;%2&quot;&gt;Нажмите здесь, чтобы загрузить новую версию&lt;/a&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="753"/>
+        <location filename="../../src/window.cpp" line="765"/>
         <source>Failed to start command</source>
         <translation>Не удалось запустить команду</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="754"/>
+        <location filename="../../src/window.cpp" line="766"/>
         <source>&lt;p&gt;Failed to launch command &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Could not start &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось выполнить команду &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Невозможно запустить &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="777"/>
+        <location filename="../../src/window.cpp" line="789"/>
         <source>Ctrl+Shift+F</source>
         <comment>Fetch tags</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="794"/>
+        <location filename="../../src/window.cpp" line="806"/>
         <source>Reload changes in tag files and search for newly added tag files.</source>
         <translation>Перезагрузить измененные файлы тегов и искать добавленные файлы тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="798"/>
+        <location filename="../../src/window.cpp" line="810"/>
         <source>Toggle forcing the author tag to be the first tag in the filename.</source>
         <translation>Включить перестановку тегов автора в начало результирующего имени файла.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="816"/>
+        <location filename="../../src/window.cpp" line="828"/>
         <source>Search results page opened in default browser.</source>
         <translation>Результаты поиска были открыты в браузере по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="855"/>
+        <location filename="../../src/window.cpp" line="868"/>
         <source>Tag fetching failed</source>
         <translation>Не удалось загрузить теги</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="856"/>
+        <location filename="../../src/window.cpp" line="869"/>
         <source>Tag fetching failed:  %1</source>
         <translation>Не удалось загрузить теги:  %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="862"/>
+        <location filename="../../src/window.cpp" line="875"/>
         <source>Tag file changed</source>
         <translation>Файл тегов изменён</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="863"/>
+        <location filename="../../src/window.cpp" line="876"/>
         <source>Tag file has been edited or removed.
 All changes successfully applied.</source>
         <translation>Файл тегов был редактирован или удален.
 Все изменения успешно применены.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="961"/>
-        <location filename="../../src/window.cpp" line="981"/>
+        <location filename="../../src/window.cpp" line="974"/>
+        <location filename="../../src/window.cpp" line="994"/>
         <source>Session Files (%1)</source>
         <translation>Файлы сессий (%1)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="967"/>
+        <location filename="../../src/window.cpp" line="980"/>
         <source>Save Session Error</source>
         <translation>Не удалось сохранить сессию</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="968"/>
+        <location filename="../../src/window.cpp" line="981"/>
         <source>&lt;p&gt;Could not save session to &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Check file permissions.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось сохранить сессию в файл &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Проверьте права доступа.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="987"/>
+        <location filename="../../src/window.cpp" line="1000"/>
         <source>Enter Number</source>
         <translation>Введите число</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="988"/>
+        <location filename="../../src/window.cpp" line="1001"/>
         <source>Enter file number to open:</source>
         <translation>Введите номер файла:</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="997"/>
+        <location filename="../../src/window.cpp" line="1010"/>
         <source>Notifications  </source>
         <translation>Уведомления  </translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="997"/>
+        <location filename="../../src/window.cpp" line="1010"/>
         <source>Notifications: %1</source>
         <translation>Уведомлений: %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1012"/>
+        <location filename="../../src/window.cpp" line="1025"/>
         <source>&lt;p&gt;New tags were found, ordered by number of times used:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Найдены новые теги, в порядке убывания частоты использования:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1019"/>
+        <location filename="../../src/window.cpp" line="1032"/>
         <source>Check Notifications menu for list of added tags.</source>
         <translation>Откройте меню уведомлений, чтобы просмотреть список новых тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1060"/>
+        <location filename="../../src/window.cpp" line="1073"/>
         <source>Tag file syntax error</source>
         <translation>Синтаксическая ошибка в файле тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1060"/>
+        <location filename="../../src/window.cpp" line="1073"/>
         <source>Regular expression syntax error</source>
         <translation>Синтаксическая ошибка в регулярном выражении</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1061"/>
+        <location filename="../../src/window.cpp" line="1074"/>
         <source>&lt;h2&gt;Regular expression syntax error&lt;/h2&gt;&lt;p&gt;At column %1: %2&lt;/p&gt;&lt;pre style=&quot;font-family: Consolas, &quot;Lucida Console&quot;, Monaco,monospace,monospace;&quot;&gt;%3
 
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</source>
@@ -1180,22 +1185,22 @@ All changes successfully applied.</source>
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1074"/>
+        <location filename="../../src/window.cpp" line="1087"/>
         <source>Network error</source>
         <translation>Ошибка соединения</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1073"/>
+        <location filename="../../src/window.cpp" line="1086"/>
         <source>Error connecting to %1: %2</source>
         <translation>Не удалось подключиться к %1: %2</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1100"/>
+        <location filename="../../src/window.cpp" line="1113"/>
         <source>Tag Fetching Done.</source>
         <translation>Загрузка тегов завершена.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1304"/>
+        <location filename="../../src/window.cpp" line="1317"/>
         <source>About %1</source>
         <translation>О программе %1</translation>
     </message>
@@ -1210,24 +1215,24 @@ All changes successfully applied.</source>
         <translation>Загрузка %1 на iqdb.org... загружено %2%</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1032"/>
+        <location filename="../../src/window.cpp" line="1045"/>
         <source>&lt;h2&gt;Could not locate suitable tag file&lt;/h2&gt;&lt;p&gt;You can still browse and rename files, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened file and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Подходящий файл тегов не обнаружен&lt;/h2&gt;&lt;p&gt;Вы сможете просматривать и переименовывать файлы, однако автодополнение тегов не будет работать.&lt;/p&gt;&lt;hr&gt;WiseTagger ищет &lt;em&gt;файлы тегов&lt;/em&gt; в папке текущего изображения, и во всех папках выше.&lt;p&gt;Названия файлов тегов:&lt;dd&gt;&lt;dl&gt;Нормальный файл: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Переопределяющий файл: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Папки, в которых производился поиск, по порядку:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Документация по добавляемым и переопределяемым файлам тегов&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1320"/>
+        <location filename="../../src/window.cpp" line="1333"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation>включен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1320"/>
+        <location filename="../../src/window.cpp" line="1333"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation>выключен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="401"/>
+        <location filename="../../src/window.cpp" line="413"/>
         <source>Done.</source>
         <translation>Готово.</translation>
     </message>
@@ -1272,102 +1277,107 @@ All changes successfully applied.</source>
         <translation>В директории:  %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="676"/>
+        <location filename="../../src/window.cpp" line="404"/>
+        <source>Calculating file hash...  %1% complete</source>
+        <translation>Вычисляем хеш файла...  выполнено %1%</translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="688"/>
         <source>New version available</source>
         <translation>Доступна новая версия</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="767"/>
+        <location filename="../../src/window.cpp" line="779"/>
         <source>Ctrl+D</source>
         <comment>File|Open Directory</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="774"/>
+        <location filename="../../src/window.cpp" line="786"/>
         <source>Ctrl+A</source>
         <comment>Fix tags</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="775"/>
+        <location filename="../../src/window.cpp" line="787"/>
         <source>Ctrl+P</source>
         <comment>Open post</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="776"/>
+        <location filename="../../src/window.cpp" line="788"/>
         <source>Ctrl+F</source>
         <comment>Reverse search</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="778"/>
+        <location filename="../../src/window.cpp" line="790"/>
         <source>Ctrl+L</source>
         <comment>Open file location</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="790"/>
+        <location filename="../../src/window.cpp" line="802"/>
         <source>Open imageboard post of this image.</source>
         <translation>Открыть это изображение на странице имиджборды.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="791"/>
+        <location filename="../../src/window.cpp" line="803"/>
         <source>Upload this image to iqdb.org and open search results page in default browser.</source>
         <translation>Загрузить это изображение на iqdb.org и открыть страницу с результатом поиска в браузере по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="792"/>
+        <location filename="../../src/window.cpp" line="804"/>
         <source>Open folder where this image is located.</source>
         <translation>Открыть папку, в которой находится это изображение.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="793"/>
+        <location filename="../../src/window.cpp" line="805"/>
         <source>Open folder where current tag file is located.</source>
         <translation>Открыть папку, в которой расположен текущий файл тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="795"/>
+        <location filename="../../src/window.cpp" line="807"/>
         <source>Open current tag file in default text editor.</source>
         <translation>Открыть текущий файл тегов в текстовом редакторе по-умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="796"/>
+        <location filename="../../src/window.cpp" line="808"/>
         <source>Toggle replacing certain imageboard tags with their shorter version.</source>
         <translation>Включить замену тегов некоторых имиджборд на их более короткие версии.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="797"/>
+        <location filename="../../src/window.cpp" line="809"/>
         <source>Toggle restoring imageboard tags back to their original version.</source>
         <translation>Включить восстановление тегов имиджборд к их оригинальным версиям.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="816"/>
+        <location filename="../../src/window.cpp" line="828"/>
         <source>IQDB upload finished</source>
         <translation>Загрузка файла завершена</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1019"/>
+        <location filename="../../src/window.cpp" line="1032"/>
         <source>New tags added</source>
         <translation>Найдены новые теги</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1030"/>
+        <location filename="../../src/window.cpp" line="1043"/>
         <source>Tag file not found</source>
         <translation>Файл тегов не найден</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1031"/>
+        <location filename="../../src/window.cpp" line="1044"/>
         <source>Could not locate suitable tag file</source>
         <translation>Подходящий файл тегов не обнаружен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1075"/>
+        <location filename="../../src/window.cpp" line="1088"/>
         <source>Network error: %1</source>
         <translation>Ошибка соединения: %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1316"/>
+        <location filename="../../src/window.cpp" line="1329"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>

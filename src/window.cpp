@@ -392,6 +392,18 @@ void Window::showTagFetchProgress(QString url_str)
 	statusBar()->showMessage(tr("Fetching tags from %1...").arg(url.host()));
 }
 
+void Window::showFileHashingProgress(QString file, int value)
+{
+#ifdef Q_OS_WIN32
+	auto progress = m_win_taskbar_button.progress();
+	progress->setVisible(true);
+	progress->setMaximum(100);
+	progress->setValue(value);
+#endif
+	updateWindowTitleProgress(value);
+	statusBar()->showMessage(tr("Calculating file hash...  %1% complete").arg(value));
+}
+
 void Window::hideUploadProgress()
 {
 #ifdef Q_OS_WIN32
@@ -847,6 +859,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
 	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateStatusBarText);
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::hashing_progress, this, &Window::showFileHashingProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::failed, this, [this](auto file, auto reason)
 	{

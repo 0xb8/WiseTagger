@@ -44,6 +44,9 @@ public slots:
 	/// Display current tag fetching progress
 	void showTagFetchProgress(QString url);
 
+	/// Display file hashing progress.
+	void showFileHashingProgress(QString file, int value);
+
 	/// Hide current upload progress
 	void hideUploadProgress();
 

@@ -44,6 +44,11 @@ signals:
 	void started(QString url);
 
 	/*!
+	 * \brief Emitted when hashing input file.
+	 */
+	void hashing_progress(QString file, int percent);
+
+	/*!
 	 * \brief Emitted when valid tags were found for
 	 * \param tags Fetched tags
 	 */
@@ -59,6 +64,9 @@ signals:
 
 private:
 	void open_reply(QNetworkReply* reply);
+
+	/// file size threshold for displaying progress bar.
+	static constexpr int64_t m_progress_threshold = 5 * 1024 * 1024;
 
 	QNetworkAccessManager m_nam;
 	QNetworkReply *m_reply = nullptr;
