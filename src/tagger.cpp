@@ -33,6 +33,9 @@ namespace logging_category {
 #define pwarn qCWarning(logging_category::tagger)
 #define ESCAPE_HIDE_TIMEOUT_MS 600
 
+extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+
+
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)
 {
@@ -77,7 +80,7 @@ Tagger::Tagger(QWidget *_parent) :
 			tr("Error opening media"),
 			tr("<p>Could not open <b>%1</b></p>"
 			   "<p>File format is not supported or file corrupted.</p>"
-		           "<p>Media player error: %2</p>")
+			   "<p>Media player error: %2</p>")
 				.arg(currentFileName()).arg(m_player.errorString()));
 	});
 	connect(&m_player, &QMediaPlayer::metaDataAvailableChanged, this, [this](bool){
@@ -97,6 +100,7 @@ void Tagger::clear()
 	m_picture.clear();
 	m_picture.cache.clear();
 	m_input.clear();
+	m_input.setEnabled(true);
 	emit cleared();
 }
 
@@ -236,6 +240,7 @@ void Tagger::fixTags()
 
 void Tagger::fetchTags()
 {
+	Q_ASSERT(fileRenameable());
 	m_fetcher.fetch_tags(currentFile(), m_input.postTagsApiURL());
 }
 
@@ -399,6 +404,11 @@ bool Tagger::fileModified() const
 		return false;
 
 	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
+}
+
+bool Tagger::fileRenameable() const
+{
+	return m_input.isEnabled();
 }
 
 bool Tagger::isEmpty() const
@@ -840,7 +850,16 @@ bool Tagger::loadFile(size_t index, bool silent)
 		}
 	}
 
+	// check if user has write permission for this directory
+	QFileInfo dir_fi(f.absolutePath());
+	++qt_ntfs_permission_lookup;
+	bool has_write_permission = dir_fi.isWritable();
+	--qt_ntfs_permission_lookup;
+
 	m_input.setText(f.completeBaseName());
+	m_input.setToolTip(has_write_permission ? QString() : tr("Renaming disabled: User has no write permission in this directory."));
+	m_input.setEnabled(has_write_permission);
+
 	// remember original tags so we can show the difference when renaming
 	m_original_tags = m_input.tags_list();
 	m_original_tags.sort();

@@ -34,6 +34,10 @@ QLineEdit#Input {
     selection-background-color: darkgray;
     color: #eee;
 }
+QLineEdit#Input:disabled {
+    background: #111;
+    color: #555;
+}
 
 QMenuBar {
     margin: 2px;

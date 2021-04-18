@@ -1316,7 +1316,7 @@ void Window::updateMenus()
 	a_save_prev.setDisabled(val);
 	a_delete_file.setDisabled(val);
 	a_fix_tags.setDisabled(val);
-	a_fetch_tags.setDisabled(val);
+	a_fetch_tags.setDisabled(val || !m_tagger.fileRenameable());
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
 	a_open_loc.setDisabled(val);

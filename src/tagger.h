@@ -111,7 +111,10 @@ public:
 	void prevFile(RenameOptions options = RenameOption::NoOption);
 
 	/// Is current file name modified by user.
-	bool    fileModified()    const;
+	bool    fileModified() const;
+
+	/// Is current file renameable.
+	bool    fileRenameable() const;
 
 	/// Is the file queue empty.
 	bool    isEmpty() const;
