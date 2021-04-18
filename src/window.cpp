@@ -802,9 +802,15 @@ void Window::createActions()
 	a_hide.setShortcutContext(Qt::WidgetShortcut);
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
 	a_view_input.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_I));
+	a_view_statusbar.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
 	a_play_pause.setShortcut(   QKeySequence(Qt::Key_Space));
 	a_play_mute.setShortcut(    QKeySequence(Qt::Key_M));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
+
+	a_view_sort_name.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_N));
+	a_view_sort_type.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_T));
+	a_view_sort_date.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_D));
+	a_view_sort_size.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_Z));
 
 	a_open_post.setStatusTip(     tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(   tr("Upload this image to iqdb.org and open search results page in default browser."));
@@ -832,7 +838,7 @@ void Window::createActions()
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched, &TaggerStatistics::instance(), &TaggerStatistics::reverseSearched);
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched, this, [this]()
 	{
-		addNotification(tr("IQDB upload finished"), tr("Search results page opened in default browser."), QStringLiteral(""));
+		addNotification(tr("IQDB upload finished"), tr("Search results page opened in default browser."));
 	});
 
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
@@ -872,7 +878,7 @@ void Window::createActions()
 	{
 		if (file == m_tagger.currentFile()) {
 			hideUploadProgress();
-			addNotification(tr("Tag fetching failed"), reason, QStringLiteral(""));
+			addNotification(tr("Tag fetching failed"), reason);
 			statusBar()->showMessage(tr("Tag fetching failed:  %1").arg(reason), 3000);
 		}
 	});
@@ -881,8 +887,7 @@ void Window::createActions()
 	{
 		addNotification(tr("Tag file changed"),
 		                tr("Tag file has been edited or removed.\n"
-		                   "All changes successfully applied."),
-		                QStringLiteral(""));
+		                   "All changes successfully applied."));
 	});
 	connect(&m_tagger,      &Tagger::fileOpened, this, [this]()
 	{
@@ -1090,7 +1095,7 @@ void Window::createActions()
 	auto show_network_error_notification = [this](QUrl url, QString error)
 	{
 		auto error_str = tr("Error connecting to %1: %2").arg(url.host(), error);
-		addNotification(tr("Network error"), error_str, QStringLiteral(""));
+		addNotification(tr("Network error"), error_str);
 		statusBar()->showMessage(tr("Network error: %1").arg(error_str), 3000);
 		hideUploadProgress();
 	};
@@ -1109,8 +1114,27 @@ void Window::createActions()
 	});
 	connect(&ag_sort_criteria, &QActionGroup::triggered, this, [this](QAction* a)
 	{
-		m_tagger.queue().setSortBy(a->data().value<SortQueueBy>());
+		auto criteria = a->data().value<SortQueueBy>();
+		m_tagger.queue().setSortBy(criteria);
 		m_tagger.queue().sort();
+
+		QString criteria_str;
+		switch (criteria) {
+		case SortQueueBy::FileName:
+			criteria_str = tr("Name");
+			break;
+		case SortQueueBy::FileType:
+			criteria_str = tr("Type");
+			break;
+		case SortQueueBy::ModificationDate:
+			criteria_str = tr("Modification Date");
+			break;
+		case SortQueueBy::FileSize:
+			criteria_str = tr("Size");
+			break;
+		}
+
+		addNotification(tr("Queue Sorted by %1").arg(criteria_str));
 	});
 	connect(&a_fetch_tags,  &QAction::triggered, &m_tagger, &Tagger::fetchTags);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::ready, this, [this](QString, QString)

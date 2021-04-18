@@ -67,10 +67,10 @@ public slots:
 	 *
 	 * Notifications are queued and are shown in a submenu of main menu bar.
 	 * \param title Notification title
-	 * \param description Short description
-	 * \param body Main notification text
+	 * \param description Short description (optional).
+	 * \param body Main notification text (optional).
 	 */
-	void addNotification(QString title, QString description, QString body);
+	void addNotification(QString title, QString description=QString{}, QString body=QString{});
 
 	/// Remove notification from queue
 	void removeNotification(QString title);
