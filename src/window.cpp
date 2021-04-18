@@ -400,6 +400,7 @@ void Window::showTagFetchProgress(QString url_str)
 
 void Window::showFileHashingProgress(QString file, int value)
 {
+	Q_UNUSED(file);
 #ifdef Q_OS_WIN32
 	auto progress = m_win_taskbar_button.progress();
 	progress->setVisible(true);
