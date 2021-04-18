@@ -50,9 +50,14 @@ public:
 	void loadTagData(const QByteArray& data);
 
 	/*!
+	 * \brief Clears loaded tags.
+	 */
+	void clearTagData();
+
+	/*!
 	 * \brief Reset state used to keep track of already processed tags.
 	 */
-	void clearTagState();
+	void clearTagEditState();
 
 	/*!
 	 * \brief Set initial text.

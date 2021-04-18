@@ -145,15 +145,16 @@ const QStringList & TagParser::getAllTags() const
 
 bool TagParser::loadTagData(const QByteArray& data)
 {
-	if(data.isEmpty()) {
-		return false;
-	}
-
+	m_tags_from_file.clear();
 	m_related_tags.clear();
 	m_replaced_tags.clear();
 	m_removed_tags.clear();
 	m_comment_tooltips.clear();
 	m_regexps.clear();
+
+	if(data.isEmpty()) {
+		return false;
+	}
 
 	QTextStream in(data);
 	in.setCodec("UTF-8");

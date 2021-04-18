@@ -182,8 +182,10 @@ static void update_model(QStandardItemModel& model, const TagParser& parser)
 
 void TagInput::loadTagData(const QByteArray& data)
 {
-	if (!m_tag_parser.loadTagData(data))
+	if (!m_tag_parser.loadTagData(data)) {
+		m_tags_model.clear();
 		return;
+	}
 
 	update_model(m_tags_model, m_tag_parser);
 
@@ -193,14 +195,19 @@ void TagInput::loadTagData(const QByteArray& data)
 	setCompleter(m_completer.get());
 }
 
+void TagInput::clearTagData()
+{
+	loadTagData(QByteArray{});
+}
+
 void TagInput::setText(const QString &s)
 {
-	clearTagState();
+	clearTagEditState();
 	updateText(s);
 	m_initial_text = s;
 }
 
-void TagInput::clearTagState()
+void TagInput::clearTagEditState()
 {
 	m_edit_state.clear();
 }

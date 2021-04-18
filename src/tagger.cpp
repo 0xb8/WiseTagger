@@ -100,6 +100,8 @@ void Tagger::clear()
 	m_picture.clear();
 	m_picture.cache.clear();
 	m_input.clear();
+	m_input.clearTagData();
+	m_input.clearTagEditState();
 	m_input.setEnabled(true);
 	emit cleared();
 }
@@ -630,7 +632,7 @@ void Tagger::reloadTagsContents()
 	data.push_back(m_temp_tags.toUtf8());
 
 	m_input.loadTagData(data);
-	m_input.clearTagState();
+	m_input.clearTagEditState();
 }
 
 void Tagger::openTagFilesInEditor()
@@ -672,6 +674,13 @@ void Tagger::findTagsFiles(bool force)
 		return;
 
 	m_previous_dir = c;
+	m_current_tag_files.clear();
+	m_input.clearTagData();
+	m_input.clearTagEditState();
+
+	if (!fileRenameable())
+		return;
+
 	QFileInfo fi(m_file_queue.current());
 
 	const QSettings settings;
@@ -703,8 +712,6 @@ void Tagger::findTagsFiles(bool force)
 			m_current_tag_files.push_back(f.absoluteFilePath());
 		}
 	};
-
-	m_current_tag_files.clear();
 
 	QStringList search_paths_list;
 	search_paths_list.reserve(search_dirs.size());
