@@ -108,6 +108,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
 	, a_view_statusbar(  tr("&Statusbar"), nullptr)
 	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
+	, a_view_slideshow(  tr("Slide Sho&w"), nullptr)
 	, a_view_menu(       tr("&Menu"), nullptr)
 	, a_view_input(      tr("Tag &Input"), nullptr)
 	, a_view_sort_name(  tr("By File &Name"), nullptr)
@@ -549,11 +550,12 @@ void Window::initSettings()
 	}
 
 	menuBar()->setVisible(show_menu);
-	m_tagger.setInputVisible(show_input);
 	m_tagger.setViewMode(m_view_mode);
+	m_tagger.setInputVisible(show_input);
 	m_statusbar.setVisible(show_status && m_view_mode != ViewMode::Minimal);
 
 	a_view_fullscreen.setChecked(isFullScreen());
+	a_view_slideshow.setChecked(isFullScreen() && !show_menu && !show_input && !show_status);
 	a_view_minimal.setChecked(m_view_mode == ViewMode::Minimal);
 	a_view_statusbar.setChecked(show_status);
 	a_view_menu.setChecked(show_menu);
@@ -798,6 +800,7 @@ void Window::createActions()
 	a_help.setShortcut(         QKeySequence::HelpContents);
 	a_exit.setShortcut(         QKeySequence::Close);
 	a_view_fullscreen.setShortcut(QKeySequence::FullScreen);
+	a_view_slideshow.setShortcut(QKeySequence(Qt::Key_F5));
 	a_hide.setShortcut(QKeySequence{Qt::Key_Escape, Qt::Key_Escape});
 	a_hide.setShortcutContext(Qt::WidgetShortcut);
 	a_view_menu.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_M));
@@ -827,6 +830,7 @@ void Window::createActions()
 	a_tag_forcefirst.setCheckable(true);
 	a_view_statusbar.setCheckable(true);
 	a_view_fullscreen.setCheckable(true);
+	a_view_slideshow.setCheckable(true);
 	a_view_minimal.setCheckable(true);
 	a_view_menu.setCheckable(true);
 	a_view_input.setCheckable(true);
@@ -938,12 +942,12 @@ void Window::createActions()
 		QSettings s; s.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
 	});
 
-	connect(&a_view_statusbar, &QAction::triggered, this, [this](bool checked)
+	connect(&a_view_statusbar, &QAction::toggled, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
 		m_statusbar.setVisible(checked && m_view_mode != ViewMode::Minimal);
 	});
-	connect(&a_view_fullscreen, &QAction::triggered, this, [this](bool checked)
+	connect(&a_view_fullscreen, &QAction::toggled, this, [this](bool checked)
 	{
 		if(checked) {
 			m_view_maximized = isMaximized();
@@ -956,18 +960,25 @@ void Window::createActions()
 			}
 		}
 	});
+	connect(&a_view_slideshow, &QAction::triggered, this, [this](bool checked)
+	{
+		a_view_menu.setChecked(!checked);
+		a_view_input.setChecked(!checked);
+		a_view_statusbar.setChecked(!checked);
+		a_view_fullscreen.setChecked(checked);
+	});
 	connect(&a_view_minimal, &QAction::triggered, this, [this](bool checked)
 	{
 		m_view_mode = checked ? ViewMode::Minimal : ViewMode::Normal;
 		QSettings s; s.setValue(SETT_VIEW_MODE, QVariant::fromValue(m_view_mode));
 		updateSettings();
 	});
-	connect(&a_view_menu, &QAction::triggered, this, [this](bool checked)
+	connect(&a_view_menu, &QAction::toggled, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_MENU, checked);
 		this->menuBar()->setVisible(checked);
 	});
-	connect(&a_view_input, &QAction::triggered, this, [this](bool checked)
+	connect(&a_view_input, &QAction::toggled, this, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
 		this->m_tagger.setInputVisible(checked);
@@ -1208,6 +1219,7 @@ void Window::createMenus()
 
 	// View menu actions
 	add_action(menu_view, a_view_fullscreen);
+	add_action(menu_view, a_view_slideshow);
 	add_action(menu_view, a_view_minimal);
 	add_separator(menu_view);
 	add_action(menu_view, a_view_menu);

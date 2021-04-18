@@ -148,6 +148,7 @@ private:
 	QAction a_view_minimal;
 	QAction a_view_statusbar;
 	QAction a_view_fullscreen;
+	QAction a_view_slideshow;
 	QAction a_view_menu;
 	QAction a_view_input;
 	QAction a_view_sort_name;
