@@ -492,16 +492,6 @@ bool Tagger::canExit(Tagger::RenameStatus status)
 void Tagger::updateSettings()
 {
 	QSettings s;
-	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
-	if(view_mode == ViewMode::Minimal) {
-		m_tag_input_layout.setMargin(0);
-		m_separator.hide();
-	}
-	if(view_mode == ViewMode::Normal) {
-		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
-		m_separator.show();
-	}
-	m_input.updateSettings();
 	m_picture.cache.setMemoryLimitKiB(s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024);
 	m_picture.cache.setMaxConcurrentTasks(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2);
 }
@@ -589,6 +579,19 @@ void Tagger::setInputVisible(bool visible)
 	} else {
 		m_tag_input_layout.setMargin(0);
 	}
+}
+
+void Tagger::setViewMode(ViewMode view_mode)
+{
+	if(view_mode == ViewMode::Minimal) {
+		m_tag_input_layout.setMargin(0);
+		m_separator.hide();
+	}
+	if(view_mode == ViewMode::Normal) {
+		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
+		m_separator.show();
+	}
+	m_input.setViewMode(view_mode);
 }
 
 //------------------------------------------------------------------------------

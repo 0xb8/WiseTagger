@@ -550,6 +550,7 @@ void Window::initSettings()
 
 	menuBar()->setVisible(show_menu);
 	m_tagger.setInputVisible(show_input);
+	m_tagger.setViewMode(m_view_mode);
 	m_statusbar.setVisible(show_status && m_view_mode != ViewMode::Minimal);
 
 	a_view_fullscreen.setChecked(isFullScreen());
@@ -587,11 +588,7 @@ void Window::updateSettings()
 {
 	QSettings settings;
 	m_show_current_directory = settings.value(SETT_SHOW_CURRENT_DIR, true).toBool();
-	if(m_view_mode == ViewMode::Minimal) {
-		m_statusbar.hide();
-	} else {
-		m_statusbar.setVisible(a_view_statusbar.isChecked());
-	}
+	setViewMode(m_view_mode);
 	updateStyle();
 	for(auto action : menu_commands.actions()) {
 		this->removeAction(action); // NOTE: to prevent hotkey conflicts
@@ -611,6 +608,16 @@ void Window::updateStyle()
 	qApp->setStyleSheet(styles_file.readAll());
 	qApp->setWindowIcon(QIcon(QStringLiteral(":/wisetagger.svg")));
 	m_tray_icon.setIcon(QPixmap(QStringLiteral(":/wisetagger.svg"))); // BUG: cannot use QIcon on linux, but QPixmap works (might be related to QTBUG-55932)
+}
+
+void Window::setViewMode(ViewMode mode)
+{
+	if(mode == ViewMode::Minimal) {
+		m_statusbar.hide();
+	} else {
+		m_statusbar.setVisible(a_view_statusbar.isChecked());
+	}
+	m_tagger.setViewMode(mode);
 }
 
 #ifdef Q_OS_WIN
@@ -949,7 +956,6 @@ void Window::createActions()
 		m_view_mode = checked ? ViewMode::Minimal : ViewMode::Normal;
 		QSettings s; s.setValue(SETT_VIEW_MODE, QVariant::fromValue(m_view_mode));
 		updateSettings();
-		m_tagger.updateSettings();
 	});
 	connect(&a_view_menu, &QAction::triggered, this, [this](bool checked)
 	{

@@ -24,7 +24,6 @@ namespace logging_category {
 
 TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
-	updateSettings();
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 	connect(&m_tag_parser, &TagParser::parseError, this, &TagInput::parseError);
 }
@@ -246,11 +245,10 @@ QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
 	return ret;
 }
 
-void TagInput::updateSettings()
+void TagInput::setViewMode(ViewMode view_mode)
 {
 	QSettings s;
 	QFont font(s.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
-	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
 	if(view_mode == ViewMode::Normal) {
 		font.setPixelSize(s.value(QStringLiteral("window/font-size"), 14).toInt());
 		setMinimumHeight(m_minimum_height);

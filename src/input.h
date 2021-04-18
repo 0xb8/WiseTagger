@@ -19,6 +19,7 @@
 
 #include "multicompleter.h"
 #include "tag_parser.h"
+#include "global_enums.h"
 
 
 class QKeyEvent;
@@ -105,9 +106,9 @@ public:
 	QStringList getAddedTags(bool exclude_tags_from_file = false) const;
 
 	/*!
-	 * \brief Update configuration from QSettings
+	 * \brief Set tag input view mode.
 	 */
-	void updateSettings();
+	void setViewMode(ViewMode mode);
 
 signals:
 

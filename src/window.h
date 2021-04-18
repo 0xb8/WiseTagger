@@ -102,6 +102,7 @@ private:
 
 	void saveSettings();
 	void updateStyle();
+	void setViewMode(ViewMode mode);
 
 	void showNotificationsMenu();
 	void hideNotificationsMenu();

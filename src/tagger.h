@@ -162,6 +162,9 @@ public slots:
 	/// Set Tag Input visibility.
 	void setInputVisible(bool visible);
 
+	/// Set Tag input view mode.
+	void setViewMode(ViewMode view_mode);
+
 	/// Ask user to delete currently selected file.
 	void deleteCurrentFile();
 
