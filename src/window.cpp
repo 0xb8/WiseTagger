@@ -628,12 +628,17 @@ void Window::setViewMode(ViewMode mode)
 	m_tagger.setViewMode(mode);
 }
 
-void Window::setSlideShow(bool enabled)
+void Window::setSlideShow(bool slide_show)
 {
-	a_view_menu.setChecked(!enabled);
-	a_view_input.setChecked(!enabled);
-	a_view_statusbar.setChecked(!enabled);
-	a_view_fullscreen.setChecked(enabled);
+	a_view_input.setEnabled(!slide_show);
+	a_view_statusbar.setEnabled(!slide_show);
+	a_view_fullscreen.setEnabled(!slide_show);
+	a_view_minimal.setEnabled(!slide_show);
+
+	a_view_menu.setChecked(!slide_show);
+	a_view_input.setChecked(!slide_show);
+	a_view_statusbar.setChecked(!slide_show);
+	a_view_fullscreen.setChecked(slide_show);
 }
 
 #ifdef Q_OS_WIN
