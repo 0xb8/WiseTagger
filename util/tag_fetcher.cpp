@@ -12,7 +12,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QFile>
-#include <QBuffer>
 #include <QGuiApplication>
 #include <QCryptographicHash>
 
@@ -37,9 +36,12 @@ void TagFetcher::fetch_tags(const QString & filename, QString url) {
 			return;
 		}
 
+		m_hashing = true;
+
 		const auto chunk_size = file_size / 100;
 		int64_t offset = 0;
 		for (int i = 0; i < 100; ++i) {
+			if (!m_hashing) return;
 			hash.addData(data + offset, chunk_size);
 			offset += chunk_size;
 			emit hashing_progress(filename, i+1);
@@ -78,11 +80,13 @@ void TagFetcher::fetch_tags(const QString & filename, QString url) {
 
 void TagFetcher::abort()
 {
+	m_hashing = false;
 	if (m_reply) {
 		m_reply->abort();
 		m_reply->deleteLater();
 		m_reply = nullptr;
 	}
+	emit aborted();
 }
 
 void TagFetcher::open_reply(QNetworkReply * reply)

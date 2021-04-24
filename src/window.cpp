@@ -897,6 +897,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateStatusBarText);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::hashing_progress, this, &Window::showFileHashingProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
+	connect(&m_tagger.tag_fetcher(), &TagFetcher::aborted, this, &Window::hideUploadProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::failed, this, [this](auto file, auto reason)
 	{
 		if (file == m_tagger.currentFile()) {

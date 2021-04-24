@@ -49,6 +49,11 @@ signals:
 	void hashing_progress(QString file, int percent);
 
 	/*!
+	 * \brief Emitted when \ref abort() is called.
+	 */
+	void aborted();
+
+	/*!
 	 * \brief Emitted when valid tags were found for
 	 * \param tags Fetched tags
 	 */
@@ -70,6 +75,7 @@ private:
 
 	QNetworkAccessManager m_nam;
 	QNetworkReply *m_reply = nullptr;
+	bool m_hashing = false;
 };
 
 
