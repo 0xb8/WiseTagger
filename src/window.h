@@ -103,6 +103,7 @@ private:
 	void saveSettings();
 	void updateStyle();
 	void setViewMode(ViewMode mode);
+	void setSlideShow(bool enabled);
 
 	void showNotificationsMenu();
 	void hideNotificationsMenu();
@@ -148,7 +149,9 @@ private:
 	QAction a_view_minimal;
 	QAction a_view_statusbar;
 	QAction a_view_fullscreen;
+	QAction a_exit_fullscreen;
 	QAction a_view_slideshow;
+	QAction a_exit_slideshow;
 	QAction a_view_menu;
 	QAction a_view_input;
 	QAction a_view_sort_name;
@@ -176,6 +179,7 @@ private:
 	QMenu menu_help;
 	QMenu menu_notifications;
 	QMenu menu_tray;
+	QMenu menu_context_tagger;
 
 	QStatusBar m_statusbar;
 	QLabel     m_statusbar_label;

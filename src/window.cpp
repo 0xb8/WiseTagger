@@ -108,7 +108,9 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
 	, a_view_statusbar(  tr("&Statusbar"), nullptr)
 	, a_view_fullscreen( tr("&Fullscreen"), nullptr)
+	, a_exit_fullscreen( tr("Exit &Fullscreen"), nullptr)
 	, a_view_slideshow(  tr("Slide Sho&w"), nullptr)
+	, a_exit_slideshow(  tr("Exit Slide Sho&w"), nullptr)
 	, a_view_menu(       tr("&Menu"), nullptr)
 	, a_view_input(      tr("Tag &Input"), nullptr)
 	, a_view_sort_name(  tr("By File &Name"), nullptr)
@@ -575,6 +577,10 @@ void Window::initSettings()
 
 void Window::saveSettings()
 {
+	// FIXME: hack to prevent saving slideshow state
+	if (a_view_slideshow.isChecked())
+		setSlideShow(false);
+
 	QSettings settings;
 
 	settings.setValue(SETT_WINDOW_GEOMETRY, saveGeometry());
@@ -620,6 +626,14 @@ void Window::setViewMode(ViewMode mode)
 		m_statusbar.setVisible(a_view_statusbar.isChecked());
 	}
 	m_tagger.setViewMode(mode);
+}
+
+void Window::setSlideShow(bool enabled)
+{
+	a_view_menu.setChecked(!enabled);
+	a_view_input.setChecked(!enabled);
+	a_view_statusbar.setChecked(!enabled);
+	a_view_fullscreen.setChecked(enabled);
 }
 
 #ifdef Q_OS_WIN
@@ -960,13 +974,17 @@ void Window::createActions()
 			}
 		}
 	});
-	connect(&a_view_slideshow, &QAction::triggered, this, [this](bool checked)
-	{
-		a_view_menu.setChecked(!checked);
-		a_view_input.setChecked(!checked);
-		a_view_statusbar.setChecked(!checked);
-		a_view_fullscreen.setChecked(checked);
+	connect(&a_exit_fullscreen, &QAction::triggered, this, [this]() {
+		a_view_fullscreen.setChecked(false);
 	});
+	connect(&a_view_slideshow, &QAction::triggered, this, &Window::setSlideShow);
+	connect(&a_exit_slideshow, &QAction::triggered, this, [this](bool) {
+		if (a_view_slideshow.isChecked()) {
+			a_view_slideshow.setChecked(false);
+			setSlideShow(false);
+		}
+	});
+
 	connect(&a_view_minimal, &QAction::triggered, this, [this](bool checked)
 	{
 		m_view_mode = checked ? ViewMode::Minimal : ViewMode::Normal;
@@ -1266,6 +1284,24 @@ void Window::createMenus()
 	add_action(menu_help, a_about);
 	add_action(menu_help, a_about_qt);
 
+	// Tagger context menu
+	add_action(menu_context_tagger, a_exit_slideshow);
+	add_action(menu_context_tagger, a_exit_fullscreen);
+	add_separator(menu_context_tagger);
+	add_action(menu_context_tagger, a_next_file);
+	add_action(menu_context_tagger, a_prev_file);
+	add_separator(menu_context_tagger);
+	menu_context_tagger.addMenu(&menu_sort);
+	add_separator(menu_context_tagger);
+	add_action(menu_context_tagger, a_ib_replace);
+	add_action(menu_context_tagger, a_ib_restore);
+	add_action(menu_context_tagger, a_tag_forcefirst);
+	add_separator(menu_context_tagger);
+	add_action(menu_context_tagger, a_show_settings);
+	add_action(menu_context_tagger, a_hide);
+	add_action(menu_context_tagger, a_exit);
+
+
 	// For enabling addSeparator() in QMenuBar.
 	class ProxyStyle : public QProxyStyle
 	{
@@ -1297,6 +1333,15 @@ void Window::createMenus()
 
 	// Tray context menu
 	m_tray_icon.setContextMenu(&menu_tray);
+
+	// tagger context menu
+	m_tagger.setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(&m_tagger, &Tagger::customContextMenuRequested, this, [this](const QPoint& pos) {
+		auto widget = qobject_cast<QWidget*>(sender());
+		a_exit_slideshow.setVisible(a_view_slideshow.isChecked());
+		a_exit_fullscreen.setVisible(!a_view_slideshow.isChecked() && a_view_fullscreen.isChecked());
+		menu_context_tagger.exec(widget->mapToGlobal(pos));
+	});
 
 	// Status bar items
 	setStatusBar(&m_statusbar);
