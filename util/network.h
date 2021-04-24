@@ -9,7 +9,7 @@
 #define TAGGER_NETWORK_H
 
 // User-agents are cancer, let's pretend to be firefox.
-#define WISETAGGER_USERAGENT QStringLiteral("Mozilla/5.0 (Windows NT 6.1; rv:45.5) Gecko/20100101 Firefox/45.5")
+#define WISETAGGER_USERAGENT QStringLiteral("Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0")
 
 
 #endif // TAGGER_NETWORK_H
