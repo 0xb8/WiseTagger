@@ -8,11 +8,17 @@
 #ifndef TAG_FETCHER_H
 #define TAG_FETCHER_H
 
+/**
+ * \file tag_fetcher.h
+ * \brief Class \ref TagFetcher
+ */
+
 #include <QString>
 #include <QNetworkAccessManager>
 
 class QNetworkReply;
 
+/// Fetches tags from imageboard API
 class TagFetcher : public QObject {
 	Q_OBJECT
 public:
@@ -20,31 +26,36 @@ public:
 	~TagFetcher();
 
 	/*!
-	 * \brief Fetches tags using imageboard JSON API
-	 * \param url Imageboard API url for the post
+	 * \brief Fetches tags using imageboard JSON API.
+	 * \param file File for which to fetch tags.
+	 * \param url Imageboard API url for the post.
 	 */
 	void fetch_tags(const QString& file, QString url);
 
 	/*!
-	 * \brief Aborts the tag fetching request
+	 * \brief Aborts the tag fetching request.
 	 */
 	void abort();
 
 signals:
 
 	/*!
-	 * \brief Emitted when network error is detected while fetching tags
-	 * \param error Human-readable error description
+	 * \brief Emitted when network error is detected while fetching tags.
+	 * \param url Imageboard API URL for this file.
+	 * \param error Human-readable error description.
 	 */
 	void net_error(QUrl url, QString net_error);
 
 	/*!
-	 * \brief Emitted when tag fetching is started
+	 * \brief Emitted when tag fetching is started.
+	 * \param url Imageboard API url for this file.
 	 */
 	void started(QString url);
 
 	/*!
 	 * \brief Emitted when hashing input file.
+	 * \param file File for which tags are fetched.
+	 * \param percent Percentage completed.
 	 */
 	void hashing_progress(QString file, int percent);
 
@@ -54,13 +65,17 @@ signals:
 	void aborted();
 
 	/*!
-	 * \brief Emitted when valid tags were found for
+	 * \brief Emitted when valid tags were found.
+	 * \param file File for which tags are fetched.
 	 * \param tags Fetched tags
 	 */
 	void ready(QString file, QString tags);
 
 	/*!
 	 * \brief Emitted when non-network failure occured.
+	 *
+	 * \param file File for which tags are fetched.
+	 * \param reason Failure reason.
 	 *
 	 * For example, no such image exists on the imageboard, or MD5 mismatched.
 	 */
