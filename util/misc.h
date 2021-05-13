@@ -42,7 +42,7 @@ QLocale::Language       language_code(const QString& name);
 QString                 language_name(QLocale::Language code);
 
 /// String with human-readable time duration
-QString                 duration(std::uint64_t ms);
+QString                 duration(std::uint64_t seconds, bool with_minutes=true, bool with_seconds=true);
 
 /// Load icon from executable file (windows-only)
 QIcon                   get_icon_from_executable(const QString& path);

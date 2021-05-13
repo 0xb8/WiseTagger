@@ -46,16 +46,16 @@ QString util::read_resource_html(const char *filename)
 	return ret;
 }
 
-QString util::duration(uint64_t secs)
+QString util::duration(uint64_t seconds, bool with_minutes, bool with_seconds)
 {
-	auto yr = secs / 31536000;
-	auto mon = (secs / 2678400) % 12;
-	auto d = (secs / 86400) % 31;
-	auto hr = (secs / 3600) % 24;
-	auto min = (secs / 60) % 60;
+	auto yr = seconds / 31536000;
+	auto mon = (seconds / 2678400) % 12;
+	auto d = (seconds / 86400) % 31;
+	auto hr = (seconds / 3600) % 24;
+	auto min = with_minutes ? (seconds / 60) % 60 : 0;
+	auto s = with_seconds ? seconds % 60 : 0;
 
-	auto s = secs % 60;
-	auto sec  =            qApp->translate("Duration", "%n seconds", "", s);
+	auto sec  = s   != 0 ? qApp->translate("Duration", "%n seconds", "", s)   : QStringLiteral("");
 	auto mins = min != 0 ? qApp->translate("Duration", "%n minutes", "", min) : QStringLiteral("");
 	auto hrs  = hr  != 0 ? qApp->translate("Duration", "%n hours", "", hr)    : QStringLiteral("");
 	auto days = d   != 0 ? qApp->translate("Duration", "%n days", "", d)      : QStringLiteral("");

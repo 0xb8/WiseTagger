@@ -155,6 +155,9 @@ public:
 	/// File type of current media.
 	QString currentFileType() const;
 
+	/// Last modified date of current media.
+	QDateTime currentFileLastModified() const;
+
 	/// Reference to FileQueue.
 	FileQueue& queue();
 

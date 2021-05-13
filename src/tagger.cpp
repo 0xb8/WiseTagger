@@ -400,6 +400,12 @@ QString Tagger::currentFileType() const
 	return fi.suffix().toUpper();
 }
 
+QDateTime Tagger::currentFileLastModified() const
+{
+	QFileInfo fi(m_file_queue.current());
+	return fi.lastModified();
+}
+
 bool Tagger::fileModified() const
 {
 	if(m_file_queue.empty()) // NOTE: to avoid FileQueue::current() returning invalid reference.
