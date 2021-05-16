@@ -33,8 +33,11 @@ namespace logging_category {
 #define pwarn qCWarning(logging_category::tagger)
 #define ESCAPE_HIDE_TIMEOUT_MS 600
 
-extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
-
+#ifdef Q_OS_WIN
+	extern Q_CORE_EXPORT int qt_ntfs_permission_lookup;
+#else
+	static int qt_ntfs_permission_lookup;
+#endif
 
 Tagger::Tagger(QWidget *_parent) :
 	QWidget(_parent)
