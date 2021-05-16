@@ -1,9 +1,9 @@
 
 [Setup]
 AppName=WiseTagger
-AppCopyright=Copyright (C) 2020 catgirl
-AppVersion=0.5.8
-VersionInfoVersion=0.5.8
+AppCopyright=Copyright (C) 2021 catgirl
+AppVersion=0.5.9
+VersionInfoVersion=0.5.9
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -25,8 +25,6 @@ WizardStyle=modern
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
-MinVersion=6.0
-
 [Files]
 Source: "WiseTagger.exe"; DestDir: "{app}"; DestName: "WiseTagger.exe"
 Source: *; Excludes: "*.iss"; DestDir: "{app}" ; Flags: recursesubdirs
@@ -45,7 +43,13 @@ Type: files; Name: "{app}\libicuuc64.dll"
 Type: files; Name: "{app}\libicudt65.dll"
 Type: files; Name: "{app}\libicuin65.dll"
 Type: files; Name: "{app}\libicuuc65.dll"
+Type: files; Name: "{app}\libicudt67.dll"
+Type: files; Name: "{app}\libicuin67.dll"
+Type: files; Name: "{app}\libicuuc67.dll"
 Type: files; Name: "{app}\imageformats\qmng.dll"
+Type: files; Name: "{app}\platforms\qminimal.dll"
+Type: files; Name: "{app}\platforms\qoffscreen.dll"
+Type: files; Name: "{app}\platforms\qwebgl.dll"
 
  [Registry]
 Root: HKCU; Subkey: "Software\Classes\.wt-session"; ValueType: string; ValueName: ""; ValueData: "WiseTaggerSessionFile"; Flags: uninsdeletevalue
