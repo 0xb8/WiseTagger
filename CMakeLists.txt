@@ -32,13 +32,13 @@ if(WIN32)
 	set(WINEXTRAS Qt5::WinExtras)
 	set(WINEXTRAS_PKG WinExtras)
 endif()
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Network Widgets ${WINEXTRAS_PKG})
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Network Widgets Multimedia MultimediaWidgets ${WINEXTRAS_PKG})
 
 qt5_wrap_ui(wisetagger_ui_hdrs
 	ui/settings.ui
 )
 add_executable(WiseTagger ${SUBSYSTEM} ${wt_srcs} ${wisetagger_ui_hdrs})
-target_link_libraries(WiseTagger Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets ${WINEXTRAS})
+target_link_libraries(WiseTagger Qt5::Core Qt5::Gui Qt5::Network Qt5::Widgets Qt5::Multimedia Qt5::MultimediaWidgets ${WINEXTRAS})
 target_compile_definitions(WiseTagger PRIVATE QT_DEPRECATED_WARNINGS)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
