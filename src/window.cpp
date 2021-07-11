@@ -969,6 +969,14 @@ void Window::createActions()
 	};
 	connect(&a_set_queue_filter, &QAction::triggered, this, set_queue_filter);
 	connect(&m_statusbar_label, &QLabel::linkActivated, this, set_queue_filter);
+	connect(&m_tagger, &Tagger::linkActivated, this, [this](auto link){
+		if (link == QStringLiteral("#open_file")) {
+			fileOpenDialog();
+		}
+		if (link == QStringLiteral("#open_dir")) {
+			directoryOpenDialog();
+		}
+	});
 	connect(&a_next_file,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.nextFile();
