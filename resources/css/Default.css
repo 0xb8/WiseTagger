@@ -12,6 +12,9 @@ QLabel#Picture {
 QLineEdit#Input {
     border-top-color: rgba(0,0,0,0.5);
     padding: 0px 3px;
+    qproperty-removedTagColor: #ff1010;
+    qproperty-replacedTagColor: #ffa000;
+    qproperty-unknownTagColor: #848484;
 }
 
 QLabel#StatusbarInfo {

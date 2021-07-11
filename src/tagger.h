@@ -299,6 +299,7 @@ private:
 	unsigned    m_overall_new_tag_counts = 0u;
 
 	bool        m_media_muted = false;
+	bool        m_file_renameable = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Tagger::RenameOptions)

@@ -28,6 +28,15 @@ class QKeyEvent;
 /// Provides a Line Edit widget designed for tagging.
 class TagInput : public QLineEdit {
 	Q_OBJECT
+	/// Removed tags color.
+	Q_PROPERTY(QColor removedTagColor READ getRemovedTagColor WRITE setRemovedTagColor DESIGNABLE true)
+
+	/// Replaced tags color.
+	Q_PROPERTY(QColor replacedTagColor READ getReplacedTagColor WRITE setReplacedTagColor DESIGNABLE true)
+
+	/// Unknown tags color.
+	Q_PROPERTY(QColor unknownTagColor READ getUnknownTagColor WRITE setUnknownTagColor DESIGNABLE true)
+
 public:
 
 	explicit TagInput(QWidget* _parent = nullptr);
@@ -115,6 +124,36 @@ public:
 	 */
 	void setViewMode(ViewMode mode);
 
+	/*!
+	 * \brief Returns removed tags color.
+	 */
+	QColor getRemovedTagColor() const;
+
+	/*!
+	 * \brief Sets removed tags color.
+	 */
+	void   setRemovedTagColor(QColor color);
+
+	/*!
+	 * \brief Returns replaced tags color.
+	 */
+	QColor getReplacedTagColor() const;
+
+	/*!
+	 * \brief Sets replaced tags color.
+	 */
+	void   setReplacedTagColor(QColor color);
+
+	/*!
+	 * \brief Returns unknown tags color.
+	 */
+	QColor getUnknownTagColor() const;
+
+	/*!
+	 * \brief Sets unknown tags color.
+	 */
+	void   setUnknownTagColor(QColor color);
+
 signals:
 
 	/*!
@@ -143,6 +182,7 @@ private:
 	bool        next_completer();
 
 	void        updateText(const QString &t);
+	void        classifyText();
 
 	int         m_index;
 	QStringList m_text_list;
@@ -159,5 +199,9 @@ private:
 
 	std::unique_ptr<MultiSelectCompleter>     m_completer;
 	using tag_iterator = decltype(std::begin(m_text_list));
+
+	QColor m_removed_tag_color;
+	QColor m_replaced_tag_color;
+	QColor m_unknown_tag_color;
 };
 #endif // TAGINPUT_H

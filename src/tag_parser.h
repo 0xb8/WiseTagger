@@ -100,6 +100,36 @@ public:
 
 
 	/*!
+	 * \brief Bitflags describing the tag.
+	 */
+	enum class TagKind {
+		/// Tag does not belong to any of tag files.
+		/// If this flag is present, none of the other flags will be.
+		Unknown         = 1 << 1,
+
+		/// Tag is a main tag from tag file.
+		Main            = 1 << 2,
+
+		/// Tag is a consequent in tag implication.
+		Consequent      = 1 << 3,
+
+		/// Tag is a replaced by another tag
+		Replaced        = 1 << 4,
+
+		/// Tag is a candidate for autoremoval.
+		Removed         = 1 << 5
+	};
+	Q_DECLARE_FLAGS(TagClassification, TagKind);
+
+
+	/*!
+	 * \brief Classify \p tag.
+	 * \return Classification flags \ref TagKind for this tag.
+	 */
+	TagClassification classify(QStringView tag) const;
+
+
+	/*!
 	 * \brief Get comment for a tag.
 	 * \retval Empty string if comment was not found.
 	 */
@@ -110,6 +140,14 @@ public:
 	 * \retval Empty string if replacement was not found.
 	 */
 	QString getReplacement(const QString& tag) const;
+
+	/*!
+	 * \brief Get consequent tags for tag \p antecedent.
+	 * \param[in] antecedent Tag for which to find consequent tags.
+	 * \param[out] consequents Where to store consequent tags. Not modified if no tags were found.
+	 * \returns Whether consequent tags were found.
+	 */
+	bool getConsequents(const QString& antecedent, std::unordered_set<QString>& consequents) const;
 
 	/*!
 	 * \brief Returns list of all known tags.
@@ -191,6 +229,9 @@ private:
 	/// Set of autoremoved tags.
 	std::unordered_set      <QString>   m_removed_tags;
 
+	/// Classification of tags.
+	std::unordered_map<QStringView, TagClassification> m_tags_classification;
+
 	/*!
 	 * \brief List of regular expressions to be checked on first tag fix.
 	 *
@@ -199,4 +240,8 @@ private:
 	 */
 	QVector<QPair<QRegularExpression, QString>> m_regexps;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(TagParser::TagClassification);
+
+
 #endif // TAG_PARSER_H

@@ -33,6 +33,9 @@ QLineEdit#Input {
     background: #181818;
     selection-background-color: darkgray;
     color: #eee;
+    qproperty-removedTagColor: #ff2020;
+    qproperty-replacedTagColor: #aaaa00;
+    qproperty-unknownTagColor: #888888;
 }
 QLineEdit#Input:disabled {
     background: #111;

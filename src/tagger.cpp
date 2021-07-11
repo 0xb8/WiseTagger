@@ -419,7 +419,7 @@ bool Tagger::fileModified() const
 
 bool Tagger::fileRenameable() const
 {
-	return m_input.isEnabled();
+	return m_file_renameable;
 }
 
 bool Tagger::isEmpty() const
@@ -869,17 +869,18 @@ bool Tagger::loadFile(size_t index, bool silent)
 	// check if user has write permission for this directory
 	QFileInfo dir_fi(f.absolutePath());
 	++qt_ntfs_permission_lookup;
-	bool has_write_permission = dir_fi.isWritable();
+	m_file_renameable = dir_fi.isWritable();
 	--qt_ntfs_permission_lookup;
 
+	findTagsFiles(); // must call before setting input text for tag classification to work
+
+	m_input.setToolTip(fileRenameable() ? QString() : tr("Renaming disabled: User has no write permission in this directory."));
+	m_input.setEnabled(fileRenameable());
 	m_input.setText(f.completeBaseName());
-	m_input.setToolTip(has_write_permission ? QString() : tr("Renaming disabled: User has no write permission in this directory."));
-	m_input.setEnabled(has_write_permission);
 
 	// remember original tags so we can show the difference when renaming
 	m_original_tags = m_input.tags_list();
 	m_original_tags.sort();
-	findTagsFiles();
 	setFocus(Qt::MouseFocusReason);
 	return true;
 }

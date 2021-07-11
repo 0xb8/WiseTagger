@@ -81,13 +81,15 @@ QStringList TagParser::fixTags(TagEditState& state,
 		text_list += related_tags(state, text_list[i]);
 	}
 
-	text_list.removeDuplicates();
 	text_list.erase(
 		std::remove_if(
 			text_list.begin(),
 			text_list.end(),
 			[](const auto& s){ return s.isEmpty(); }),
 		text_list.end());
+
+	// order matters here, cannot use std::unique :(
+	text_list.removeDuplicates();
 
 	using tag_iterator = decltype(std::begin(text_list));
 
@@ -114,6 +116,15 @@ QStringList TagParser::fixTags(TagEditState& state,
 	return text_list;
 }
 
+TagParser::TagClassification TagParser::classify(QStringView tag) const
+{
+	auto pos = m_tags_classification.find(tag);
+	if (pos != m_tags_classification.end()) {
+		return pos->second;
+	}
+	return TagKind::Unknown;
+}
+
 
 QString TagParser::getComment(const QString & tag) const
 {
@@ -136,6 +147,14 @@ QString TagParser::getReplacement(const QString & tag) const
 	return ret;
 }
 
+bool TagParser::getConsequents(const QString & antecedent, std::unordered_set<QString>& consequents) const
+{
+	auto related_tags_range = m_related_tags.equal_range(antecedent);
+	for (auto it = related_tags_range.first; it != related_tags_range.second; ++it)
+		consequents.insert(it->second);
+
+	return related_tags_range.first != related_tags_range.second;
+}
 
 const QStringList & TagParser::getAllTags() const
 {
@@ -151,6 +170,7 @@ bool TagParser::loadTagData(const QByteArray& data)
 	m_removed_tags.clear();
 	m_comment_tooltips.clear();
 	m_regexps.clear();
+	m_tags_classification.clear();
 
 	if(data.isEmpty()) {
 		return false;
@@ -158,11 +178,9 @@ bool TagParser::loadTagData(const QByteArray& data)
 
 	QTextStream in(data);
 	in.setCodec("UTF-8");
-	auto tags = parse_tags_file(&in);
-
-	tags.removeDuplicates();
-	m_tags_from_file = tags;
-	return true;
+	m_tags_from_file = parse_tags_file(&in);
+	m_tags_from_file.removeDuplicates(); // cannot use std::unique here either, order matters
+	return !m_tags_from_file.empty();
 }
 
 
@@ -183,33 +201,92 @@ bool TagParser::isTagRemoved(const QString & tag) const
 
 QStringList TagParser::parse_tags_file(QTextStream *input)
 {
-	QString current_line, main_tag, removed_tag, replaced_tag, mapped_tag, comment;
+	QString current_line, main_tag, removed_tag, replaced_tag, consequent_tag, comment;
 	QString regex_source;
-	QStringList main_tags_list, removed_tags_list, replaced_tags_list, mapped_tags_list;
+	QStringList main_tags_list, removed_tags_list, replaced_tags_list, consequent_tags_list;
 
-	auto allowed_in_tag = [](QChar c)
+	auto allowed_in_tag = [](QChar c, bool within=false)
 	{
-		const char valid_chars[] = "`~!@$%^&*()[]_+;.";
-		return c.isLetterOrNumber() ||
-			std::find(std::begin(valid_chars),
-			          std::end(valid_chars),
-			          c.toLatin1()) != std::end(valid_chars);
+		if (c.isLetterOrNumber())
+			return true;
+
+		if (within && c == '-')
+			return true;
+
+		if (auto latin = c.toLatin1()) {
+			const char valid_chars[] = "`~!@$%^&*()[]_+;.";
+			return std::find(std::begin(valid_chars),
+			                 std::end(valid_chars),
+			                 latin) != std::end(valid_chars);
+		}
+
+		return false;
 	};
 
-	auto allowed_within_tag = [](QChar c)
-	{
-		return c == '-';
+	auto is_negation_token = [](QChar ch) {
+		const auto negation_symbol = QChar(0x00AC);    // ¬
+		return ch == '-' || ch == negation_symbol;
 	};
 
-	auto allowed_in_file = [&allowed_in_tag](QChar c)
-	{
-		const char valid_chars[] = " \t-=:,\'\"";
-		return	c.isLetterOrNumber() ||
-			allowed_in_tag(c)    ||
-			std::find(std::begin(valid_chars),
-		                  std::end(valid_chars),
-		                  c.toLatin1()) != std::end(valid_chars);
+	auto is_implication_token = [](QChar ch) {
+		const std::array<QChar, 6> implication_symbols {
+			QChar(':'),
+			QChar(0x2192), // →
+			QChar(0x21D2), // ⇒
+			QChar(0x21DB), // ⇛
+			QChar(0x27F6), // ⟶
+			QChar(0x27F9), // ⟹
+		};
+
+		return std::find(implication_symbols.begin(),
+		                 implication_symbols.end(),
+		                 ch) != implication_symbols.end();
 	};
+
+	auto is_replacement_token = [](QChar ch) {
+		const std::array<QChar, 6> replacement_symbols{
+			QChar('='),
+			QChar(0x2190), // ←
+			QChar(0x21D0), // ⇐
+			QChar(0x21DA), // ⇚
+			QChar(0x27F5), // ⟵
+			QChar(0x27F8), // ⟸
+		};
+
+		return std::find(replacement_symbols.begin(),
+		                 replacement_symbols.end(),
+		                 ch) != replacement_symbols.end();
+	};
+
+	auto allowed_in_file = [&allowed_in_tag,
+	                       &is_implication_token,
+	                       &is_replacement_token,
+	                       &is_negation_token](QChar c)
+	{
+		if (allowed_in_tag(c, true))
+			return true;
+
+		if (auto latin = c.toLatin1()) {
+			const char valid_chars[] = " \t-=:,\'\"";
+			return std::find(std::begin(valid_chars),
+			                 std::end(valid_chars),
+			                 latin) != std::end(valid_chars);
+		}
+
+		if (is_implication_token(c) || is_replacement_token(c) || is_negation_token(c))
+			return true;
+
+		return false;
+	};
+
+	auto add_tag_kind = [this](const auto& tag, TagKind kind) {
+		Q_ASSERT(kind != TagKind::Unknown);
+		auto result = m_tags_classification.emplace(tag, kind);
+		if (!result.second) {
+			result.first->second |= kind;
+		}
+	};
+
 
 	while(!input->atEnd()) {
 		current_line = input->readLine().trimmed();
@@ -227,13 +304,13 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		main_tag.clear();
 		removed_tag.clear();
 		replaced_tag.clear();
-		mapped_tag.clear();
+		consequent_tag.clear();
 		comment.clear();
 		regex_source.clear();
 
 		removed_tags_list.clear();
 		replaced_tags_list.clear();
-		mapped_tags_list.clear();
+		consequent_tags_list.clear();
 
 		int first_parse_symbol_pos = 0;
 		bool appending_main = true, removing_main = false, found_replace = false, found_mapped = false, found_comment = false;
@@ -280,51 +357,52 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		}
 
 
-		for(int i = first_parse_symbol_pos; i < current_line.length(); ++i) {
+		for(int current_token_pos = first_parse_symbol_pos; current_token_pos < current_line.length(); ++current_token_pos) {
+			const auto current_token = current_line[current_token_pos];
 
-			if(current_line[i] == QChar('#')) {
+			if(current_token == QChar('#')) {
 				found_comment = true;
 				continue;
 			}
 
 			if(found_comment) {
-				comment.append(current_line[i]);
+				comment.append(current_token);
 				continue;
 			}
 
-			if(!allowed_in_file(current_line[i])) {
+			if(!allowed_in_file(current_token)) {
 				break; // go to next line
 			}
 
 			if(appending_main) {
-				if(allowed_in_tag(current_line[i]) || (!main_tag.isEmpty() && allowed_within_tag(current_line[i]))) {
-					main_tag.append(current_line[i]);
+				if(allowed_in_tag(current_token, !main_tag.isEmpty())) {
+					main_tag.append(current_token);
 					continue;
 				}
 			}
 
 			if(removing_main) {
-				if(allowed_in_tag(current_line[i]) || allowed_within_tag(current_line[i])) {
-					removed_tag.append(current_line[i]);
+				if(allowed_in_tag(current_token, !removed_tag.isEmpty())) {
+					removed_tag.append(current_token);
 					continue;
 				}
 			}
 
 			if(found_replace) {
-				if(allowed_in_tag(current_line[i]) || allowed_within_tag(current_line[i])) {
-					replaced_tag.append(current_line[i]);
+				if(allowed_in_tag(current_token, !replaced_tag.isEmpty())) {
+					replaced_tag.append(current_token);
 					continue;
 				}
 			}
 
 			if(found_mapped) {
-				if(allowed_in_tag(current_line[i]) || allowed_within_tag(current_line[i])) {
-					mapped_tag.append(current_line[i]);
+				if(allowed_in_tag(current_token, !consequent_tag.isEmpty())) {
+					consequent_tag.append(current_token);
 					continue;
 				}
 			}
 
-			if(current_line[i] == '-' && main_tag.isEmpty() && regex_source.isEmpty()) {
+			if(is_negation_token(current_token) && main_tag.isEmpty() && regex_source.isEmpty()) {
 				appending_main = false;
 				found_mapped = false;
 				found_replace = false;
@@ -332,7 +410,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 				continue;
 			}
 
-			if(current_line[i] == '=' && !main_tag.isEmpty()) {
+			if(is_replacement_token(current_token) && !main_tag.isEmpty()) {
 				appending_main = false;
 				removing_main = false;
 				found_mapped = false;
@@ -340,7 +418,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 				continue;
 			}
 
-			if(current_line[i] == ':' && !main_tag.isEmpty()) {
+			if(is_implication_token(current_token) && !main_tag.isEmpty()) {
 				appending_main = false;
 				removing_main = false;
 				found_replace = false;
@@ -348,7 +426,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 				continue;
 			}
 
-			if(current_line[i] == ',') {
+			if(current_token == ',') {
 				if(removing_main && !removed_tag.isEmpty()) {
 					removed_tags_list.push_back(removed_tag);
 					removed_tag.clear();
@@ -358,9 +436,9 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 					replaced_tags_list.push_back(replaced_tag);
 					replaced_tag.clear();
 				}
-				if(found_mapped && !mapped_tag.isEmpty()) {
-					mapped_tags_list.push_back(mapped_tag);
-					mapped_tag.clear();
+				if(found_mapped && !consequent_tag.isEmpty()) {
+					consequent_tags_list.push_back(consequent_tag);
+					consequent_tag.clear();
 				}
 			}
 
@@ -374,12 +452,14 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			replaced_tags_list.push_back(replaced_tag);
 		}
 
-		if(!mapped_tag.isEmpty()) {
-			mapped_tags_list.push_back(mapped_tag);
+		if(!consequent_tag.isEmpty()) {
+			consequent_tags_list.push_back(consequent_tag);
 		}
 
 		if(!main_tag.isEmpty()) {
 			main_tags_list.push_back(main_tag);
+			add_tag_kind(main_tag, TagKind::Main);
+
 			if(!comment.isEmpty()) {
 				comment = comment.trimmed();
 				auto it = m_comment_tooltips.find(main_tag);
@@ -387,21 +467,24 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 					it->second.append(QStringLiteral(", "));
 					it->second.append(comment);
 				} else {
-					m_comment_tooltips.insert(std::make_pair(main_tag, comment));
+					m_comment_tooltips.emplace(main_tag, comment);
 				}
 			}
 		}
 
 		for(const auto& remtag : qAsConst(removed_tags_list)) {
-			m_removed_tags.insert(remtag);
+			m_removed_tags.emplace(remtag);
+			add_tag_kind(remtag, TagKind::Removed);
 		}
 
 		for (const auto& repltag : qAsConst(replaced_tags_list)) {
-			m_replaced_tags.insert(std::pair<QString,QString>(repltag, main_tag));
+			m_replaced_tags.emplace(repltag, main_tag);
+			add_tag_kind(repltag, TagKind::Replaced);
 		}
 
-		for(const auto& maptag : qAsConst(mapped_tags_list)) {
-			m_related_tags.insert(std::pair<QString,QString>(main_tag,maptag));
+		for(const auto& cons_tag : qAsConst(consequent_tags_list)) {
+			m_related_tags.emplace(main_tag, cons_tag);
+			add_tag_kind(cons_tag, TagKind::Consequent);
 		}
 	}
 	return main_tags_list;
@@ -459,7 +542,9 @@ void TagParser::remove_if_unwanted(TagEditState & state, QString &tag) const
 	}
 }
 
-void TagEditState::clear() {
+
+void TagEditState::clear()
+{
 	m_removed_tags.clear();
 	m_replaced_tags.clear();
 	m_related_tags.clear();
@@ -475,7 +560,6 @@ bool TagEditState::needAdd(const QString & tag)
 {
 	return m_added_tags.insert(tag).second;
 }
-
 
 bool TagEditState::needAddRelated(const QString & tag)
 {

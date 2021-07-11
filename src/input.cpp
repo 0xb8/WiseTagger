@@ -9,9 +9,12 @@
 #include "global_enums.h"
 #include "util/misc.h"
 
+#include <vector>
 #include <QKeyEvent>
 #include <QLoggingCategory>
 #include <QSettings>
+#include <QTextLayout>
+#include <QCoreApplication>
 
 
 namespace logging_category {
@@ -26,6 +29,9 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 {
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 	connect(&m_tag_parser, &TagParser::parseError, this, &TagInput::parseError);
+	connect(this, &QLineEdit::textEdited, this, [this](auto){
+		classifyText();
+	});
 }
 
 void TagInput::fixTags(bool sort)
@@ -195,9 +201,29 @@ void TagInput::loadTagData(const QByteArray& data)
 	setCompleter(m_completer.get());
 }
 
+static void set_line_edit_text_formats(QLineEdit& input, const std::vector<QTextLayout::FormatRange>& formats)
+{
+	QList<QInputMethodEvent::Attribute> attributes;
+	for(const auto& fr : formats) {
+		QInputMethodEvent::AttributeType type = QInputMethodEvent::TextFormat;
+		int start = fr.start - input.cursorPosition();
+		int length = fr.length;
+		QVariant value = fr.format;
+		attributes.append(QInputMethodEvent::Attribute(type, start, length, value));
+	}
+	QInputMethodEvent event(QString(), attributes);
+	QCoreApplication::sendEvent(&input, &event);
+}
+
+static void clear_line_edit_text_formats(QLineEdit& input)
+{
+	set_line_edit_text_formats(input, std::vector<QTextLayout::FormatRange>{});
+}
+
 void TagInput::clearTagData()
 {
 	loadTagData(QByteArray{});
+	clear_line_edit_text_formats(*this);
 }
 
 void TagInput::setText(const QString &s)
@@ -216,6 +242,69 @@ void TagInput::updateText(const QString &t)
 {
 	m_text_list = t.split(QChar(' '), QString::SkipEmptyParts);
 	QLineEdit::setText(t);
+	classifyText();
+}
+
+void TagInput::classifyText()
+{
+	const auto tag_list = tags_list();
+	const auto text = QLineEdit::text();
+
+	std::unordered_set<QStringView> antecedent_tags;
+	std::unordered_set<QString> consequent_tags;
+
+	for (const auto& tag: tag_list) {
+		if (m_tag_parser.getConsequents(tag, consequent_tags)) {
+			antecedent_tags.insert(tag); // add antecedent tag too
+		}
+	}
+
+	std::vector<QTextLayout::FormatRange> formats;
+
+	int offset = 0;
+	for (const auto& tag : tag_list) {
+		offset = text.indexOf(tag, offset);
+		if (offset < 0)
+			break;
+
+		QTextCharFormat f;
+		auto tag_kind = m_tag_parser.classify(tag);
+
+		if (tag_kind & TagParser::TagKind::Unknown) {
+			f.setForeground(getUnknownTagColor());
+		} else {
+			// this tag implies another tag
+			if (antecedent_tags.find(tag) != antecedent_tags.end()) {
+				f.setFontItalic(true);
+				f.setFontWeight(QFont::Bold);
+			}
+		}
+
+		if (tag_kind & TagParser::TagKind::Consequent) {
+			// this tag is implied by other tag
+			if (consequent_tags.find(tag) != consequent_tags.end()) {
+				f.setFontItalic(true);
+			}
+		}
+
+		if (tag_kind & TagParser::TagKind::Replaced) {
+			f.setForeground(getReplacedTagColor());
+
+		}
+		if (tag_kind & TagParser::TagKind::Removed) {
+			f.setForeground(getRemovedTagColor());
+		}
+
+		QTextLayout::FormatRange fr;
+		fr.start = offset;
+		fr.length = tag.length();
+		fr.format = f;
+
+		formats.push_back(fr);
+		offset += tag.length();
+	}
+
+	set_line_edit_text_formats(*this, formats);
 }
 
 QString TagInput::postURL() const
@@ -269,6 +358,36 @@ void TagInput::setViewMode(ViewMode view_mode)
 		setStyleSheet(QStringLiteral("border-top-width: 1px; border-top-style: outset;"));
 	}
 	setFont(font);
+}
+
+QColor TagInput::getRemovedTagColor() const
+{
+	return m_removed_tag_color;
+}
+
+void TagInput::setRemovedTagColor(QColor color)
+{
+	m_removed_tag_color = color;
+}
+
+QColor TagInput::getReplacedTagColor() const
+{
+	return m_replaced_tag_color;
+}
+
+void TagInput::setReplacedTagColor(QColor color)
+{
+	m_replaced_tag_color = color;
+}
+
+QColor TagInput::getUnknownTagColor() const
+{
+	return m_unknown_tag_color;
+}
+
+void TagInput::setUnknownTagColor(QColor color)
+{
+	m_unknown_tag_color = color;
 }
 
 bool TagInput::next_completer()
