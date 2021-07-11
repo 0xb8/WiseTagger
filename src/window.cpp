@@ -85,6 +85,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_iqdb_search(     tr("&Reverse Search Image..."), nullptr)
 	, a_exit(            tr("&Exit"), nullptr)
 	, a_hide(            tr("Hide to tray"), nullptr)
+	, a_set_queue_filter(tr("Set &Queue Filter..."), nullptr)
 	, a_next_file(       tr("&Next Image"), nullptr)
 	, a_prev_file(       tr("&Previous Image"), nullptr)
 	, a_save_file(       tr("&Save"), nullptr)
@@ -290,6 +291,7 @@ void Window::updateStatusBarText()
 		m_statusbar_label.clear();
 		return;
 	}
+
 	if(m_show_current_directory) {
 		auto last_modified = m_tagger.currentFileLastModified();
 		statusBar()->showMessage(tr("In directory:  %1      Last modified: %2 ago (%3)")
@@ -299,8 +301,29 @@ void Window::updateStatusBarText()
 	}
 	const auto current = m_tagger.queue().currentIndex() + 1u;
 	const auto qsize   = m_tagger.queue().size();
-	m_statusbar_label.setText(QStringLiteral("%1 / %2  ")
-		.arg(QString::number(current), QString::number(qsize)));
+	auto queue_filter  = m_tagger.queueFilter();
+	if (queue_filter.isEmpty()) {
+		m_statusbar_label.setText(QStringLiteral("%1 / %2  ")
+			.arg(QString::number(current), QString::number(qsize)));
+	} else {
+		const bool matches = m_tagger.queue().currentFileMatchesQueueFilter();
+
+		const auto current_filtered = m_tagger.queue().currentIndexFiltered() + 1u;
+		const auto filtered_qsize = m_tagger.queue().filteredSize();
+		auto color = m_statusbar_label.palette().color(QPalette::Disabled, QPalette::WindowText);
+
+		m_statusbar_label.setText(tr(
+			"<a href=\"#filter\" style=\"color:#0089cc;\">"
+			"Queue Filter:</a>&nbsp;&nbsp;%1"
+			"&nbsp;&nbsp;%2&nbsp;&nbsp;"
+			"%3&nbsp;/&nbsp;%4&nbsp;&nbsp;%5")
+		                          .arg(matches ? QStringLiteral("<b>%1</b>").arg(queue_filter) : queue_filter,
+		                               matches ? "" : (filtered_qsize ? tr("(not matched)") : tr("(no matches)")),
+		                               matches ? QString::number(current_filtered) : QString::number(current),
+		                               matches ? QString::number(filtered_qsize)   : QString::number(qsize),
+		                               matches ? QStringLiteral("|&nbsp;&nbsp;<span style=\"color: %3;\">%1 / %2</span>&nbsp;&nbsp;").arg(current).arg(qsize).arg(color.name()) : ""));
+	}
+
 }
 
 void Window::updateImageboardPostURL(QString url)
@@ -811,6 +834,7 @@ void Window::createActions()
 	a_open_dir.setShortcut(     QKeySequence(tr("Ctrl+D", "File|Open Directory")));
 	a_next_file.setShortcut(    QKeySequence(Qt::Key_Right));
 	a_prev_file.setShortcut(    QKeySequence(Qt::Key_Left));
+	a_set_queue_filter.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 	a_save_file.setShortcut(    QKeySequence::Save);
 	a_save_next.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Left));
@@ -925,6 +949,26 @@ void Window::createActions()
 	{
 		m_tagger.rename(Tagger::RenameOption::ReopenFile);
 	});
+	connect(&m_filter_dialog, &FilterDialog::finished, this, [this](int result){
+
+		auto dialog = qobject_cast<FilterDialog*>(sender());
+		Q_ASSERT(dialog);
+		pdbg << result;
+
+		if (result == QDialog::Accepted) {
+			m_tagger.setQueueFilter(dialog->text());
+		}
+		updateStatusBarText();
+	});
+	auto set_queue_filter = [this](auto _)
+	{
+		Q_UNUSED(_);
+		m_filter_dialog.setModel(m_tagger.completionModel());
+		m_filter_dialog.setText(m_tagger.queueFilter());
+		m_filter_dialog.open();
+	};
+	connect(&a_set_queue_filter, &QAction::triggered, this, set_queue_filter);
+	connect(&m_statusbar_label, &QLabel::linkActivated, this, set_queue_filter);
 	connect(&a_next_file,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.nextFile();
@@ -1238,6 +1282,8 @@ void Window::createMenus()
 	add_action(menu_navigation, a_save_next);
 	add_action(menu_navigation, a_save_prev);
 	add_separator(menu_navigation);
+	add_action(menu_navigation, a_set_queue_filter);
+	add_separator(menu_navigation);
 	add_action(menu_navigation, a_open_loc);
 	add_action(menu_navigation, a_open_tags);
 	add_separator(menu_navigation);
@@ -1302,6 +1348,7 @@ void Window::createMenus()
 	add_action(menu_context_tagger, a_prev_file);
 	add_separator(menu_context_tagger);
 	menu_context_tagger.addMenu(&menu_sort);
+	add_action(menu_context_tagger, a_set_queue_filter);
 	add_separator(menu_context_tagger);
 	add_action(menu_context_tagger, a_ib_replace);
 	add_action(menu_context_tagger, a_ib_restore);
@@ -1357,6 +1404,7 @@ void Window::createMenus()
 	setStatusBar(&m_statusbar);
 	m_statusbar.setObjectName(QStringLiteral("StatusBar"));
 	m_statusbar_label.setObjectName(QStringLiteral("StatusbarInfo"));
+	m_statusbar_label.setOpenExternalLinks(false);
 	m_statusbar.setSizeGripEnabled(false);
 	m_statusbar.addPermanentWidget(&m_statusbar_label);
 }

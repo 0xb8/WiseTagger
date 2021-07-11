@@ -31,6 +31,36 @@ void FileQueue::setNameFilter(const QStringList &f) noexcept(false)
 	m_name_filters = f;
 }
 
+void FileQueue::setSubstringFilter(const QStringList & filters)
+{
+	m_substr_filter_include.clear();
+	m_substr_filter_exclude.clear();
+
+	if (!filters.isEmpty()) {
+		for (const auto& tag : filters) {
+			if (tag.size() > 1 && (tag[0] == '!' || tag[0] == '-'))
+				m_substr_filter_exclude.append(tag.mid(1));
+			else
+				m_substr_filter_include.append(tag);
+		}
+		m_substr_filter_exclude.sort();
+		m_substr_filter_include.sort();
+
+		m_substr_filter_exclude.erase(std::unique(m_substr_filter_exclude.begin(),
+		                                          m_substr_filter_exclude.end()),
+		                              m_substr_filter_exclude.end());
+		m_substr_filter_include.erase(std::unique(m_substr_filter_include.begin(),
+		                                          m_substr_filter_include.end()),
+		                              m_substr_filter_include.end());
+	}
+	update_filter();
+}
+
+bool FileQueue::substringFilterActive() const
+{
+	return m_substr_filter_exclude.size() + m_substr_filter_include.size();
+}
+
 bool FileQueue::checkSessionFileSuffix(const QFileInfo &fi)
 {
 	return fi.suffix() == QStringLiteral("wt-session") || fi.filePath() == QStringLiteral("-");
@@ -61,10 +91,19 @@ void FileQueue::push(const QString &f)
 	if(fi.isFile() && checkExtension(fi)) {
 		m_files.push_back(fi.absoluteFilePath());
 
+		if (fileMatchesFilter(fi)) {
+			m_filtered_indices.push_back(m_files.size()-1);
+		}
+
 	} else if(fi.isDir()) {
 		QDirIterator it(f, m_name_filters, QDir::Files);
 		while(it.hasNext() && !it.next().isNull()) {
-			m_files.push_back(it.fileInfo().absoluteFilePath());
+			auto fi = it.fileInfo();
+			m_files.push_back(fi.absoluteFilePath());
+
+			if (fileMatchesFilter(fi)) {
+				m_filtered_indices.push_back(m_files.size()-1);
+			}
 		}
 	} else {
 		pwarn << "push() : extension not allowed by filter:" << fi.fileName();
@@ -95,6 +134,7 @@ void FileQueue::assign(const QStringList& paths)
 
 	std::swap(tmp, m_files);
 	m_current = FileQueue::npos;
+	update_filter();
 }
 
 const QString& FileQueue::select(size_t index) noexcept
@@ -183,6 +223,8 @@ void FileQueue::sort() noexcept
 	select(find(curr_file));
 	if(m_current >= m_files.size()) // in case duplicates were actually erased
 		m_current = 0;
+
+	update_filter();
 }
 
 FileQueue::RenameResult FileQueue::renameCurrentFile(const QString& new_path)
@@ -235,6 +277,8 @@ void FileQueue::eraseCurrent()
 	m_files.erase(std::next(std::begin(m_files), m_current));
 	if(m_current >= m_files.size())
 		m_current = 0u;
+
+	update_filter();
 }
 
 size_t FileQueue::saveToFile(const QString &path) const
@@ -331,9 +375,46 @@ size_t FileQueue::loadFromFile(const QString &path)
 	return m_files.size();
 }
 
+void FileQueue::update_filter()
+{
+	m_filtered_indices.clear();
+	m_filter_current = npos;
+
+	// filter is not set, nothiing to do
+	if (!substringFilterActive())
+		return;
+
+	for (size_t i = 0; i < m_files.size(); ++i) {
+		auto file = m_files[i];
+		QFileInfo fi(file);
+		if (fileMatchesFilter(fi)) {
+			m_filtered_indices.push_back(i);
+			if (i == m_current) // current file matches the filter, keep it as current in the filtered queue
+				m_filter_current = m_filtered_indices.size() - 1;
+		}
+	}
+
+	// current file did not match the filter, select the first file that did.
+	if (m_filter_current == npos && !m_filtered_indices.empty())
+		m_filter_current = 0;
+}
+
 const QString& FileQueue::forward() noexcept
 {
 	static_assert(noexcept(m_files[m_current]), "");
+
+	if (!m_filtered_indices.empty()) {
+		if(m_filter_current >= m_filtered_indices.size()) {
+			pwarn << "forward(): filtered queue empty or index is out of bounds";
+			return m_empty;
+		}
+		if (++m_filter_current >= m_filtered_indices.size()) {
+			m_filter_current = 0u;
+		}
+		auto main_index = m_filtered_indices[m_filter_current];
+		m_current = main_index;
+		return m_files[m_current];
+	}
 
 	if(m_current >= m_files.size()) {
 		pwarn << "forward(): queue empty or index is out of bounds";
@@ -348,6 +429,20 @@ const QString& FileQueue::forward() noexcept
 const QString& FileQueue::backward() noexcept
 {
 	static_assert(noexcept(m_files[m_current]), "");
+
+	if (!m_filtered_indices.empty()) {
+		if(m_filter_current >= m_filtered_indices.size()) {
+			pwarn << "backward(): filtered queue empty or index is out of bounds";
+			return m_empty;
+		}
+		if (m_filter_current == 0u) {
+			m_filter_current = m_filtered_indices.size();
+		}
+		--m_filter_current;
+		auto main_index = m_filtered_indices[m_filter_current];
+		m_current = main_index;
+		return m_files[m_current];
+	}
 
 	if(m_current >= m_files.size()) {
 		pwarn << "backward(): queue empty or index is out of bounds";
@@ -399,6 +494,42 @@ const QString &FileQueue::current() const noexcept
 	return m_files[m_current]; // no need for another bounds-check
 }
 
+bool FileQueue::currentFileMatchesQueueFilter() const noexcept
+{
+	if (!substringFilterActive())
+		return true;
+
+	if (m_filter_current >= m_filtered_indices.size())
+		return false;
+
+	// current filtered index is the same as unfiltered index
+	return m_filtered_indices[m_filter_current] == m_current;
+}
+
+bool FileQueue::fileMatchesFilter(const QFileInfo& file) const
+{
+	QString name = file.completeBaseName();
+	QStringList tags = name.split(' ', QString::SkipEmptyParts);
+	tags.sort();
+	tags.erase(std::unique(tags.begin(),
+	                       tags.end()),
+	           tags.end());
+
+	QStringList res;
+	std::set_intersection(tags.begin(), tags.end(),
+	                      m_substr_filter_exclude.begin(), m_substr_filter_exclude.end(),
+	                      std::back_inserter(res));
+	if (!res.isEmpty())
+		return false;
+
+	res.clear();
+	std::set_intersection(tags.begin(), tags.end(),
+	                      m_substr_filter_include.begin(), m_substr_filter_include.end(),
+	                      std::back_inserter(res));
+
+	return res.size() == m_substr_filter_include.size();
+}
+
 size_t FileQueue::currentIndex() const noexcept
 {
 	static_assert(noexcept(m_files.size()), "");
@@ -409,10 +540,25 @@ size_t FileQueue::currentIndex() const noexcept
 	return m_current;
 }
 
+size_t FileQueue::currentIndexFiltered() const noexcept
+{
+	static_assert(noexcept(m_filtered_indices.size()), "");
+	if(m_filter_current >= m_filtered_indices.size()) {
+		pwarn << "currentIndexFiltered(): filtered queue empty or index is out of bounds";
+		return FileQueue::npos;
+	}
+	return m_filter_current;
+}
+
 bool FileQueue::empty() const noexcept
 {
 	static_assert(noexcept(m_files.empty()), "");
 	return m_files.empty();
+}
+
+bool FileQueue::filteredEmpty() const noexcept
+{
+	return m_filtered_indices.empty();
 }
 
 size_t FileQueue::size() const noexcept
@@ -421,9 +567,17 @@ size_t FileQueue::size() const noexcept
 	return m_files.size();
 }
 
+size_t FileQueue::filteredSize() const noexcept
+{
+	static_assert(noexcept(m_filtered_indices.size()), "");
+	return m_filtered_indices.size();
+}
+
 void FileQueue::clear() noexcept
 {
 	static_assert(noexcept(m_files.clear()), "");
 	m_files.clear();
+	m_filtered_indices.clear();
 	m_current = 0u;
+	m_filter_current = npos;
 }

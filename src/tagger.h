@@ -158,6 +158,12 @@ public:
 	/// Last modified date of current media.
 	QDateTime currentFileLastModified() const;
 
+	/// Filter string that filename must match to be selected in queue.
+	QString queueFilter() const;
+
+	/// Returns pointer to current tags completion model.
+	QAbstractItemModel* completionModel();
+
 	/// Reference to FileQueue.
 	FileQueue& queue();
 
@@ -206,6 +212,9 @@ public slots:
 
 	/// Set media mute state.
 	void setMediaMuted(bool muted);
+
+	/// Set filter string that filename must match to be selected in queue.
+	void setQueueFilter(QString filter_str);
 
 signals:
 	/// Emitted when media file has been successfully opened.
@@ -256,6 +265,11 @@ signals:
 	 */
 	void hideRequested();
 
+	/*!
+	 * \brief Emitted when picture label link is clicked.
+	 */
+	void linkActivated(QString link);
+
 protected:
 	void keyPressEvent(QKeyEvent* e) override;
 	void timerEvent(QTimerEvent* e) override;
@@ -294,6 +308,9 @@ private:
 	QStringList m_current_tag_files;
 	QString     m_temp_tags;
 	QStringList m_original_tags;
+
+	QString     m_queue_filter_src;
+
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
 	unsigned    m_overall_new_tag_counts = 0u;

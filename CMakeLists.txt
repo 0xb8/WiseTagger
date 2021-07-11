@@ -12,6 +12,7 @@ set(wt_srcs
 	src/main.cpp
 	src/global_enums.cpp
 	src/file_queue.cpp
+	src/filter_dialog.cpp
 	src/input.cpp
 	src/multicompleter.cpp
 	src/picture.cpp

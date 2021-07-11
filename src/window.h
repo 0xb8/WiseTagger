@@ -15,6 +15,7 @@
 #include "reverse_search.h"
 #include "tagger.h"
 #include "settings_dialog.h"
+#include "filter_dialog.h"
 #include "util/project_info.h"
 #include <vector>
 #include <QMainWindow>
@@ -126,6 +127,7 @@ private:
 	QAction a_iqdb_search;
 	QAction a_exit;
 	QAction a_hide;
+	QAction a_set_queue_filter;
 	QAction a_next_file;
 	QAction a_prev_file;
 	QAction a_save_file;
@@ -189,6 +191,8 @@ private:
 	int        m_notification_count = 0;
 	bool       m_show_current_directory = false;
 	bool       m_view_maximized = false;
+
+	FilterDialog m_filter_dialog;
 
 #ifdef Q_OS_WIN32
 	QWinTaskbarButton       m_win_taskbar_button;

@@ -20,7 +20,7 @@
 
 /*!
  * \brief File Queue class designed for image viewing and renaming.
- * 
+ *
  * Class \ref FileQueue allows to select certain file as current and perform typical
  * operations on it, such as removing or deleting that file.
  *
@@ -67,11 +67,24 @@ public:
 
 
 	/*!
+	 * \brief Set filename substring filter.
+	 * \param filters List of substring filters.
+	 */
+	void setSubstringFilter(const QStringList& filters);
+
+
+	/*!
+	 * \brief Is substring filter currently activated.
+	 */
+	bool substringFilterActive() const;
+
+
+	/*!
 	 * \brief Enqueue a file or all files inside a directory.
 	 * \param path Path to file or directory.
 	 *
 	 * If \p path is a file, it is added to queue. If \p path is a directory,
-	 * all files inside \p path are added to queue, according to filters set 
+	 * all files inside \p path are added to queue, according to filters set
 	 * by \ref FileQueue::setNameFilter()
 	 *
 	 * \note This function provides basic exception safety guarantee.
@@ -125,7 +138,7 @@ public:
 	 *
 	 * When \p index is negative, returns Nth file from the back of queue.
 	 * When absolute value of \p index is larger than size of queue, the
-	 * resulting file index is determined as follows: 
+	 * resulting file index is determined as follows:
 	 * \code index % queue_size \endcode.
 	 */
 	const QString& nth(ptrdiff_t index) noexcept;
@@ -149,9 +162,28 @@ public:
 
 
 	/*!
+	 * \brief Does the current file match the current filter.
+	 */
+	bool currentFileMatchesQueueFilter() const noexcept;
+
+
+	/*!
+	 * \brief Does the \p file match the current filter.
+	 */
+	bool fileMatchesFilter(const QFileInfo& file) const;
+
+
+	/*!
 	 * \brief Check if the queue is empty.
 	 */
 	bool   empty()        const noexcept;
+
+
+	/*!
+	 * \brief Check if filtered queue is empty;
+	 * \return
+	 */
+	bool   filteredEmpty() const noexcept;
 
 
 	/*!
@@ -161,11 +193,23 @@ public:
 
 
 	/*!
+	 * \brief Number of files in queue that pass the filter.
+	 */
+	size_t filteredSize() const noexcept;
+
+
+	/*!
 	 * \brief Index of currently selected file.
 	 * \return Index of currently selected file.
 	 * \retval FileQueue::npos Queue is empty
 	 */
 	size_t currentIndex() const noexcept;
+
+	/*!
+	 * \brief Index of currently selected file among filtered files.
+	 * \return FileQueue::npos Filtered queue is empty
+	 */
+	size_t currentIndexFiltered() const noexcept;
 
 
 	/*!
@@ -217,10 +261,16 @@ public:
 	size_t loadFromFile(const QString& path);
 
 private:
+	void update_filter();
+
 	static const QString m_empty;
 	std::deque<QString>  m_files;
+	std::deque<size_t>   m_filtered_indices;
 	QStringList          m_name_filters;
+	QStringList          m_substr_filter_include;
+	QStringList          m_substr_filter_exclude;
 	size_t               m_current = npos;
+	size_t               m_filter_current = npos;
 	SortQueueBy          m_sort_by = SortQueueBy::FileName;
 };
 

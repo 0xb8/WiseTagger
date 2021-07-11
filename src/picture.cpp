@@ -47,7 +47,8 @@ Picture::Picture(QWidget *parent) :
 	textcolor.setAlpha(140);
 	pal.setColor(QPalette::WindowText, textcolor);
 
-	setTextInteractionFlags(Qt::NoTextInteraction);
+	setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+	setOpenExternalLinks(false);
 	setAutoFillBackground(true);
 	setPalette(pal);
 

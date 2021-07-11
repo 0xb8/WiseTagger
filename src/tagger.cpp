@@ -70,6 +70,7 @@ Tagger::Tagger(QWidget *_parent) :
 
 	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
 	connect(&m_input, &TagInput::parseError, this, &Tagger::parseError);
+	connect(&m_picture, &Picture::linkActivated, this, &Tagger::linkActivated);
 	connect(this, &Tagger::fileRenamed, &TaggerStatistics::instance(), &TaggerStatistics::fileRenamed);
 	connect(this, &Tagger::fileOpened, this, [this](const auto& file)
 	{
@@ -409,9 +410,19 @@ QDateTime Tagger::currentFileLastModified() const
 	return fi.lastModified();
 }
 
+QString Tagger::queueFilter() const
+{
+	return m_queue_filter_src;
+}
+
+QAbstractItemModel * Tagger::completionModel()
+{
+	return m_input.completionModel();
+}
+
 bool Tagger::fileModified() const
 {
-	if(m_file_queue.empty()) // NOTE: to avoid FileQueue::current() returning invalid reference.
+	if(isEmpty()) // NOTE: to avoid FileQueue::current() returning invalid reference.
 		return false;
 
 	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
@@ -554,6 +565,11 @@ void Tagger::setMediaMuted(bool muted)
 	m_media_muted = muted;
 }
 
+void Tagger::setQueueFilter(QString filter_str)
+{
+	m_queue_filter_src = filter_str;
+	m_file_queue.setSubstringFilter(filter_str.split(' ', QString::SkipEmptyParts));
+}
 
 void Tagger::keyPressEvent(QKeyEvent * e)
 {
@@ -675,7 +691,7 @@ void Tagger::openTagFilesInShell()
 
 void Tagger::findTagsFiles(bool force)
 {
-	if(m_file_queue.empty())
+	if(isEmpty())
 		return;
 
 	const auto c = currentDir();

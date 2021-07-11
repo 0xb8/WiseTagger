@@ -22,6 +22,10 @@ QLabel#StatusbarInfo {
     color: #999;
 }
 
+QLabel#StatusbarInfo:disabled {
+    color: #666;
+}
+
 QStatusBar {
     background-color: rgba(0,0,0,0.3) !important;
     border-top: 1px outset #111;

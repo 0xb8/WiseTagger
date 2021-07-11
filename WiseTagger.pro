@@ -39,6 +39,7 @@ Debug:PRECOMPILED_HEADER += util/precompiled.h
 
 SOURCES +=                                           \
     src/file_queue.cpp                               \
+    src/filter_dialog.cpp                            \
     src/global_enums.cpp                             \
     src/input.cpp                                    \
     src/main.cpp                                     \
@@ -57,6 +58,7 @@ SOURCES +=                                           \
 
 HEADERS  +=                                          \
     src/file_queue.h                                 \
+    src/filter_dialog.h                              \
     src/global_enums.h                               \
     src/input.h                                      \
     src/multicompleter.h                             \

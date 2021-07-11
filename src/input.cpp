@@ -390,6 +390,11 @@ void TagInput::setUnknownTagColor(QColor color)
 	m_unknown_tag_color = color;
 }
 
+QAbstractItemModel * TagInput::completionModel()
+{
+	return &m_tags_model;
+}
+
 bool TagInput::next_completer()
 {
     if(m_completer->setCurrentRow(m_index++))

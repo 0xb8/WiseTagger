@@ -154,6 +154,11 @@ public:
 	 */
 	void   setUnknownTagColor(QColor color);
 
+	/*!
+	 * \brief Returns pointer to current tag autocomplete model.
+	 */
+	QAbstractItemModel* completionModel();
+
 signals:
 
 	/*!
@@ -204,4 +209,5 @@ private:
 	QColor m_replaced_tag_color;
 	QColor m_unknown_tag_color;
 };
+
 #endif // TAGINPUT_H
