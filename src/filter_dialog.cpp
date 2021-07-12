@@ -143,10 +143,12 @@ void CompletionEdit::setModel(QAbstractItemModel * model)
 		m_tags_model.setData(dst_index, comm, Qt::DisplayRole);
 
 		const auto dst_index_neg = m_tags_model.index(rows + i, 0);
-		m_tags_model.setData(dst_index_neg, "-" + tag, Qt::UserRole);
-		m_tags_model.setData(dst_index_neg, "-" + comm, Qt::DisplayRole);
-	}
+		const auto negtag = tag.startsWith('-') ? tag : "-" + tag;
+		const auto negcom = comm.startsWith('-') ? comm : "-" + comm;
 
+		m_tags_model.setData(dst_index_neg, negtag, Qt::UserRole);
+		m_tags_model.setData(dst_index_neg, negcom, Qt::DisplayRole);
+	}
 
 	m_completer = std::make_unique<MultiSelectCompleter>(&m_tags_model, nullptr);
 	m_completer->setCompletionRole(Qt::UserRole);

@@ -212,6 +212,14 @@ private:
 	 */
 	void        remove_if_unwanted(TagEditState& state, QString& tag) const;
 
+	/*!
+	 * \brief Remove all instances of a tag if negated ("-tag") instance exists.
+	 *
+	 * If specified tag was already processed by this function, it will not
+	 * be processed again to allow user to restore autoremoved tag.
+	 */
+	void        remove_explicit(TagEditState& state, QStringList& text_list) const;
+
 	//----------------------------------------------------------------------
 
 	/// List of all top-level tags from tag files.

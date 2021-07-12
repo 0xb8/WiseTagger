@@ -30,7 +30,8 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 	connect(&m_tag_parser, &TagParser::parseError, this, &TagInput::parseError);
 	connect(this, &QLineEdit::textEdited, this, [this](auto){
-		classifyText();
+		const auto tag_list = tags_list();
+		classifyText(tag_list);
 	});
 }
 
@@ -159,7 +160,7 @@ void TagInput::focusInEvent(QFocusEvent * event)
 	}
 }
 
-static void update_model(QStandardItemModel& model, const TagParser& parser)
+static int update_model(QStandardItemModel& model, const TagParser& parser)
 {
 	const auto& tags = parser.getAllTags();
 	model.clear();
@@ -184,6 +185,7 @@ static void update_model(QStandardItemModel& model, const TagParser& parser)
 			model.setData(index, tag, Qt::DisplayRole);
 		}
 	}
+	return model.rowCount();
 }
 
 void TagInput::loadTagData(const QByteArray& data)
@@ -193,7 +195,7 @@ void TagInput::loadTagData(const QByteArray& data)
 		return;
 	}
 
-	update_model(m_tags_model, m_tag_parser);
+	m_tags_model_num_main_tags = update_model(m_tags_model, m_tag_parser);
 
 	m_completer = std::make_unique<MultiSelectCompleter>(&m_tags_model, nullptr);
 	m_completer->setCompletionRole(Qt::UserRole);
@@ -242,12 +244,15 @@ void TagInput::updateText(const QString &t)
 {
 	m_text_list = t.split(QChar(' '), QString::SkipEmptyParts);
 	QLineEdit::setText(t);
-	classifyText();
+
+	const auto tag_list = tags_list();
+	classifyText(tag_list);
+	updateModelRemovedTags(tag_list);
 }
 
-void TagInput::classifyText()
+void TagInput::classifyText(const QStringList& tag_list)
 {
-	const auto tag_list = tags_list();
+
 	const auto text = QLineEdit::text();
 
 	std::unordered_set<QStringView> antecedent_tags;
@@ -305,6 +310,31 @@ void TagInput::classifyText()
 	}
 
 	set_line_edit_text_formats(*this, formats);
+}
+
+void TagInput::updateModelRemovedTags(const QStringList& tag_list)
+{
+	int current_row = m_tags_model_num_main_tags;
+
+	// add all tags to model with negation
+	for (const auto& tag : tag_list) {
+
+		if (tag.startsWith('-'))
+			continue; // shouldn't happen, but just in case
+
+		if (current_row >= m_tags_model.rowCount()) {
+			m_tags_model.setRowCount(current_row + 1);
+		}
+
+		auto dst_index = m_tags_model.index(current_row, 0);
+		const auto negtag = "-" + tag;
+		m_tags_model.setData(dst_index, negtag, Qt::DisplayRole);
+		m_tags_model.setData(dst_index, negtag, Qt::UserRole);
+		++current_row;
+	}
+
+	// remove any remaining rows
+	m_tags_model.setRowCount(current_row);
 }
 
 QString TagInput::postURL() const

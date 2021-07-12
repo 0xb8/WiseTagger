@@ -81,11 +81,14 @@ QStringList TagParser::fixTags(TagEditState& state,
 		text_list += related_tags(state, text_list[i]);
 	}
 
+	// remove tags by negation
+	remove_explicit(state, text_list);
+
 	text_list.erase(
 		std::remove_if(
 			text_list.begin(),
 			text_list.end(),
-			[](const auto& s){ return s.isEmpty(); }),
+			[](const auto& s){ return s.isEmpty() || s.startsWith('-'); }),
 		text_list.end());
 
 	// order matters here, cannot use std::unique :(
@@ -538,6 +541,23 @@ void TagParser::remove_if_unwanted(TagEditState & state, QString &tag) const
 		if(state.needRemove(tag)) {
 			/* Next time this tag will not be removed */
 			tag.clear();
+		}
+	}
+}
+
+void TagParser::remove_explicit(TagEditState& state, QStringList & text_list) const
+{
+	for (auto& tag : text_list) {
+		// find "-tag"
+		auto neg_pos = std::find_if(
+			text_list.begin(),
+			text_list.end(),
+			[&tag](const auto& s){ return s.startsWith('-') && s.midRef(1) == tag; });
+		if (neg_pos != text_list.end()) {
+			if (state.needRemove(tag)) {
+				tag.clear();
+			}
+			// negated tag will be removed by caller anyway
 		}
 	}
 }

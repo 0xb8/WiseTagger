@@ -187,7 +187,12 @@ private:
 	bool        next_completer();
 
 	void        updateText(const QString &t);
-	void        classifyText();
+
+	/// Classify all tags in current list and style accordingly.
+	void        classifyText(const QStringList & tag_list);
+
+	/// Add negated versions of all tags in current list and append to model.
+	void        updateModelRemovedTags(const QStringList& tag_list);
 
 	int         m_index;
 	QStringList m_text_list;
@@ -201,6 +206,8 @@ private:
 	 * into \c Qt::DisplayRole.
 	 */
 	QStandardItemModel m_tags_model;
+	/// Number of main tags in model.
+	int m_tags_model_num_main_tags = 0;
 
 	std::unique_ptr<MultiSelectCompleter>     m_completer;
 	using tag_iterator = decltype(std::begin(m_text_list));
