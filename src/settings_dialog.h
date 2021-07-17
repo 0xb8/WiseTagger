@@ -35,6 +35,7 @@ public slots:
 
 signals:
 	void updated();
+	void restart();
 
 private:
 	void resetModel();

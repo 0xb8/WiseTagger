@@ -178,6 +178,23 @@ bool Tagger::openSession(const QString& sfile)
 	return res;
 }
 
+bool Tagger::openSession(const QByteArray & sdata)
+{
+	if(rename() == RenameStatus::Cancelled)
+		return false;
+
+	if(!m_file_queue.loadFromMemory(sdata)) {
+		QMessageBox::critical(this,
+			tr("Load Session Failed"),
+			tr("<p>Could not load session from memory buffer</p>"));
+		return false;
+	}
+	m_picture.cache.clear();
+
+	bool res = loadCurrentFile();
+	return res;
+}
+
 void Tagger::nextFile(RenameOptions options)
 {
 	if(rename(options) == RenameStatus::Cancelled)
@@ -194,6 +211,16 @@ void Tagger::prevFile(RenameOptions options)
 
 	m_file_queue.backward();
 	loadCurrentFile();
+}
+
+void Tagger::setText(const QString & text)
+{
+	m_input.setText(text);
+}
+
+QString Tagger::text() const
+{
+	return m_input.text();
 }
 
 bool Tagger::openFileInQueue(size_t index)
@@ -312,7 +339,7 @@ void Tagger::tagsFetched(QString file, QString tags)
 			} else {
 				// if there was only hash filename to begin with,
 				// just use the imageboard tags without asking
-				m_input.setText(tags);
+				setText(tags);
 			}
 		}
 	}
@@ -892,7 +919,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 
 	m_input.setToolTip(fileRenameable() ? QString() : tr("Renaming disabled: User has no write permission in this directory."));
 	m_input.setEnabled(fileRenameable());
-	m_input.setText(f.completeBaseName());
+	setText(f.completeBaseName());
 
 	// remember original tags so we can show the difference when renaming
 	m_original_tags = m_input.tags_list();
@@ -1143,7 +1170,7 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 
 	if(messagebox_reply == QMessageBox::Discard) {
 		// NOTE: restore to initial state to prevent multiple rename dialogs
-		m_input.setText(file.completeBaseName());
+		setText(file.completeBaseName());
 		return RenameStatus::NotModified;
 	}
 

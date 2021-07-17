@@ -374,12 +374,8 @@ void SettingsDialog::apply()
 
 	auto language_code = util::language_code(ui->appLanguage->currentText());
 	auto previous_code = util::language_from_settings();
-	if(language_code != previous_code) {
-		QMessageBox::information(this,
-			tr("Language Changed"),
-			tr("<p>Please restart %1 to apply language change.</p>")
-				.arg(QStringLiteral(TARGET_PRODUCT)));
-	}
+	bool lang_changed = language_code != previous_code;
+	bool style_changed = ui->appStyle->currentText() != settings.value(S_STYLE).toString();
 
 	settings.setValue(S_LOCALE,        language_code);
 	settings.setValue(S_STYLE,         ui->appStyle->currentText());
@@ -444,6 +440,10 @@ void SettingsDialog::apply()
 	}
 	settings.endArray();
 	emit updated();
+
+	if (lang_changed || style_changed) {
+		emit restart();
+	}
 }
 
 void SettingsDialog::restoreDefaults()

@@ -79,6 +79,9 @@ public slots:
 	/// Update settings
 	void updateSettings();
 
+	/// Close the window and restart the process.
+	void scheduleRestart();
+
 protected:
 	bool eventFilter(QObject*, QEvent *) override;
 	void closeEvent(QCloseEvent*) override;
@@ -108,6 +111,9 @@ private:
 
 	void showNotificationsMenu();
 	void hideNotificationsMenu();
+
+	void restartProcess(QString current_text);
+	void readRestartData();
 
 	static constexpr const char* MainWindowTitle = "%1%2 [%3x%4] (%5)  –  " TARGET_PRODUCT " v%6";
 	static constexpr const char* MainWindowTitleFrameRate = "%1%2 [%3x%4, %7 FPS] (%5)  –  " TARGET_PRODUCT " v%6";

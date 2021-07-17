@@ -260,6 +260,18 @@ public:
 	 */
 	size_t loadFromFile(const QString& path);
 
+	/*!
+	 * \brief Serialize file names in queue to a memory buffer.
+	 */
+	QByteArray saveToMemory() const;
+
+	/*!
+	 * \brief Assign file names into queue from \p memory buffer.
+	 *        Previous contents of queue is lost.
+	 * \return Number of entries added to queue.
+	 */
+	size_t loadFromMemory(const QByteArray& memory);
+
 private:
 	void update_filter();
 

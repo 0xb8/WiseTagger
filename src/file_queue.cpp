@@ -293,21 +293,7 @@ size_t FileQueue::saveToFile(const QString &path) const
 		return 0;
 	}
 
-	QByteArray raw_data;
-	raw_data.reserve(m_files.size() * 128);
-	QTextStream stream(&raw_data, QIODevice::WriteOnly);
-	stream.setCodec("UTF-8");
-
-	stream << m_files.size() << '\n' << m_current << '\n';
-
-	for(const auto& e : m_files) {
-		stream << e << '\n';
-		if(stream.status() != QTextStream::Ok) {
-			pwarn << "TextStream bad status:" << stream.status() << " for: " << e;
-			return 0;
-		}
-	}
-	stream.flush();
+	auto raw_data = saveToMemory();
 	f.write(qCompress(raw_data, 8));
 	const auto ret = f.size();
 	f.commit();
@@ -357,6 +343,61 @@ size_t FileQueue::loadFromFile(const QString &path)
 	QString line;
 	line.reserve(256);
 
+	while (stream.readLineInto(&line)) {
+		if(!line.isEmpty()) {
+			fi.setFile(line);
+			if(checkExtension(fi))
+				res.push_back(fi.canonicalFilePath());
+		}
+	}
+
+	if(!res.empty() && (size_t)curr < res.size()) {
+		m_files = std::move(res);
+		m_current = curr;
+	} else {
+		pwarn << "loadFromFile(): file list is empty or smaller than current file index";
+	}
+
+	return m_files.size();
+}
+
+QByteArray FileQueue::saveToMemory() const
+{
+	QByteArray raw_data;
+	raw_data.reserve(m_files.size() * 128);
+	QTextStream stream(&raw_data, QIODevice::WriteOnly);
+	stream.setCodec("UTF-8");
+
+	stream << m_files.size() << '\n' << m_current << '\n';
+
+	for(const auto& e : m_files) {
+		stream << e << '\n';
+		if(stream.status() != QTextStream::Ok) {
+			pwarn << "TextStream bad status:" << stream.status() << " for: " << e;
+			return 0;
+		}
+	}
+	stream.flush();
+	return raw_data;
+}
+
+size_t FileQueue::loadFromMemory(const QByteArray& memory)
+{
+	QTextStream stream{memory, QIODevice::ReadOnly};
+	stream.setCodec("UTF-8");
+
+	int curr = 0, size = -1;
+	stream >> size >> curr;
+	if(size <= 0 || curr < 0 || curr >= size) {
+		pwarn << "Invalid size / current index:" << curr << size;
+		return 0;
+	}
+
+	std::deque<QString> res;
+	QString line;
+	line.reserve(256);
+
+	QFileInfo fi;
 	while (stream.readLineInto(&line)) {
 		if(!line.isEmpty()) {
 			fi.setFile(line);

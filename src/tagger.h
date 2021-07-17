@@ -59,6 +59,9 @@ public:
 	/// Open tagging session from file.
 	bool openSession(const QString& sfile);
 
+	/// Open tagging session from serialized data.
+	bool openSession(const QByteArray& sdata);
+
 	/// Open file with specified index in queue.
 	bool openFileInQueue(size_t index = 0);
 
@@ -109,6 +112,14 @@ public:
 	 * \param options UI behavior modifiers (see \ref RenameOption).
 	 */
 	void prevFile(RenameOptions options = RenameOption::NoOption);
+
+	/*!
+	 * \brief Set tag input text.
+	 */
+	void setText(const QString& text);
+
+	/// Current tag input text.
+	QString text() const;
 
 	/// Is current file name modified by user.
 	bool    fileModified() const;

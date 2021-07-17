@@ -541,6 +541,11 @@ void Window::parseCommandLineArguments()
 		return;
 
 	if(args.size() == 2) {
+		if (args[1] == QStringLiteral("--restart")) {
+			readRestartData();
+			return;
+		}
+
 		m_tagger.open(args.back()); // may open session file or read list from stdin
 		return;
 	}
@@ -631,6 +636,115 @@ void Window::updateSettings()
 	menu_commands.clear();
 	createCommands();
 	updateMenus();
+}
+
+void Window::restartProcess(QString current_text)
+{
+	Q_ASSERT(!m_tagger.fileModified());
+	class DetachedProc : public QProcess {
+	public:
+		using QProcess::QProcess;
+		void detach() {
+			waitForStarted();
+			setProcessState(QProcess::NotRunning);
+		}
+	};
+
+	DetachedProc proc;
+	QStringList args;
+	if (!m_tagger.isEmpty()) {
+		args.append(QStringLiteral("--restart"));
+	}
+
+	proc.start(qApp->applicationFilePath(), args, QIODevice::WriteOnly);
+	if (!proc.waitForStarted()) {
+		pwarn << "could not start new process";
+
+		// restore modifications
+		m_tagger.setText(current_text);
+		return;
+	}
+
+	if (!m_tagger.isEmpty()) {
+
+		QByteArray header;
+		{
+			QBuffer buffer(&header);
+			buffer.open(QIODevice::WriteOnly);
+			QTextStream out(&buffer);
+			out.setCodec("UTF-8");
+			// version
+			out << 1 << '\n';
+			// current text
+			out << current_text << '\n';
+			// queue filter
+			out << m_tagger.queueFilter() << '\n';
+			// end of header
+			out << "--EOH--" << '\n';
+			out.flush();
+			buffer.close();
+		}
+
+		auto written = proc.write(header);
+		if (written < 0 || written != header.size()) {
+			pwarn << "error writing session header to process stdin";
+		} else {
+
+			// serialize queue and write to stdin of the process
+			auto data = m_tagger.queue().saveToMemory();
+			written = proc.write(data);
+			if (written < 0 || written != data.size()) {
+				pwarn << "error writing session data to process stdin";
+			}
+		}
+		proc.waitForBytesWritten();
+	}
+	proc.closeWriteChannel();
+
+	if (proc.state() == QProcess::Running && proc.error() == QProcess::UnknownError) {
+		bool closed = close();
+		Q_ASSERT(closed);
+		proc.detach();
+	}
+}
+
+void Window::readRestartData()
+{
+	QFile in;
+	in.open(stdin, QIODevice::ReadOnly);
+	QTextStream stream(&in);
+	stream.setCodec("UTF-8");
+
+	auto version = stream.readLine(10);
+	if (version != QStringLiteral("1")) {
+		pwarn << "Unknown input data version:" << version;
+		return;
+	}
+	auto current_text = stream.readLine(10000);
+	auto queue_filter = stream.readLine(10000);
+
+	auto end = stream.readLine(10);
+	if (end != QStringLiteral("--EOH--")) {
+		pwarn << "No end of headers found";
+		return;
+	}
+
+	auto session_data = in.readAll();
+	m_tagger.openSession(session_data);
+	m_tagger.setQueueFilter(queue_filter);
+	m_tagger.setText(current_text);
+	updateStatusBarText();
+}
+
+void Window::scheduleRestart()
+{
+	// remember current tags
+	auto current_text = m_tagger.text();
+
+	// undo tag modification to prevent rename dialog
+	m_tagger.setText(QFileInfo(m_tagger.currentFile()).completeBaseName());
+	// launch process
+	restartProcess(current_text);
 }
 
 void Window::updateStyle()
@@ -1198,6 +1312,10 @@ void Window::createActions()
 		connect(sd, &SettingsDialog::updated, this, &Window::updateSettings);
 		connect(sd, &SettingsDialog::updated, this, &Window::updateProxySettings);
 		connect(sd, &SettingsDialog::updated, &m_tagger, &Tagger::updateSettings);
+		connect(sd, &SettingsDialog::restart, this, [this](){
+			pdbg << "scheduling restart...";
+			QTimer::singleShot(100, this, &Window::scheduleRestart);
+		});
 		connect(sd, &SettingsDialog::finished, [sd](int){
 			sd->deleteLater();
 		});
