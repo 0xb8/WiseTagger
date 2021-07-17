@@ -13,12 +13,14 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QSettings>
+#include <QWhatsThis>
+#include <QCursor>
 
 
 FilterDialog::FilterDialog(QWidget * _parent) : QDialog(_parent)
 {
 	setWindowTitle(tr("Edit queue filter"));
-	setMinimumWidth(400);
+	setMinimumWidth(420);
 
 	setSizeGripEnabled(true);
 
@@ -31,15 +33,30 @@ FilterDialog::FilterDialog(QWidget * _parent) : QDialog(_parent)
 	setFixedHeight(pixel_size * 4);
 	m_edit.setFont(font);
 
-	// hide the question mark button
-	auto flags = windowFlags();
-	flags = flags & (~Qt::WindowContextHelpButtonHint);
-	setWindowFlags(flags);
+	auto help_text = tr("Enter one or more tags to filter queue by:"
+	                    "<ul><li><b><code>tail</code></b> will match any occurence of <code>tail</code>, e.g. <code>ponytail</code></li></ul>"
+	                    "Use quotation marks to match tags exactly:"
+	                    "<ul><li><b><code>\"tail\"</code></b> will match just the tag <code>tail</code></li></ul>"
+	                    "Use minus sign to exclude tags:"
+	                    "<ul><li><b><code>-cat</code></b> will exclude any occurence of <code>cat</code>, e.g. <code>catgirl</code></li>"
+	                    "<li><b><code>-\"cat\"</code></b> will exclude just the tag <code>cat</code></li></ul>");
+	setWhatsThis(help_text);
 
 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	QHBoxLayout* l = new QHBoxLayout(this);
 	l->addWidget(new QLabel(tr("Filter:"), this));
 	l->addWidget(&m_edit);
+
+	auto help_label = new QLabel("<a href=\"#help\">(?)</a>", this);
+	l->addWidget(help_label);
+
+	help_label->setOpenExternalLinks(false);
+	connect(help_label, &QLabel::linkActivated, this, [help_text, this](auto){
+		auto pos = QCursor::pos();
+		auto w = qobject_cast<QWidget*>(sender());
+		Q_ASSERT(w);
+		QWhatsThis::showText(pos, help_text, w);
+	});
 }
 
 void FilterDialog::keyPressEvent(QKeyEvent * event) {
@@ -70,10 +87,15 @@ void FilterDialog::setModel(QAbstractItemModel * model)
 // --------------------------------------------------------
 
 
-CompletionEdit::CompletionEdit(QWidget * _parent) : QLineEdit(_parent)
+CompletionEdit::CompletionEdit(QWidget * _parent) :
+        QLineEdit(_parent),
+        m_model(),
+        m_completer(&m_model, nullptr)
 {
-	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
-	setCompleter(m_completer.get());
+
+	m_completer.setCompletionRole(Qt::UserRole);
+	m_completer.setCompletionMode(QCompleter::PopupCompletion);
+	setCompleter(&m_completer);
 }
 
 void CompletionEdit::keyPressEvent(QKeyEvent * event)
@@ -81,7 +103,7 @@ void CompletionEdit::keyPressEvent(QKeyEvent * event)
 	if(event->key() == Qt::Key_Tab) {
 		if((!next_completer())&&(!next_completer()))
 			return;
-		setText(m_completer->currentCompletion());
+		setText(m_completer.currentCompletion());
 		return;
 	}
 
@@ -102,7 +124,7 @@ void CompletionEdit::keyPressEvent(QKeyEvent * event)
 		QLineEdit::keyPressEvent(event);
 	}
 
-	m_completer->setCompletionPrefix(text());
+	m_completer.setCompletionPrefix(text());
 	m_index = 0;
 
 	if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
@@ -117,50 +139,109 @@ void CompletionEdit::keyPressEvent(QKeyEvent * event)
 
 void CompletionEdit::setModel(QAbstractItemModel * model)
 {
-	if (model && model == m_prev_model) {
-		return;
-	}
-
-	m_prev_model = model;
-	m_tags_model.clear();
-
+	m_model.setSourceModel(model);
 	if (!model) {
 		return;
 	}
-
-	const auto rows = model->rowCount();
-	m_tags_model.setColumnCount(1);
-	m_tags_model.setRowCount(2 * rows);
-
-	for(int i = 0; i < rows; ++i) {
-		const auto src_index = model->index(i, 0);
-		const auto dst_index = m_tags_model.index(i, 0);
-
-		const auto tag = model->data(src_index, Qt::UserRole).toString();
-		const auto comm = model->data(src_index, Qt::DisplayRole).toString();
-
-		m_tags_model.setData(dst_index, tag, Qt::UserRole);
-		m_tags_model.setData(dst_index, comm, Qt::DisplayRole);
-
-		const auto dst_index_neg = m_tags_model.index(rows + i, 0);
-		const auto negtag = tag.startsWith('-') ? tag : "-" + tag;
-		const auto negcom = comm.startsWith('-') ? comm : "-" + comm;
-
-		m_tags_model.setData(dst_index_neg, negtag, Qt::UserRole);
-		m_tags_model.setData(dst_index_neg, negcom, Qt::DisplayRole);
-	}
-
-	m_completer = std::make_unique<MultiSelectCompleter>(&m_tags_model, nullptr);
-	m_completer->setCompletionRole(Qt::UserRole);
-	m_completer->setCompletionMode(QCompleter::PopupCompletion);
-	setCompleter(m_completer.get());
 	m_index = 0;
 }
 
 bool CompletionEdit::next_completer()
 {
-	if(m_completer->setCurrentRow(m_index++))
+	if(m_completer.setCurrentRow(m_index++))
 		return true;
 	m_index = 0;
 	return false;
+}
+
+FilterTagsModel::FilterTagsModel(QObject * parent) : QAbstractListModel(parent)
+{
+
+}
+
+void FilterTagsModel::setSourceModel(QAbstractItemModel *tags_model)
+{
+	beginResetModel();
+	m_source_model = tags_model;
+	endResetModel();
+}
+
+int FilterTagsModel::rowCount(const QModelIndex & parent) const
+{
+	Q_UNUSED(parent);
+	int res =  m_source_model ? m_source_model->rowCount() * 4 : 0;
+	return res;
+}
+
+QVariant FilterTagsModel::data(const QModelIndex & proxy_index, int role) const
+{
+	if (!m_source_model || !(role == Qt::DisplayRole || role == Qt::UserRole))
+		return QVariant();
+
+	auto src_index= m_source_model->index(proxy_index.row() % m_source_model->rowCount(), 0);
+	Q_ASSERT(m_source_model->checkIndex(src_index));
+
+	auto remove_neg = [](const QString& s) {
+		if (s.startsWith('-'))
+			return s.mid(1);
+		return s;
+	};
+
+	auto quote = [](const QString& s) {
+		return "\"" + s + "\"";
+	};
+
+	enum class Kind {
+		Normal,
+		Quoted,
+		Negated,
+		QuotedNegated
+	};
+
+	auto get_kind = [](auto model, auto index) {
+		int kind = index.row() / model->rowCount();
+		Q_ASSERT(kind < 4);
+		return static_cast<Kind>(kind);
+	};
+
+	auto kind = get_kind(m_source_model, proxy_index);
+
+
+	// normal and negated tags
+	if (kind == Kind::Normal || kind == Kind::Negated) {
+		auto data = remove_neg(m_source_model->data(src_index, role).toString());
+
+		if (kind ==  Kind::Negated && !data.startsWith('-'))
+			data.insert(0, '-');
+
+		return data;
+	}
+
+	auto get_tag_quoted = [&remove_neg, &quote](auto model, auto index) {
+		return quote(remove_neg(model->data(index, Qt::UserRole).toString()));
+	};
+
+	auto get_display_quoted = [&get_tag_quoted](auto model, auto index) {
+		auto tag = get_tag_quoted(model, index);
+		auto comm = model->data(index, Qt::UserRole+1).toString();
+		return comm.isEmpty() ? tag : QStringLiteral("%1  (%2)").arg(tag, comm);
+	};
+
+	// quoted tags and negated quoted tags
+	if (kind ==  Kind::Quoted || kind == Kind::QuotedNegated) {
+		QString data;
+		if (role == Qt::UserRole) {
+			data = get_tag_quoted(m_source_model, src_index);
+		}
+		if (role == Qt::DisplayRole) {
+			data = get_display_quoted(m_source_model, src_index);
+		}
+
+		if (kind == Kind::QuotedNegated)
+			data.insert(0, '-');
+
+		return data;
+	}
+	Q_ASSERT(false && "Unknown kind");
+	Q_UNREACHABLE();
 }

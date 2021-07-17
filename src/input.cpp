@@ -180,7 +180,10 @@ static int update_model(QStandardItemModel& model, const TagParser& parser)
 			data.append(comment);
 			data.append(QStringLiteral(")"));
 			if(Q_UNLIKELY(!model.setData(index, data, Qt::DisplayRole)))
-				pwarn << "could not set tag comment:" << data;
+				pwarn << "could not set tag display role:" << data;
+
+			if (Q_UNLIKELY((!model.setData(index, comment, Qt::UserRole + 1))))
+				pwarn << "could not set tag comment:" << comment;
 		} else {
 			model.setData(index, tag, Qt::DisplayRole);
 		}

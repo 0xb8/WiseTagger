@@ -509,25 +509,76 @@ bool FileQueue::currentFileMatchesQueueFilter() const noexcept
 bool FileQueue::fileMatchesFilter(const QFileInfo& file) const
 {
 	QString name = file.completeBaseName();
-	QStringList tags = name.split(' ', QString::SkipEmptyParts);
-	tags.sort();
-	tags.erase(std::unique(tags.begin(),
-	                       tags.end()),
-	           tags.end());
 
-	QStringList res;
-	std::set_intersection(tags.begin(), tags.end(),
-	                      m_substr_filter_exclude.begin(), m_substr_filter_exclude.end(),
-	                      std::back_inserter(res));
-	if (!res.isEmpty())
-		return false;
+	auto contains_separate = [](const QString& name, const auto& tag)
+	{
+		Q_ASSERT(!tag.isEmpty());
 
-	res.clear();
-	std::set_intersection(tags.begin(), tags.end(),
-	                      m_substr_filter_include.begin(), m_substr_filter_include.end(),
-	                      std::back_inserter(res));
+		if (Q_UNLIKELY(name.size() < tag.size()))
+		    return false;
 
-	return res.size() == m_substr_filter_include.size();
+
+		int tag_pos = 0;
+		// check each instance of tag in name
+		while ((tag_pos = name.indexOf(tag, tag_pos)) >= 0) {
+
+			auto left = name.leftRef(tag_pos); // part of name before the tag
+			auto right = name.midRef(tag_pos + tag.size()); // part of name immediately after the tag
+
+			bool left_separate = left.isEmpty() || left.back().isSpace();
+			bool right_separate = right.isEmpty() || right.front().isSpace();
+
+			if (left_separate && right_separate) // found separate tag
+				return true;
+
+			// advance search position
+			tag_pos += tag.size();
+		}
+		return false; // could not find separate tag
+	};
+
+	auto is_tag_quoted = [](const QString& tag) {
+		return tag.startsWith('"') && tag.endsWith('"');
+	};
+
+	auto unquoted_tag = [](const QString& tag) {
+		return tag.midRef(1, tag.size()-2);
+	};
+
+
+	// check if name contains excluded tags
+	for (const auto& excl : qAsConst(m_substr_filter_exclude)) {
+
+		// if tag is quoted, check if name contains separated tag
+		if (is_tag_quoted(excl)) {
+
+			if (contains_separate(name, unquoted_tag(excl)))
+				return false;
+
+		} else {
+			if (name.contains(excl, Qt::CaseInsensitive))
+				return false;
+		}
+	}
+
+	// check if name contains all included tags
+	int count = 0;
+	for (const auto& incl : qAsConst(m_substr_filter_include)) {
+
+		// if tag is quoted, check if name contains separated tag
+		if (is_tag_quoted(incl)) {
+
+			if (contains_separate(name, unquoted_tag(incl)))
+				++count;
+
+		} else {
+
+			if (name.contains(incl, Qt::CaseInsensitive))
+				++count;
+		}
+	}
+
+	return count >= m_substr_filter_include.size();
 }
 
 size_t FileQueue::currentIndex() const noexcept

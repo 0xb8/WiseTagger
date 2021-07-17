@@ -14,12 +14,40 @@
 
 #include <QDialog>
 #include <QLineEdit>
-#include <QStandardItemModel>
-#include <memory>
-
+#include <QAbstractListModel>
 #include "multicompleter.h"
 
 
+/*!
+ * \brief Filter tags autocomplete model.
+ *
+ * Acts as a proxy for actual tag autocomplete model.
+ * Each tag is presented in 4 variations: normal, negated, quoted, negated quoted.
+ */
+class FilterTagsModel : public QAbstractListModel
+{
+	Q_OBJECT
+public:
+	explicit FilterTagsModel(QObject* parent = nullptr);
+	~FilterTagsModel() = default;
+
+	/*!
+	 * \brief Sets source tags model.
+	 */
+	void setSourceModel(QAbstractItemModel* tags_model);
+
+	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+private:
+	// source model
+	QAbstractItemModel* m_source_model = nullptr;
+};
+
+
+/*!
+ * \brief Line edit widget with tag filter autocomplete.
+ */
 class CompletionEdit : public QLineEdit {
 	Q_OBJECT;
 public:
@@ -34,16 +62,20 @@ protected:
 	void keyPressEvent(QKeyEvent* event) override;
 
 private:
-	std::unique_ptr<MultiSelectCompleter> m_completer;
-	QStandardItemModel m_tags_model;
-	QAbstractItemModel* m_prev_model = nullptr;
-	int m_index = 0;
+	// proxy model for filter autocomplete
+	FilterTagsModel m_model;
 
+	// filter completer
+	MultiSelectCompleter m_completer;
+	int m_index = 0;
 	bool next_completer();
 };
 
 
 
+/*!
+ * \brief Dialog widget for editing the queue filter.
+ */
 class FilterDialog : public QDialog {
 	Q_OBJECT
 public:

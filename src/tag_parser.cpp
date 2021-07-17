@@ -88,7 +88,7 @@ QStringList TagParser::fixTags(TagEditState& state,
 		std::remove_if(
 			text_list.begin(),
 			text_list.end(),
-			[](const auto& s){ return s.isEmpty() || s.startsWith('-'); }),
+			[](const auto& s){ return s.isEmpty() || is_negation_token(s[0]); }),
 		text_list.end());
 
 	// order matters here, cannot use std::unique :(
@@ -199,6 +199,18 @@ bool TagParser::isTagRemoved(const QString & tag) const
 }
 
 
+bool TagParser::is_negation_token(QChar ch) noexcept
+{
+	const auto negation_symbol = QChar(0x00AC);    // ¬
+	return ch == '-' || ch == negation_symbol;
+}
+
+bool TagParser::starts_with_negation_token(const QString& str) noexcept
+{
+	return str.size() > 0 && is_negation_token(str[0]);
+}
+
+
 //------------------------------------------------------------------------------
 
 
@@ -224,11 +236,6 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		}
 
 		return false;
-	};
-
-	auto is_negation_token = [](QChar ch) {
-		const auto negation_symbol = QChar(0x00AC);    // ¬
-		return ch == '-' || ch == negation_symbol;
 	};
 
 	auto is_implication_token = [](QChar ch) {
@@ -263,10 +270,12 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 
 	auto allowed_in_file = [&allowed_in_tag,
 	                       &is_implication_token,
-	                       &is_replacement_token,
-	                       &is_negation_token](QChar c)
+	                       &is_replacement_token](QChar c)
 	{
 		if (allowed_in_tag(c, true))
+			return true;
+
+		if (is_implication_token(c) || is_replacement_token(c) || is_negation_token(c))
 			return true;
 
 		if (auto latin = c.toLatin1()) {
@@ -275,9 +284,6 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			                 std::end(valid_chars),
 			                 latin) != std::end(valid_chars);
 		}
-
-		if (is_implication_token(c) || is_replacement_token(c) || is_negation_token(c))
-			return true;
 
 		return false;
 	};
@@ -399,6 +405,11 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			}
 
 			if(found_mapped) {
+				if (is_negation_token(current_token) && consequent_tag.isEmpty()) {
+					consequent_tag.append(current_token);
+					continue;
+				}
+
 				if(allowed_in_tag(current_token, !consequent_tag.isEmpty())) {
 					consequent_tag.append(current_token);
 					continue;
@@ -496,18 +507,22 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 QStringList TagParser::related_tags(TagEditState& state, const QString &tag) const
 {
 	QStringList relatives;
-	auto related_tags_range = m_related_tags.equal_range(tag);
-	bool found_tag_entry = related_tags_range.first != m_related_tags.end();
+	if (state.needAddRelated(tag)) {
+		auto related_tags_range = m_related_tags.equal_range(tag);
 
-	/* Mark this tag as processed. This also prevents infinite looping.
-	   If user decides to remove related tag(s), they will not be added again.
-	 */
-	if(found_tag_entry && state.needAddRelated(tag)) {
-		std::for_each(related_tags_range.first, related_tags_range.second,
-			[&relatives](const auto& p)
-			{	/* Add all related tags for this tag */
-				relatives.push_back(p.second);
-			});
+		/* Mark this tag as processed. This also prevents infinite looping.
+		 * If user decides to remove related tag(s), they will not be added again.
+		 */
+		for(auto it = related_tags_range.first; it != related_tags_range.second; ++it) {
+			auto consequent = it->second;
+			/* Check if consequent tag was added before as well,
+			 * because several tags can imply the same consequent, resulting in a cycle.
+			 */
+			if (state.needAdd(consequent)) {
+				/* Add consequent tag for this tag */
+				relatives.push_back(consequent);
+			}
+		}
 	}
 	return relatives;
 }
@@ -549,11 +564,12 @@ void TagParser::remove_explicit(TagEditState& state, QStringList & text_list) co
 {
 	for (auto& tag : text_list) {
 		// find "-tag"
-		auto neg_pos = std::find_if(
-			text_list.begin(),
-			text_list.end(),
-			[&tag](const auto& s){ return s.startsWith('-') && s.midRef(1) == tag; });
+		auto neg_pos = std::find_if(text_list.begin(), text_list.end(),
+			[&tag](const auto& s) {
+				return starts_with_negation_token(s) && s.midRef(1) == tag;
+			});
 		if (neg_pos != text_list.end()) {
+			// mark this tag as processed
 			if (state.needRemove(tag)) {
 				tag.clear();
 			}

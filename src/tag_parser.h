@@ -169,6 +169,7 @@ public:
 	 */
 	bool isTagRemoved(const QString& tag) const;
 
+
 signals:
 
 	/*!
@@ -219,6 +220,16 @@ private:
 	 * be processed again to allow user to restore autoremoved tag.
 	 */
 	void        remove_explicit(TagEditState& state, QStringList& text_list) const;
+
+	/*!
+	 *  \brief Returns whether \p ch is a tag negation token.
+	 */
+	static bool is_negation_token(QChar ch) noexcept;
+
+	/*!
+	 * \brief Returns whether string \p str starts with tag negation token.
+	 */
+	static bool starts_with_negation_token(const QString& str) noexcept;
 
 	//----------------------------------------------------------------------
 
