@@ -2,8 +2,8 @@
 [Setup]
 AppName=WiseTagger
 AppCopyright=Copyright (C) 2021 catgirl
-AppVersion=0.5.9
-VersionInfoVersion=0.5.9
+AppVersion=0.6.0
+VersionInfoVersion=0.6.0
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -24,6 +24,10 @@ WizardStyle=modern
 
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
+
+[Languages]
+Name: "en"; MessagesFile: "compiler:Default.isl"
+Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [Files]
 Source: "WiseTagger.exe"; DestDir: "{app}"; DestName: "WiseTagger.exe"
