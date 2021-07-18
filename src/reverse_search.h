@@ -21,6 +21,7 @@
 #include <QVector>
 #include <QFile>
 #include <QUrl>
+#include <QByteArray>
 
 class QNetworkReply;
 class QObject;
@@ -83,7 +84,7 @@ private:
 
 	static constexpr const char * const iqdb_url = "https://iqdb.org/";
 	static constexpr const char * const iqdb_supported_formats = "JPEG, PNG, GIF";
-	static constexpr size_t iqdb_max_file_size = 8 * 1024 * 1024;
+	static constexpr qint64 iqdb_max_file_size = 8 * 1024 * 1024;
 	static constexpr int iqdb_max_image_width  = 7500;
 	static constexpr int iqdb_max_image_height = 7500;
 
@@ -91,6 +92,7 @@ private:
 
 	QString m_current_file_name;
 	QFile m_image_file;
+	QByteArray m_image_scaled_data;
 	QVector<QString> m_response_files;
 	QNetworkAccessManager m_nam;
 };

@@ -13,10 +13,12 @@
 #include <QNetworkReply>
 #include <QMimeDatabase>
 #include <QImageReader>
+#include <QImageWriter>
 #include <QMessageBox>
 #include <QSaveFile>
 #include <QSettings>
 #include <QFileInfo>
+#include <QBuffer>
 #include <stdexcept>
 #include <memory>
 #include "util/size.h"
@@ -47,15 +49,6 @@ void ReverseSearch::upload_file()
 {
 	QFileInfo file_info(m_current_file_name);
 
-	if(static_cast<size_t>(file_info.size()) > iqdb_max_file_size) {
-		QMessageBox::warning(
-			nullptr,
-			tr("Reverse search"),
-			tr("<p>Reverse search failed: File <b>%1</b> is too large.</p><p>Maximum file size is <b>8</b> MiB.</p>")
-				.arg(file_info.fileName()));
-		return;
-	}
-
 	m_image_file.setFileName(m_current_file_name);
 	if (!m_image_file.open(QIODevice::ReadOnly)){
 		QMessageBox::critical(
@@ -68,9 +61,9 @@ void ReverseSearch::upload_file()
 
 	{ // new scope since we don't need those afterwards
 		QImageReader reader(&m_image_file);
-		auto format = reader.format().toUpper();
+		const auto format = reader.format();
 		QByteArray formats{iqdb_supported_formats};
-		if(!formats.contains(format)) {
+		if(!formats.contains(format.toUpper())) {
 			QMessageBox::critical(nullptr,
 				tr("Reverse search"),
 				tr("<p>Reverse search of <b>%1</b> failed: Unsupported file format.</p><p>Supported formats are: <b>%2</b>.</p>")
@@ -80,17 +73,41 @@ void ReverseSearch::upload_file()
 		}
 
 		auto dimensions = reader.size();
-		if(!dimensions.isValid() || dimensions.width() > iqdb_max_image_width
-			|| dimensions.height() > iqdb_max_image_height)
-		{
-			const auto max_w = QString::number(iqdb_max_image_width);
-			const auto max_h = QString::number(iqdb_max_image_height);
-			QMessageBox::critical(nullptr,
-				tr("Reverse search"),
-				tr("<p>Reverse search of <b>%1</b> failed: Image dimensions are too large.</p><p>Maximum dimensions: <b>%2x%3</b> px.</p>")
-					.arg(file_info.fileName(), max_w, max_h));
+		if(!dimensions.isValid()) {
+			pwarn << "Could not determine image dimensions";
 			return;
 		}
+
+		auto image_data_size = file_info.size();
+		QImage image;
+		while (dimensions.width() > iqdb_max_image_width
+		       || dimensions.height() > iqdb_max_image_height
+		       || image_data_size > iqdb_max_file_size)
+		{
+			int max_width = iqdb_max_image_width; // BUG: libstd++'s std::min() does not like this variable in debug mode
+			auto half_width = std::min(dimensions.width(), max_width) / 2;
+			if (image.isNull())
+				image = reader.read();
+
+			auto scaled = image.scaledToWidth(half_width, Qt::SmoothTransformation);
+			dimensions = scaled.size();
+			if (!dimensions.isValid()) {
+				pwarn << "Could not determine scaled image dimensions";
+				return;
+			}
+
+			m_image_scaled_data.clear();
+			QBuffer buffer{&m_image_scaled_data};
+			QImageWriter writer{&buffer, format};
+			if (!writer.write(scaled)) {
+				pwarn << "Could not write scaled image:" << writer.errorString();
+				m_image_scaled_data.clear();
+				return;
+			}
+			image_data_size = m_image_scaled_data.size();
+			pdbg << "Scaled" << m_image_file << "to" << dimensions << "/" << image_data_size << "bytes";
+		}
+
 	}
 	m_image_file.reset(); // NOTE: avoid breaking file upload
 
@@ -110,7 +127,11 @@ void ReverseSearch::upload_file()
 		QNetworkRequest::ContentTypeHeader,
 		QMimeDatabase().mimeTypeForFile(file_info).name().toLatin1());
 
-	iqdb_parts.file.setBodyDevice(&m_image_file);
+	if (m_image_scaled_data.isEmpty()) {
+		iqdb_parts.file.setBodyDevice(&m_image_file);
+	} else {
+		iqdb_parts.file.setBody(m_image_scaled_data);
+	}
 
 	/* Check IQDB search services
 	 * NOTE: these ids correspond to iqdb.org service ids, perhaps we could preload
@@ -156,6 +177,7 @@ void ReverseSearch::open_reply(QNetworkReply* reply)
 
 	/* At this point request been sent, so we don't need this anymore */
 	m_image_file.close();
+	m_image_scaled_data.clear();
 
 	if(reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0) {
 		QByteArray response = reply->readAll();
