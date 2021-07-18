@@ -187,6 +187,12 @@ static int update_model(QStandardItemModel& model, const TagParser& parser)
 		} else {
 			model.setData(index, tag, Qt::DisplayRole);
 		}
+
+		auto color = parser.getColor(tag);
+		if (Q_UNLIKELY(color.isValid())) {
+			if(Q_UNLIKELY(!model.setData(index, color, Qt::TextColorRole)))
+				pwarn << "could not set tag color role:" << tag << color;
+		}
 	}
 	return model.rowCount();
 }
@@ -281,6 +287,13 @@ void TagInput::classifyText(const QStringList& tag_list)
 		if (tag_kind & TagParser::TagKind::Unknown) {
 			f.setForeground(getUnknownTagColor());
 		} else {
+
+			// tag has custom color
+			auto color = m_tag_parser.getColor(tag);
+			if (Q_UNLIKELY(color.isValid())) {
+				f.setForeground(color);
+			}
+
 			// this tag implies another tag
 			if (antecedent_tags.find(tag) != antecedent_tags.end()) {
 				f.setFontItalic(true);
@@ -300,7 +313,15 @@ void TagInput::classifyText(const QStringList& tag_list)
 
 		}
 		if (tag_kind & TagParser::TagKind::Removed) {
-			f.setForeground(getRemovedTagColor());
+
+			auto color = m_tag_parser.getColor(tag);
+			if (Q_UNLIKELY(color.isValid())) {
+				// tag has custom color
+				f.setForeground(color);
+			} else {
+				// use default removed color
+				f.setForeground(getRemovedTagColor());
+			}
 		}
 
 		QTextLayout::FormatRange fr;

@@ -59,6 +59,9 @@ QByteArray              guess_image_format(const QString& filename);
 /// Join list of strings with \p separator
 QString                 join(const QStringList&, QChar separator = QChar(' '));
 
+/// Split string by \p separator. Empty parts are skipped.
+QStringList             split(const QString& str, QChar separator = QChar(' '));
+
 /// Tests whether the string contains only hexadecimal digits
 bool                    is_hex_string(const QString& str);
 

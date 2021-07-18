@@ -265,3 +265,13 @@ bool util::is_hex_string(const QString & str)
 	}
 	return true;
 }
+
+QStringList util::split(const QString& str, QChar separator)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+	auto flags = Qt::SkipEmptyParts;
+#else
+	auto flags = QString::SkipEmptyParts;
+#endif
+	return str.split(separator, flags);
+}

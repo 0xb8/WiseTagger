@@ -10,6 +10,7 @@
 #include <QLoggingCategory>
 #include <QTextStream>
 #include <QSettings>
+#include "util/misc.h"
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(parser, "TagParser")
@@ -140,6 +141,17 @@ QString TagParser::getComment(const QString & tag) const
 }
 
 
+QColor TagParser::getColor(const QString & tag) const
+{
+	QColor ret;
+	auto it = m_tag_colors.find(tag);
+	if (it != m_tag_colors.end()) {
+		ret = it->second;
+	}
+	return ret;
+}
+
+
 QString TagParser::getReplacement(const QString & tag) const
 {
 	QString ret;
@@ -172,6 +184,7 @@ bool TagParser::loadTagData(const QByteArray& data)
 	m_replaced_tags.clear();
 	m_removed_tags.clear();
 	m_comment_tooltips.clear();
+	m_tag_colors.clear();
 	m_regexps.clear();
 	m_tags_classification.clear();
 
@@ -288,12 +301,44 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		return false;
 	};
 
-	auto add_tag_kind = [this](const auto& tag, TagKind kind) {
+	auto add_tag_kind = [this](const auto& tag, TagKind kind)
+	{
 		Q_ASSERT(kind != TagKind::Unknown);
 		auto result = m_tags_classification.emplace(tag, kind);
 		if (!result.second) {
 			result.first->second |= kind;
 		}
+	};
+
+	auto parse_tag_color_comment = [](const QString& comment, QString& name)
+	{
+		QColor tag_color;
+		// early out
+		if (comment.isEmpty())
+			return tag_color;
+
+		auto split_comment = util::split(comment);
+
+		for (const auto& part : qAsConst(split_comment)) {
+			if (!part.startsWith('#'))
+				continue;
+
+			// try hex color
+			tag_color.setNamedColor(part);
+			if (tag_color.isValid()) {
+				name = part;
+				break;
+			}
+
+			// try named color (without #)
+			tag_color.setNamedColor(part.midRef(1));
+			if (tag_color.isValid()) {
+				name = part;
+				break;
+			}
+		}
+
+		return tag_color;
 	};
 
 
@@ -369,7 +414,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		for(int current_token_pos = first_parse_symbol_pos; current_token_pos < current_line.length(); ++current_token_pos) {
 			const auto current_token = current_line[current_token_pos];
 
-			if(current_token == QChar('#')) {
+			if(current_token == QChar('#') && !found_comment) {
 				found_comment = true;
 				continue;
 			}
@@ -470,12 +515,23 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			consequent_tags_list.push_back(consequent_tag);
 		}
 
+		QString color_name;
+		QColor tag_color = parse_tag_color_comment(comment, color_name);
+
 		if(!main_tag.isEmpty()) {
 			main_tags_list.push_back(main_tag);
 			add_tag_kind(main_tag, TagKind::Main);
 
 			if(!comment.isEmpty()) {
 				comment = comment.trimmed();
+
+				if (tag_color.isValid()) {
+					tag_color.setAlpha(255);
+					m_tag_colors.emplace(main_tag, tag_color);
+					comment.remove(color_name);
+					comment = comment.trimmed();
+				}
+
 				auto it = m_comment_tooltips.find(main_tag);
 				if(it != m_comment_tooltips.end()) {
 					it->second.append(QStringLiteral(", "));
@@ -489,6 +545,10 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		for(const auto& remtag : qAsConst(removed_tags_list)) {
 			m_removed_tags.emplace(remtag);
 			add_tag_kind(remtag, TagKind::Removed);
+
+			// add removed tag color
+			if (tag_color.isValid())
+				m_tag_colors.emplace(remtag, tag_color);
 		}
 
 		for (const auto& repltag : qAsConst(replaced_tags_list)) {

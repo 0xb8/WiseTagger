@@ -173,13 +173,17 @@ int FilterTagsModel::rowCount(const QModelIndex & parent) const
 	return res;
 }
 
-QVariant FilterTagsModel::data(const QModelIndex & proxy_index, int role) const
+QVariant FilterTagsModel::data(const QModelIndex& proxy_index, int role) const
 {
-	if (!m_source_model || !(role == Qt::DisplayRole || role == Qt::UserRole))
+	if (!m_source_model || !(role == Qt::DisplayRole || role == Qt::UserRole || role == Qt::TextColorRole))
 		return QVariant();
 
 	auto src_index= m_source_model->index(proxy_index.row() % m_source_model->rowCount(), 0);
 	Q_ASSERT(m_source_model->checkIndex(src_index));
+
+	if (role == Qt::TextColorRole) {
+		return m_source_model->data(src_index, role);
+	}
 
 	auto remove_neg = [](const QString& s) {
 		if (s.startsWith('-'))
@@ -205,7 +209,6 @@ QVariant FilterTagsModel::data(const QModelIndex & proxy_index, int role) const
 	};
 
 	auto kind = get_kind(m_source_model, proxy_index);
-
 
 	// normal and negated tags
 	if (kind == Kind::Normal || kind == Kind::Negated) {

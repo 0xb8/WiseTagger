@@ -15,6 +15,7 @@
 #include <QStringList>
 #include <QVector>
 #include <QRegularExpression>
+#include <QColor>
 #include <unordered_set>
 #include "util/unordered_map_qt.h"
 
@@ -136,6 +137,12 @@ public:
 	QString getComment(const QString& tag) const;
 
 	/*!
+	 * \brief Get custom color for a tag.
+	 * \retval Invalid color if custom color was not found.
+	 */
+	QColor getColor(const QString& tag) const;
+
+	/*!
 	 * \brief Get replacement for a tag.
 	 * \retval Empty string if replacement was not found.
 	 */
@@ -238,6 +245,9 @@ private:
 
 	/// Map of tag comments.
 	std::unordered_map<QString,QString> m_comment_tooltips;
+
+	/// Map of tag custom colors.
+	std::unordered_map<QString,QColor> m_tag_colors;
 
 	/// Multimap used to keep track of related tags.
 	std::unordered_multimap <QString,QString> m_related_tags;
