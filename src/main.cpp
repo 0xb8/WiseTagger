@@ -36,6 +36,10 @@ int main(int argc, char *argv[])
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
+#if defined (Q_OS_WIN) && QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+	qputenv("QT_QPA_PLATFORM", "windows:darkmode=1");
+#endif
+
 	QApplication a(argc, argv);
 	a.setApplicationVersion(QStringLiteral(APP_VERSION));
 	a.setApplicationName(QStringLiteral(TARGET_PRODUCT));
