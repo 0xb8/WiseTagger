@@ -69,7 +69,7 @@ QStringList TagParser::fixTags(TagEditState& state,
 	}
 
 
-	auto text_list = text.split(QChar(' '), QString::SkipEmptyParts);
+	auto text_list = util::split(text);
 	if(options.replace_imageboard_tags)
 		ib::replace_imageboard_tags(text_list);
 

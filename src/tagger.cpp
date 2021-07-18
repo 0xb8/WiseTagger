@@ -292,7 +292,7 @@ void Tagger::tagsFetched(QString file, QString tags)
 		// Autofix imageboard tags before comparing and assigning
 		util::replace_special(tags);
 		auto fixed_tags_list = m_input.tag_parser().fixTags(state, tags, options);
-		tags = fixed_tags_list.join(' ');
+		tags = util::join(fixed_tags_list);
 		processed_tags_count = fixed_tags_list.size();
 
 		util::replace_special(tags);
@@ -317,7 +317,7 @@ void Tagger::tagsFetched(QString file, QString tags)
 				                    "<p style=\"margin-left: 1em; line-height: 130%;\">"
 				                    "<code>%1</code></p></p>"
 				                    "%2%3"
-				                    "<p>Please choose what to do:</p>").arg(fixed_tags_list.join(' '))
+				                    "<p>Please choose what to do:</p>").arg(tags)
 				                                                       .arg(added_tags_str)
 				                                                       .arg(removed_tags_str),
 				                 QMessageBox::Save|QMessageBox::SaveAll);
@@ -393,7 +393,7 @@ void Tagger::getTagDifference(QStringList current_list,
 		added_tags_str = QStringLiteral("<p style=\"margin-top: 1.6em;\">");
 		added_tags_str.append(tr("Tags that will be added:"));
 		added_tags_str.append(QStringLiteral("<p style=\"margin-left: 1em; line-height: 130%;\">"
-		                                     "<code style=\"color:green;\">%1</code></p></p>").arg(tags_added.join(' ')));
+		                                     "<code style=\"color:green;\">%1</code></p></p>").arg(util::join(tags_added)));
 	}
 	if (!tags_removed.empty()) {
 		removed_tags_str = QStringLiteral("<p style=\"margin-top: 1.6em;\">");
@@ -404,7 +404,7 @@ void Tagger::getTagDifference(QStringList current_list,
 			removed_tags_str.append(QStringLiteral(")</small>"));
 		}
 		removed_tags_str.append(QStringLiteral("<p style=\"margin-left: 1em; line-height: 130%;\">"
-		                                       "<code style=\"color:red;\">%2</code></p></p>").arg(tags_removed.join(' ')));
+		                                       "<code style=\"color:red;\">%2</code></p></p>").arg(util::join(tags_removed)));
 	}
 }
 
@@ -594,8 +594,10 @@ void Tagger::setMediaMuted(bool muted)
 
 void Tagger::setQueueFilter(QString filter_str)
 {
-	m_queue_filter_src = filter_str;
-	m_file_queue.setSubstringFilter(filter_str.split(' ', QString::SkipEmptyParts));
+	auto filter = util::split(filter_str);
+	filter.removeDuplicates();
+	m_queue_filter_src = util::join(filter);
+	m_file_queue.setSubstringFilter(filter);
 }
 
 void Tagger::keyPressEvent(QKeyEvent * e)

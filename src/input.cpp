@@ -41,14 +41,14 @@ void TagInput::fixTags(bool sort)
 	opts.sort = sort;
 	m_text_list = m_tag_parser.fixTags(m_edit_state, text(), opts);
 
-	auto newname = m_text_list.join(' ');
+	auto newname = util::join(m_text_list);
 	util::replace_special(newname);
 	updateText(newname);
 }
 
 void TagInput::setTags(const QString& s)
 {
-	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
+	auto text_list = util::split(text());
 	QStringList imageboard_ids;
 
 	tag_iterator tag_begin = text_list.begin(), id = tag_begin;
@@ -68,7 +68,7 @@ void TagInput::setTags(const QString& s)
 		tag_begin = std::next(tag_begin);
 	}
 
-	QString res = imageboard_ids.join(' ');
+	QString res = util::join(imageboard_ids);
 	res.append(' ');
 	res.append(s);
 	setText(res);
@@ -76,12 +76,12 @@ void TagInput::setTags(const QString& s)
 
 QString TagInput::tags() const
 {
-	return tags_list().join(QChar(' '));
+	return util::join(tags_list());
 }
 
 QStringList TagInput::tags_list() const
 {
-	auto text_list = text().split(QChar(' '), QString::SkipEmptyParts);
+	auto text_list = util::split(text());
 
 	tag_iterator tag_begin = text_list.begin(), id = tag_begin;
 
@@ -251,7 +251,7 @@ void TagInput::clearTagEditState()
 
 void TagInput::updateText(const QString &t)
 {
-	m_text_list = t.split(QChar(' '), QString::SkipEmptyParts);
+	m_text_list = util::split(t);
 	QLineEdit::setText(t);
 
 	const auto tag_list = tags_list();
@@ -378,8 +378,9 @@ bool TagInput::hasTagFile() const
 
 QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
 {
-	auto initial_tags = m_initial_text.split(QChar(' '), QString::SkipEmptyParts);
-	auto new_tags = text().split(QChar(' '), QString::SkipEmptyParts);
+	auto initial_tags = util::split(m_initial_text);
+	auto new_tags = util::split(text());
+
 	initial_tags.sort();
 	new_tags.sort();
 	QStringList ret;

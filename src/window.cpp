@@ -830,7 +830,7 @@ void Window::processNewVersion(QNetworkReply *r)
 	settings.setValue(SETT_LAST_VER_CHECK, QDate::currentDate());
 
 	QString response = r->readAll();
-	auto parts = response.split(' ', QString::SkipEmptyParts);
+	auto parts = util::split(response);
 	if(parts.size() < 2) {
 		vcwarn << "not enough parts";
 		return;
