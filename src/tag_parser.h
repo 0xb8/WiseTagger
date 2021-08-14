@@ -87,7 +87,10 @@ public:
 
 	/*!
 	 * \brief Fix and sort tags.
-	 * \param sort Enable tag sorting.
+	 * \param state Current tag edit state. Allows to e.g. enter autoremoved tag again.
+	 * \param text Input string with space-separated tags.
+	 * \param options Fix options.
+	 * \return Sorted list of tags fixed according to \p options.
 	 *
 	 * Sorts and removes duplicate tags, makes tags lower-case, adds related
 	 * tags, replaces tags, autoremoves tags.

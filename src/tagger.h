@@ -44,6 +44,8 @@ class Tagger : public QWidget
 	Q_OBJECT
 
 public:
+
+	/// Constructs the Tagger widget.
 	explicit Tagger(QWidget *_parent = nullptr);
 	~Tagger() override = default;
 
@@ -82,6 +84,7 @@ public:
 		ForceRename = 0x1,  ///< Force rename - do not show rename dialog.
 		ReopenFile  = 0x2   ///< Reopen this file after renaming.
 	};
+	/// Bitflags for \ref RenameOption
 	using RenameOptions = QFlags<RenameOption>;
 	Q_FLAG(RenameOptions)
 
@@ -234,7 +237,7 @@ signals:
 	/// Emitted when session file has been sucessfully opened.
 	void sessionOpened(const QString& sfile);
 
-	/// Emitted when \fn clear() is called.
+	/// Emitted when \ref queue() becomes empty.
 	void cleared();
 
 	/*!

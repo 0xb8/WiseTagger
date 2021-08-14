@@ -22,8 +22,12 @@ class QNetworkReply;
 class TagFetcher : public QObject {
 	Q_OBJECT
 public:
+	/*!
+	 * \brief Constructs the Tag Fetcher
+	 * \param parent Parent QObject.
+	 */
 	TagFetcher(QObject* parent = nullptr);
-	~TagFetcher();
+	~TagFetcher() override = default;
 
 	/*!
 	 * \brief Fetches tags using imageboard JSON API.
@@ -42,7 +46,7 @@ signals:
 	/*!
 	 * \brief Emitted when network error is detected while fetching tags.
 	 * \param url Imageboard API URL for this file.
-	 * \param error Human-readable error description.
+	 * \param net_error Human-readable error description.
 	 */
 	void net_error(QUrl url, QString net_error);
 

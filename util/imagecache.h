@@ -111,11 +111,25 @@ private:
 
 	uint64_t getUniqueImageID(const QString& filename, QSize size);
 
+	/// Cache entry.
 	struct Entry
 	{
 		Entry(QImage&& img, QSize size, State st) : image(std::move(img)), original_size(size), state(st) { }
+
+		// disable copy
+		Entry(const Entry&) = delete;
+		Entry& operator=(const Entry&) = delete;
+
+		// default move
+		Entry(Entry&&) noexcept = default;
+		Entry& operator=(Entry&&) noexcept = default;
+
+		/// Resized image.
 		QImage image;
+		/// Original image size
 		QSize  original_size;
+
+		/// Cache entry state.
 		State  state;
 	};
 

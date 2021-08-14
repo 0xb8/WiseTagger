@@ -13,8 +13,8 @@
 #include <QSettings>
 #include <QMetaEnum>
 #include <stdexcept>
-#include "misc.h"
-#include "size.h"
+#include "util/misc.h"
+#include "util/size.h"
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h>

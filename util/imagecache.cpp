@@ -82,13 +82,22 @@ namespace logging_category {Q_LOGGING_CATEGORY(imagecache, "ImageCache")}
 
 #define DEFAULT_CACHE_SIZE_KB 64*1024
 
+/// Task for loading and resizing an image in a thread pool.
 struct LoadResizeImageTask : public QRunnable
 {
+	/// Pointer to image cache.
 	ImageCache* cache;
+
+	/// Image file path.
 	QString     filename;
+
+	/// Window size to calculate target image size.
 	QSize       window_size;
+
+	/// Window device pixel ratio.
 	double      device_pixel_ratio = 1.0;
 
+	/// Constructs the task.
 	LoadResizeImageTask(ImageCache* cache_, const QString& filename_, QSize window_size_, double dpr_) :
 	        cache(cache_), filename(filename_), window_size(window_size_), device_pixel_ratio(dpr_)
 	{
@@ -96,6 +105,7 @@ struct LoadResizeImageTask : public QRunnable
 		setAutoDelete(true);
 	}
 
+	/// Called when task is started in a thread.
 	void run() override
 	{
 		if(cache->m_shutting_down.load(std::memory_order_acquire))

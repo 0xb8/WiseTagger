@@ -20,7 +20,6 @@ TagFetcher::TagFetcher(QObject * parent) : QObject(parent) {
 	connect(&m_nam, &QNetworkAccessManager::finished, this, &TagFetcher::open_reply);
 }
 
-TagFetcher::~TagFetcher() {}
 
 void TagFetcher::fetch_tags(const QString & filename, QString url) {
 	QCryptographicHash hash{QCryptographicHash::Md5};

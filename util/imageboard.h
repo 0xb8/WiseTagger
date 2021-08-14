@@ -8,6 +8,16 @@
 #ifndef UTIL_IMAGEBOARD_H
 #define UTIL_IMAGEBOARD_H
 
+/** @dir util
+ * @brief Misc utilities
+ */
+
+/**
+ * @file imageboard.h
+ * @brief Imageboard tag parsing.
+ */
+
+
 #include <algorithm>
 #include <cctype>
 #include <stdexcept>
@@ -21,21 +31,46 @@
 #define IMAGEBOARD_LOG_DEFINES
 #endif
 
+/*!
+ * \namespace ib
+ * \brief Imageboard tag parsing.
+ */
 namespace ib {
 
+/*!
+ * \namespace ib::detail
+ * \brief Implementation details.
+ */
 namespace detail {
+
+	/// String type.
 	using string_t = QString;
+
+	/// String literal wrapper macro.
 	#define IB_STRING_LITERAL QStringLiteral
 
+	/// Describes an imageboard tag.
 	struct imageboard_tag
 	{
+		/// Original imageboard tag string.
 		string_t	original_name;
+
+		/// Short prefix.
 		string_t	short_name;
+
+		/// Long prefix
 		string_t	long_name;
+
+		 /// Post URL format string.
 		string_t	post_url;
+
+		/// Post URL for metadata.
 		string_t	post_meta_url;
 	};
 
+	/*!
+	 * \brief All known imageboards array.
+	 */
 	const std::array<imageboard_tag,10> imageboard_tags = {
 		imageboard_tag {
 			IB_STRING_LITERAL("yande.re"),
@@ -113,10 +148,13 @@ namespace detail {
 		}
 	};
 
+	/*!
+	 * \brief Returns whether the container \p first starts with \p second.
+	 */
 	template<typename T, typename U>
-	inline bool starts_with(const T &first, const U &secnd) {
+	bool starts_with(const T &first, const U &second) {
 		return std::equal(
-			std::begin(secnd), std::end(secnd),
+			std::begin(second), std::end(second),
 			std::begin(first),
 			[](const auto& first_elem, const auto& secnd_elem)
 			{
@@ -125,21 +163,26 @@ namespace detail {
 		);
 	}
 
-	/* Returns index of board, -1 if not found */
+	/*!
+	 * \brief Returns index of imageboard in \ref imageboard_tags array for input \p tag.
+	 * \retval -1 \p tag is not a known imageboard tag.
+	 */
 	template<typename T>
-	int which_board(const T& t)
+	int which_board(const T& tag)
 	{
 		for(size_t i = 0; i < imageboard_tags.size(); ++i) {
-			if(t == imageboard_tags[i].original_name)
+			if(tag == imageboard_tags[i].original_name)
 				return static_cast<int>(i);
-			if(starts_with(t, imageboard_tags[i].short_name))
+			if(starts_with(tag, imageboard_tags[i].short_name))
 				return static_cast<int>(i);
 		}
-		pdbg << "not found for" << t;
+		pdbg << "not found for" << tag;
 		return -1;
 	}
 
-	/* Extracts id from short version of tag */
+	/*!
+	 * \brief Extracts id from short version of \p tag
+	 */
 	template<typename T>
 	T get_id_from_short_tag(const T& tag) {
 		T res;
@@ -159,7 +202,16 @@ namespace detail {
 	}
 } // namespace detail
 
-/* Finds range of imageboard tags, returns false if imageboard tags not found */
+
+/*!
+ * \brief Finds range of imageboard tags.
+ * \param[in]  start     Begin of tag range.
+ * \param[in]  end       End of tag range.
+ * \param[out] board_tag Imageboard tag if found, \p end otherwise.
+ * \param[out] board_id  Imageboard post id if found, \p end otherwise.
+ * \retval false Imageboard tags were not found. \p board_tag and \p board_id are set to \p end.
+ * \retval true  Imageboard tags were found.
+ */
 template<typename IteratorT>
 bool find_imageboard_tags(IteratorT start, IteratorT end, IteratorT& board_tag, IteratorT& board_id)
 {
@@ -205,7 +257,10 @@ bool find_imageboard_tags(IteratorT start, IteratorT end, IteratorT& board_tag, 
 	return true;
 }
 
-/* Replaces imageboard tags with their shorter version. */
+
+/*!
+ * \brief Replaces imageboard tags with their shorter version.
+*/
 template<typename ContainerT>
 bool replace_imageboard_tags(ContainerT& cont)
 {
@@ -226,6 +281,15 @@ bool replace_imageboard_tags(ContainerT& cont)
 
 }
 
+
+/*!
+ * \brief Finds short version of imageboard tag in range [\p begin;\p end)
+ * \param[in]  begin Start of tags range.
+ * \param[in]  end   End of tags range.
+ * \param[out] res   Iterator to short imageboard tag if found, set to \p end otherwise.
+ * \retval false     Short imageboard tag not found. \p res is set to \p end.
+ * \retval true      Short imageboard tag is found.
+ */
 template<typename IteratorT>
 bool find_short_imageboard_tag(IteratorT begin, IteratorT end, IteratorT& res)
 {
@@ -244,7 +308,10 @@ bool find_short_imageboard_tag(IteratorT begin, IteratorT end, IteratorT& res)
 
 }
 
-/* Restores imageboard tags from their shorter version */
+
+/*!
+ * \brief Restores imageboard tags from their shorter version.
+ */
 template<typename ContainerT>
 bool restore_imageboard_tags(ContainerT& c)
 {
@@ -269,17 +336,27 @@ bool restore_imageboard_tags(ContainerT& c)
 	return true;
 }
 
+
+/*!
+ * \brief Imageboard metadata.
+ */
 template<typename StringT>
 struct imageboard_meta {
+	/// Name of imageboard. See \ref detail::imageboard_tag.original_name
 	StringT imageboard_name;
+
+	/// Post id string.
 	StringT post_id;
+
+	/// Post URL.
 	StringT post_url;
+
+	/// Post metadata API URL.
 	StringT post_api_url;
 };
 
 namespace detail {
 	template<typename StringT>
-	inline
 	imageboard_meta<StringT> make_meta(StringT&& name, StringT&& id, StringT&& url, StringT&& api)
 	{
 		static_assert(std::is_rvalue_reference<decltype(name)>::value, "rvalue reqired");
@@ -287,6 +364,10 @@ namespace detail {
 	}
 }
 
+
+/*!
+ * \brief Returns imageboard metadata for tags in range [\p ibegin ; \p iend).
+ */
 template<typename IteratorT>
 auto get_imageboard_meta(IteratorT ibegin, IteratorT iend)
 {
