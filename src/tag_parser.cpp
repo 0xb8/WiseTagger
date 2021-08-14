@@ -120,8 +120,21 @@ QStringList TagParser::fixTags(TagEditState& state,
 	return text_list;
 }
 
-TagParser::TagClassification TagParser::classify(QStringView tag) const
+TagParser::TagClassification TagParser::classify(QStringView tag, const QStringList& all_tags) const
 {
+	// check if tag is negated consequent for some other tag
+	for (const auto& context_tag : qAsConst(all_tags)) {
+		auto related_tags_range = m_related_tags.equal_range(context_tag);
+		for (auto it = related_tags_range.first; it != related_tags_range.second; ++it) {
+			// find negated consequent tags
+			if (starts_with_negation_token(it->second)) {
+				if (it->second.midRef(1) == tag) {
+					return TagKind::Removed;
+				}
+			}
+		}
+	}
+
 	auto pos = m_tags_classification.find(tag);
 	if (pos != m_tags_classification.end()) {
 		return pos->second;

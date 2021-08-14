@@ -282,7 +282,7 @@ void TagInput::classifyText(const QStringList& tag_list)
 			break;
 
 		QTextCharFormat f;
-		auto tag_kind = m_tag_parser.classify(tag);
+		auto tag_kind = m_tag_parser.classify(tag, tag_list);
 
 		if (tag_kind & TagParser::TagKind::Unknown) {
 			f.setForeground(getUnknownTagColor());
@@ -313,15 +313,7 @@ void TagInput::classifyText(const QStringList& tag_list)
 
 		}
 		if (tag_kind & TagParser::TagKind::Removed) {
-
-			auto color = m_tag_parser.getColor(tag);
-			if (Q_UNLIKELY(color.isValid())) {
-				// tag has custom color
-				f.setForeground(color);
-			} else {
-				// use default removed color
-				f.setForeground(getRemovedTagColor());
-			}
+			f.setForeground(getRemovedTagColor());
 		}
 
 		QTextLayout::FormatRange fr;

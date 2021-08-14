@@ -124,11 +124,10 @@ public:
 
 
 	/*!
-	 * \brief Classify \p tag.
+	 * \brief Classify \p tag with regard to \p all_tags.
 	 * \return Classification flags \ref TagKind for this tag.
 	 */
-	TagClassification classify(QStringView tag) const;
-
+	TagClassification classify(QStringView tag, const QStringList& all_tags) const;
 
 	/*!
 	 * \brief Get comment for a tag.
