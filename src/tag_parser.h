@@ -179,6 +179,13 @@ public:
 	bool isTagRemoved(const QString& tag) const;
 
 
+	/*!
+	 * \brief Returns custom color for tag \p kind.
+	 * \return Invalid QColor if no custom color is set for \p kind.
+	 */
+	QColor getCustomKindColor(TagKind kind) const;
+
+
 signals:
 
 	/*!
@@ -196,6 +203,21 @@ private:
 	 * \return List of top-level tags
 	 */
 	QStringList parse_tags_file(QTextStream* input);
+
+	/*!
+	 * \brief Parse hex color string
+	 * \param input           Input string.
+	 * \param color_name[out] Parsed input color string (optional).
+	 */
+	static QColor parse_color(const QString& input, QString* color_name = nullptr);
+
+	/*!
+	 * \brief Parse #pragma statements and set up necessary internal state.
+	 * \param line Input string
+	 * \param custom_categories Map for storing #pragma category <key> #<value>
+	 * \return true if encountered a pragma, false otherwise
+	 */
+	bool parse_pragma(const QString& line, std::unordered_map<QString, QColor>& custom_categories);
 
 	/*!
 	 * \brief List of tags that are related to specified tag.
@@ -270,6 +292,16 @@ private:
 	 * \c .second - id for related tags search.
 	 */
 	QVector<QPair<QRegularExpression, QString>> m_regexps;
+
+	/// Custom consequent tags color (#pragma implied_color)
+	QColor m_custom_implication_color;
+
+	/// Custom replaced tags color (#pragma replaced_color)
+	QColor m_custom_replacement_color;
+
+	/// Custom removed tags color (#pragma removed_color)
+	QColor m_custom_removal_color;
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TagParser::TagClassification);

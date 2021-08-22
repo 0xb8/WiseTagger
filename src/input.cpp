@@ -275,6 +275,18 @@ void TagInput::classifyText(const QStringList& tag_list)
 
 	std::vector<QTextLayout::FormatRange> formats;
 
+	const auto consequent_color = m_tag_parser.getCustomKindColor(TagParser::TagKind::Consequent);
+	auto replaced_color = m_tag_parser.getCustomKindColor(TagParser::TagKind::Replaced);
+	if (!replaced_color.isValid()) {
+		replaced_color = getReplacedTagColor();
+	}
+
+	auto removed_color = m_tag_parser.getCustomKindColor(TagParser::TagKind::Removed);
+	if (!removed_color.isValid()) {
+		removed_color = getRemovedTagColor();
+	}
+
+
 	int offset = 0;
 	for (const auto& tag : tag_list) {
 		offset = text.indexOf(tag, offset);
@@ -284,6 +296,8 @@ void TagInput::classifyText(const QStringList& tag_list)
 		QTextCharFormat f;
 		auto tag_kind = m_tag_parser.classify(tag, tag_list);
 
+		bool has_custom_color = false;
+
 		if (tag_kind & TagParser::TagKind::Unknown) {
 			f.setForeground(getUnknownTagColor());
 		} else {
@@ -291,6 +305,7 @@ void TagInput::classifyText(const QStringList& tag_list)
 			// tag has custom color
 			auto color = m_tag_parser.getColor(tag);
 			if (Q_UNLIKELY(color.isValid())) {
+				has_custom_color = true;
 				f.setForeground(color);
 			}
 
@@ -305,15 +320,18 @@ void TagInput::classifyText(const QStringList& tag_list)
 			// this tag is implied by other tag
 			if (consequent_tags.find(tag) != consequent_tags.end()) {
 				f.setFontItalic(true);
+				if (consequent_color.isValid() && !has_custom_color) {
+					f.setForeground(consequent_color);
+				}
 			}
 		}
 
 		if (tag_kind & TagParser::TagKind::Replaced) {
-			f.setForeground(getReplacedTagColor());
+			f.setForeground(replaced_color);
 
 		}
 		if (tag_kind & TagParser::TagKind::Removed) {
-			f.setForeground(getRemovedTagColor());
+			f.setForeground(removed_color);
 		}
 
 		QTextLayout::FormatRange fr;

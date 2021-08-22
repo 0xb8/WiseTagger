@@ -201,6 +201,10 @@ bool TagParser::loadTagData(const QByteArray& data)
 	m_regexps.clear();
 	m_tags_classification.clear();
 
+	m_custom_implication_color = QColor();
+	m_custom_removal_color = QColor();
+	m_custom_replacement_color = QColor();
+
 	if(data.isEmpty()) {
 		return false;
 	}
@@ -225,6 +229,22 @@ bool TagParser::isTagRemoved(const QString & tag) const
 }
 
 
+QColor TagParser::getCustomKindColor(TagKind kind) const
+{
+	switch (kind) {
+	case TagKind::Consequent:
+		return m_custom_implication_color;
+	case TagKind::Removed:
+		return m_custom_removal_color;
+	case TagKind::Replaced:
+		return m_custom_replacement_color;
+	default:
+		break;
+	}
+	return QColor{};
+}
+
+
 bool TagParser::is_negation_token(QChar ch) noexcept
 {
 	const auto negation_symbol = QChar(0x00AC);    // ¬
@@ -245,6 +265,8 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 	QString current_line, main_tag, removed_tag, replaced_tag, consequent_tag, comment;
 	QString regex_source;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, consequent_tags_list;
+
+	std::unordered_map<QString, QColor> custom_categories;
 
 	auto allowed_in_tag = [](QChar c, bool within=false)
 	{
@@ -323,38 +345,6 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		}
 	};
 
-	auto parse_tag_color_comment = [](const QString& comment, QString& name)
-	{
-		QColor tag_color;
-		// early out
-		if (comment.isEmpty())
-			return tag_color;
-
-		auto split_comment = util::split(comment);
-
-		for (const auto& part : qAsConst(split_comment)) {
-			if (!part.startsWith('#'))
-				continue;
-
-			// try hex color
-			tag_color.setNamedColor(part);
-			if (tag_color.isValid()) {
-				name = part;
-				break;
-			}
-
-			// try named color (without #)
-			tag_color.setNamedColor(part.midRef(1));
-			if (tag_color.isValid()) {
-				name = part;
-				break;
-			}
-		}
-
-		return tag_color;
-	};
-
-
 	while(!input->atEnd()) {
 		current_line = input->readLine().trimmed();
 
@@ -366,6 +356,9 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		}
 
 		if (current_line.isEmpty())
+			continue;
+
+		if (parse_pragma(current_line, custom_categories))
 			continue;
 
 		main_tag.clear();
@@ -529,7 +522,19 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		}
 
 		QString color_name;
-		QColor tag_color = parse_tag_color_comment(comment, color_name);
+		QColor tag_color = parse_color(comment, &color_name);
+		if (!tag_color.isValid()) {
+			// try to find the category in the comment
+			const auto split_comment = util::split(comment);
+			for (const auto& part : split_comment) {
+				// check if this string is a category name
+				auto pos = custom_categories.find(part);
+				if (pos != custom_categories.end()) {
+					Q_ASSERT(pos->second.isValid());
+					tag_color = pos->second;
+				}
+			}
+		}
 
 		if(!main_tag.isEmpty()) {
 			main_tags_list.push_back(main_tag);
@@ -539,7 +544,6 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 				comment = comment.trimmed();
 
 				if (tag_color.isValid()) {
-					tag_color.setAlpha(255);
 					m_tag_colors.emplace(main_tag, tag_color);
 					comment.remove(color_name);
 					comment = comment.trimmed();
@@ -573,8 +577,99 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			m_related_tags.emplace(main_tag, cons_tag);
 			add_tag_kind(cons_tag, TagKind::Consequent);
 		}
+
 	}
 	return main_tags_list;
+}
+
+QColor TagParser::parse_color(const QString& input, QString * color_name)
+{
+	QColor tag_color;
+	// early out
+	if (input.isEmpty())
+		return tag_color;
+
+	auto split_str = util::split(input);
+
+	for (const auto& part : qAsConst(split_str)) {
+		if (!part.startsWith('#'))
+			continue;
+
+		// try hex color
+		tag_color.setNamedColor(part);
+		if (tag_color.isValid()) {
+			tag_color.setAlpha(255);
+			if (color_name) *color_name = part;
+			break;
+		}
+
+		// try named color (without #)
+		tag_color.setNamedColor(part.midRef(1));
+		if (tag_color.isValid()) {
+			tag_color.setAlpha(255);
+			if (color_name) *color_name = part;
+			break;
+		}
+	}
+
+	return tag_color;
+}
+
+
+// parse #pragma statement
+bool TagParser::parse_pragma(const QString& line, std::unordered_map<QString, QColor>& custom_categories)
+{
+	if (line.startsWith('#')) {
+		const auto pragmas = util::split(line.mid(1));
+		if (pragmas.size() > 1 && pragmas[0] == QStringLiteral("pragma")) {
+
+			auto get_custom_color = [](const auto& pragmas, const auto& param_name) {
+				QColor res;
+				if (pragmas.size() >= 3) {
+					if (pragmas[1] == param_name) {
+						res = parse_color(pragmas[2]);
+					}
+				}
+				return res;
+			};
+
+			auto implication = get_custom_color(pragmas, "implied_color");
+			if (implication.isValid()) {
+				m_custom_implication_color = implication;
+			}
+
+			auto removal = get_custom_color(pragmas, "removed_color");
+			if (removal.isValid()) {
+				m_custom_removal_color = removal;
+			}
+
+			auto replacement = get_custom_color(pragmas, "replaced_color");
+			if (replacement.isValid()) {
+				m_custom_replacement_color = replacement;
+			}
+
+			auto get_category_color = [](const auto& pragmas, QString& category) {
+				QColor res;
+				if (pragmas.size() >= 4) {
+					if (pragmas[1] == "category") {
+						res = parse_color(pragmas[3]);
+						if (res.isValid()) {
+							category = pragmas[2];
+						}
+					}
+				}
+				return res;
+			};
+
+			QString category_name;
+			auto category_color = get_category_color(pragmas, category_name);
+			if (category_color.isValid()) {
+				custom_categories.emplace(category_name, category_color);
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 QStringList TagParser::related_tags(TagEditState& state, const QString &tag) const
