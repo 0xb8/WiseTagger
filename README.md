@@ -71,6 +71,23 @@ some_tag ⇐ first_replaced_tag, second_replaced_tag → first_implied_tag, seco
 
 # all these tags will be removed
 ¬ one, two, three
+
+# ----- ADVANCED FEATURES -----
+
+# it is possible to modify default colors for tag kinds using #pragma:
+#pragma replaced_color #ff8800
+#pragma implied_color #0088ff
+#pragma removed_color #ff0000
+
+# you can also define custom category colors using #pragma category:
+#pragma category artist #bbbb00
+#pragma category character #00aa00
+#pragma category copyright #dd00dd
+
+# and then use them in a tag comment (any occurence of category name counts):
+pablo_picasso                               # artist
+dorothy_gale → the_wonderful_wizard_of_oz   # character
+the_wonderful_wizard_of_oz                  # copyright
 ```
 
 **Note that tags will be presented in autocomplete suggestions in the same order they are in tags file!** 
