@@ -28,6 +28,7 @@
 #define S_STYLE         QStringLiteral("window/style")
 #define S_FONT          QStringLiteral("window/font")
 #define S_FONT_SIZE     QStringLiteral("window/font-size")
+#define S_FONT_SIZE_MIN QStringLiteral("window/font-size-minmode")
 #define S_SHOW_DIR      QStringLiteral("window/show-current-directory")
 #define S_STATISTICS    QStringLiteral("stats/enabled")
 #define S_VERCHECK      QStringLiteral("version-check-enabled")
@@ -45,6 +46,7 @@
 #define D_STYLE         QStringLiteral("Default")
 #define D_FONT          QStringLiteral("Consolas")
 #define D_FONT_SIZE     14
+#define D_FONT_SIZE_MIN 12
 #define D_SHOW_DIR      true
 #define D_STATISTICS    true
 #define D_VERCHECK      true
@@ -287,6 +289,7 @@ void SettingsDialog::reset()
 	ui->proxyGroup->   setChecked(    settings.value(S_PROXY_ENABLED, D_PROXY_ENABLED).toBool());
 	ui->useSystemProxy->setChecked(   settings.value(S_PROXY_USE_SYS, D_PROXY_USE_SYS).toBool());
 	ui->fontSize->     setValue(      settings.value(S_FONT_SIZE,     D_FONT_SIZE).toUInt());
+	ui->fontSize_min-> setValue(      settings.value(S_FONT_SIZE_MIN, D_FONT_SIZE_MIN).toUInt());
 	ui->proxyPort->    setValue(      settings.value(S_PROXY_PORT,    D_PROXY_PORT).toUInt());
 	ui->proxyHost->    setText(       settings.value(S_PROXY_HOST,    D_PROXY_HOST).toString());
 	ui->preloadGroup-> setChecked(    settings.value(S_PRELOAD,       D_PRELOAD).toBool());
@@ -381,6 +384,7 @@ void SettingsDialog::apply()
 	settings.setValue(S_STYLE,         ui->appStyle->currentText());
 	settings.setValue(S_FONT,          ui->fontFamily->currentText());
 	settings.setValue(S_FONT_SIZE,     ui->fontSize->value());
+	settings.setValue(S_FONT_SIZE_MIN, ui->fontSize_min->value());
 	settings.setValue(S_SHOW_DIR,      ui->showCurrentDir->isChecked());
 	settings.setValue(S_STATISTICS,    ui->statsEnabled->isChecked());
 	settings.setValue(S_VERCHECK,      ui->vercheckEnabled->isChecked());
@@ -462,6 +466,7 @@ void SettingsDialog::restoreDefaults()
 	ui->proxyHost->    setText(       D_PROXY_HOST);
 	ui->proxyPort->    setValue(      D_PROXY_PORT);
 	ui->fontSize->     setValue(      D_FONT_SIZE);
+	ui->fontSize_min-> setValue(       D_FONT_SIZE_MIN);
 	ui->preloadCount-> setValue(      D_PRELOAD_CNT);
 	ui->cacheMemory->  setValue(      D_PRELOAD_MEM);
 }
