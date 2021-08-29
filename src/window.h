@@ -139,6 +139,8 @@ private:
 	QAction a_save_file;
 	QAction a_save_next;
 	QAction a_save_prev;
+	QAction a_next_fixable;
+	QAction a_prev_fixable;
 	QAction a_go_to_number;
 	QAction a_open_session;
 	QAction a_save_session;

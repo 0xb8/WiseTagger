@@ -195,21 +195,43 @@ bool Tagger::openSession(const QByteArray & sdata)
 	return res;
 }
 
-void Tagger::nextFile(RenameOptions options)
+void Tagger::nextFile(RenameOptions options, SkipOptions skip_option)
 {
 	if(rename(options) == RenameStatus::Cancelled)
 		return;
 
-	m_file_queue.forward();
+	if (skip_option & SkipOption::SkipToFixable) {
+		bool found = selectWithFixableTags(+1);
+		if (!found) {
+			QMessageBox::warning(this,
+			                     tr("Could not find next fixable file"),
+			                     tr("<p>Could not find next fixable file in queue.</p>"
+			                        "<p>Perhaps all files in the queue are fixed?</p>"));
+		}
+	} else {
+		m_file_queue.forward();
+	}
+
 	loadCurrentFile();
 }
 
-void Tagger::prevFile(RenameOptions options)
+void Tagger::prevFile(RenameOptions options, SkipOptions skip_option)
 {
 	if(rename(options) == RenameStatus::Cancelled)
 		return;
 
-	m_file_queue.backward();
+	if (skip_option & SkipOption::SkipToFixable) {
+		bool found = selectWithFixableTags(-1);
+		if (!found) {
+			QMessageBox::warning(this,
+			                     tr("Could not find previous fixable file"),
+			                     tr("<p>Could not find previous fixable file in queue.</p>"
+			                        "<p>Perhaps all files in  the queue are fixed?</p>"));
+		}
+	} else {
+		m_file_queue.backward();
+	}
+
 	loadCurrentFile();
 }
 
@@ -912,10 +934,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 	}
 
 	// check if user has write permission for this directory
-	QFileInfo dir_fi(f.absolutePath());
-	++qt_ntfs_permission_lookup;
-	m_file_renameable = dir_fi.isWritable();
-	--qt_ntfs_permission_lookup;
+	m_file_renameable = isFileRenameable(f);
 
 	findTagsFiles(); // must call before setting input text for tag classification to work
 
@@ -1016,6 +1035,79 @@ bool Tagger::loadCurrentFile()
 	}
 
 	return true;
+}
+
+bool Tagger::isFileRenameable(const QFileInfo & fi)
+{
+	bool res = false;
+	QFileInfo dir_fi(fi.absolutePath());
+	if (dir_fi.exists()) {
+		++qt_ntfs_permission_lookup;
+		res = dir_fi.isWritable();
+		--qt_ntfs_permission_lookup;
+	}
+	return res;
+}
+
+bool Tagger::selectWithFixableTags(int direction)
+{
+	auto check_fixable = [this]() {
+		const QFileInfo file(m_file_queue.current());
+		if (isFileRenameable(file)) {
+			findTagsFiles();
+
+			auto orig_tags = file.completeBaseName();
+			if (util::is_hex_string(orig_tags))
+				return true;
+
+			auto orig_tags_list = util::split(orig_tags);
+
+			// check if all tags are unknown, or if some tags are removed/replaced
+			bool all_unknown = true;
+			bool any_removed = false;
+			for (const auto& tag : qAsConst(orig_tags_list)) {
+				auto kind = m_input.tag_parser().classify(tag, orig_tags_list);
+				if (!(kind & TagParser::TagKind::Unknown))
+					all_unknown = false;
+				if (kind & TagParser::TagKind::Removed)
+					any_removed = true;
+				if (kind & TagParser::TagKind::Replaced)
+					any_removed = true;
+			}
+
+			if (all_unknown || any_removed)
+				return true;
+
+			// full tag fixing fallback (checks for sorting too)
+			TagEditState state;
+			auto options = TagParser::FixOptions::from_settings();
+			options.sort = true;
+
+			// Autofix imageboard tags before comparing
+			util::replace_special(orig_tags);
+			auto fixed_tags_list = m_input.tag_parser().fixTags(state, orig_tags, options);
+			auto new_tags = util::join(fixed_tags_list);
+
+			return orig_tags != new_tags;
+		}
+		return false;
+	};
+
+	size_t original_index = m_file_queue.currentIndex();
+
+	for (size_t i = 0; i < m_file_queue.size(); ++i) {
+		// check next or previous file in queue
+		direction > 0 ? m_file_queue.forward() : m_file_queue.backward();
+		if (check_fixable()) {
+			// found fixable, queue index is already set
+			return true;
+		}
+	}
+
+	// no fixable files found
+	m_file_queue.select(original_index);
+	findTagsFiles();
+	return false;
 }
 
 Tagger::RenameStatus Tagger::rename(RenameOptions options)

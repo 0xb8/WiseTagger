@@ -121,6 +121,9 @@ QString util::duration(uint64_t seconds, bool with_minutes, bool with_seconds)
 QIcon util::get_icon_from_executable(const QString &path)
 {
 #ifdef Q_OS_WIN
+	#ifdef _MSC_VER
+		#pragma comment( lib, "User32" )
+	#endif
 	auto widepath = QDir::toNativeSeparators(path).toStdWString();
 	auto hinstance = ::GetModuleHandle(NULL);
 	auto hicon = ::ExtractIcon(hinstance, widepath.c_str(), 0);
@@ -309,10 +312,10 @@ bool util::is_hex_string(const QString & str)
 {
 	const char valid_chars[] = "1234567890abcdef";
 	for (auto c : str) {
-		auto pos = std::find(std::begin(valid_chars),
-		                     std::end(valid_chars),
-		                     c.toLower().toLower().toLatin1());
-		if (pos == std::end(valid_chars))
+		// ignore \0 terminator
+		const auto end = std::prev(std::end(valid_chars));
+		auto pos = std::find(std::begin(valid_chars), end, c.toLower().toLatin1());
+		if (pos == end)
 			return false;
 	}
 	return true;

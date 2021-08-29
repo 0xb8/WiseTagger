@@ -88,6 +88,17 @@ public:
 	using RenameOptions = QFlags<RenameOption>;
 	Q_FLAG(RenameOptions)
 
+	/// Options controlling skipping files in queue when selecting next or previous file.
+	enum class SkipOption
+	{
+		DontSkip      = 0x0,  ///< Default behavior, don't skip any files.
+		SkipToFixable = 0x1,  ///< Skip until fixable file is found.
+	};
+	/// Bitflags for \ref SkipOption
+	using SkipOptions = QFlags<SkipOption>;
+	Q_FLAG(SkipOptions)
+
+
 	/*!
 	 * \brief Determine whether it is safe to close the application.
 	 * \param status Rename operation status, see Tagger::rename().
@@ -106,15 +117,19 @@ public:
 	/*!
 	 * \brief Ask user to rename current file and opens next.
 	 * \param options UI behavior modifiers (see \ref RenameOption).
+	 * \param skip_option Skip files option (see \ref SkipOption)
 	 */
-	void nextFile(RenameOptions options = RenameOption::NoOption);
+	void nextFile(RenameOptions options = RenameOption::NoOption,
+	              SkipOptions skip_option = SkipOption::DontSkip);
 
 
 	/*!
 	 * \brief Ask user to rename current file and opens previous.
 	 * \param options UI behavior modifiers (see \ref RenameOption).
+	 * \param skip_option Skip files option (see \ref SkipOption)
 	 */
-	void prevFile(RenameOptions options = RenameOption::NoOption);
+	void prevFile(RenameOptions options = RenameOption::NoOption,
+	              SkipOptions skip_option = SkipOption::DontSkip);
 
 	/*!
 	 * \brief Set tag input text.
@@ -293,6 +308,8 @@ private:
 	void findTagsFiles(bool force = false);
 	void reloadTagsContents();
 	bool loadCurrentFile();
+	static bool isFileRenameable(const QFileInfo& fi);
+	bool selectWithFixableTags(int direction);
 	bool loadFile(size_t index, bool silent = false);
 	bool loadVideo(const QFileInfo& file);
 	void hideVideo();

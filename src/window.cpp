@@ -92,6 +92,8 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_save_file(       tr("&Save"), nullptr)
 	, a_save_next(       tr("Save and Open Next Image"), nullptr)
 	, a_save_prev(       tr("Save and Open Previous Image"), nullptr)
+	, a_next_fixable(    tr("Next fixable image"), nullptr)
+	, a_prev_fixable(    tr("Previous fixable image"), nullptr)
 	, a_go_to_number(    tr("&Go To File Number..."), nullptr)
 	, a_open_session(    tr("Open Session"), nullptr)
 	, a_save_session(    tr("Save Session"), nullptr)
@@ -988,6 +990,8 @@ void Window::createActions()
 	a_save_file.setShortcut(    QKeySequence::Save);
 	a_save_next.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Right));
 	a_save_prev.setShortcut(    QKeySequence(Qt::SHIFT + Qt::Key_Left));
+	a_next_fixable.setShortcut( QKeySequence(Qt::ALT + Qt::Key_Right));
+	a_prev_fixable.setShortcut( QKeySequence(Qt::ALT + Qt::Key_Left));
 	a_delete_file.setShortcut(  QKeySequence::Delete);
 	a_fix_tags.setShortcut(     QKeySequence(tr("Ctrl+A", "Fix tags")));
 	a_open_post.setShortcut(    QKeySequence(tr("Ctrl+P", "Open post")));
@@ -1144,6 +1148,14 @@ void Window::createActions()
 	connect(&a_save_prev,   &QAction::triggered, this, [this]()
 	{
 		m_tagger.prevFile(Tagger::RenameOption::ForceRename);
+	});
+	connect(&a_next_fixable,   &QAction::triggered, this, [this]()
+	{
+		m_tagger.nextFile(Tagger::RenameOption::NoOption, Tagger::SkipOption::SkipToFixable);
+	});
+	connect(&a_prev_fixable,   &QAction::triggered, this, [this]()
+	{
+		m_tagger.prevFile(Tagger::RenameOption::NoOption, Tagger::SkipOption::SkipToFixable);
 	});
 	connect(&a_open_post,   &QAction::triggered, this, [this]()
 	{
@@ -1451,6 +1463,9 @@ void Window::createMenus()
 	add_action(menu_navigation, a_save_next);
 	add_action(menu_navigation, a_save_prev);
 	add_separator(menu_navigation);
+	add_action(menu_navigation, a_next_fixable);
+	add_action(menu_navigation, a_prev_fixable);
+	add_separator(menu_navigation);
 	add_action(menu_navigation, a_set_queue_filter);
 	add_separator(menu_navigation);
 	add_action(menu_navigation, a_open_loc);
@@ -1594,6 +1609,8 @@ void Window::updateMenus()
 	a_save_file.setDisabled(val);
 	a_save_next.setDisabled(val);
 	a_save_prev.setDisabled(val);
+	a_next_fixable.setDisabled(val);
+	a_prev_fixable.setDisabled(val);
 	a_delete_file.setDisabled(val);
 	a_fix_tags.setDisabled(val);
 	a_fetch_tags.setDisabled(val || !m_tagger.fileRenameable());
