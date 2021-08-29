@@ -96,7 +96,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_open_session(    tr("Open Session"), nullptr)
 	, a_save_session(    tr("Save Session"), nullptr)
 	, a_fix_tags(        tr("&Apply Tag Fixes"), nullptr)
-      	, a_fetch_tags(      tr("Fetch Imageboard Tags..."), nullptr)
+	, a_fetch_tags(      tr("Fetch Imageboard Tags..."), nullptr)
 	, a_open_loc(        tr("Open &Containing Folder"), nullptr)
 	, a_reload_tags(     tr("&Reload Tag File"), nullptr)
 	, a_open_tags(       tr("Open Tag File &Location"), nullptr)
@@ -119,6 +119,8 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_view_sort_type(  tr("By File &Type"), nullptr)
 	, a_view_sort_date(  tr("By Modification &Date"), nullptr)
 	, a_view_sort_size(  tr("By File &Size"), nullptr)
+	, a_view_sort_length(tr("By File Name &Length"), nullptr)
+	, a_view_sort_tagcnt(tr("By Tag &Count"), nullptr)
 	, a_play_pause(      tr("Play/Pause"))
 	, a_play_mute(       tr("Mute"))
 	, a_about(           tr("&About..."), nullptr)
@@ -1009,6 +1011,8 @@ void Window::createActions()
 	a_view_sort_type.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_T));
 	a_view_sort_date.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_D));
 	a_view_sort_size.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_Z));
+	a_view_sort_length.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_L));
+	a_view_sort_tagcnt.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_C));
 
 	a_open_post.setStatusTip(     tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(   tr("Upload this image to iqdb.org and open search results page in default browser."));
@@ -1375,6 +1379,11 @@ void Window::createActions()
 		case SortQueueBy::FileSize:
 			criteria_str = tr("Size");
 			break;
+		case SortQueueBy::FileNameLength:
+			criteria_str = tr("Name Length");
+			break;
+		case SortQueueBy::TagCount:
+			criteria_str = tr("Tag Count");
 		}
 
 		addNotification(tr("Queue Sorted by %1").arg(criteria_str));
@@ -1471,19 +1480,27 @@ void Window::createMenus()
 	add_action(menu_sort, a_view_sort_type);
 	add_action(menu_sort, a_view_sort_size);
 	add_action(menu_sort, a_view_sort_date);
+	add_action(menu_sort, a_view_sort_length);
+	add_action(menu_sort, a_view_sort_tagcnt);
 	a_view_sort_name.setCheckable(true);
 	a_view_sort_name.setChecked(true);
 	a_view_sort_type.setCheckable(true);
 	a_view_sort_size.setCheckable(true);
 	a_view_sort_date.setCheckable(true);
+	a_view_sort_length.setCheckable(true);
+	a_view_sort_tagcnt.setCheckable(true);
 	a_view_sort_name.setActionGroup(&ag_sort_criteria);
 	a_view_sort_type.setActionGroup(&ag_sort_criteria);
 	a_view_sort_size.setActionGroup(&ag_sort_criteria);
 	a_view_sort_date.setActionGroup(&ag_sort_criteria);
+	a_view_sort_length.setActionGroup(&ag_sort_criteria);
+	a_view_sort_tagcnt.setActionGroup(&ag_sort_criteria);
 	a_view_sort_name.setData(QVariant::fromValue(SortQueueBy::FileName));
 	a_view_sort_type.setData(QVariant::fromValue(SortQueueBy::FileType));
 	a_view_sort_size.setData(QVariant::fromValue(SortQueueBy::FileSize));
 	a_view_sort_date.setData(QVariant::fromValue(SortQueueBy::ModificationDate));
+	a_view_sort_length.setData(QVariant::fromValue(SortQueueBy::FileNameLength));
+	a_view_sort_tagcnt.setData(QVariant::fromValue(SortQueueBy::TagCount));
 
 	// Options menu actions
 	add_action(menu_options, a_ib_replace);

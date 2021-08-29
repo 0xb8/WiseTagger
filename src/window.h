@@ -166,6 +166,8 @@ private:
 	QAction a_view_sort_type;
 	QAction a_view_sort_date;
 	QAction a_view_sort_size;
+	QAction a_view_sort_length;
+	QAction a_view_sort_tagcnt;
 	QAction a_play_pause;
 	QAction a_play_mute;
 	QAction a_about;

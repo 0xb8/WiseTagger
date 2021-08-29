@@ -19,7 +19,59 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #include <QtWin>
+
+
+uint64_t util::get_file_identifier(const QString& path)
+{
+	static_assert (sizeof(wchar_t) == 2, "wchar_t is not UTF-16");
+	auto native_path = QDir::toNativeSeparators(path);
+	uint64_t ret = 0;
+
+	HANDLE h = CreateFileW((wchar_t*)native_path.utf16(),
+	                       0,
+	                       FILE_SHARE_DELETE,
+	                       nullptr,
+	                       OPEN_EXISTING,
+	                       FILE_ATTRIBUTE_NORMAL,
+	                       nullptr);
+
+	if(h == INVALID_HANDLE_VALUE)
+		return 0u;
+
+	BY_HANDLE_FILE_INFORMATION info;
+	if(GetFileInformationByHandle(h, &info)) {
+		uint64_t inode = ((uint64_t)info.nFileIndexHigh << 32) | (uint64_t)info.nFileIndexLow;
+		uint64_t device = (uint64_t)info.dwVolumeSerialNumber << 32;
+		uint64_t mtime = ((uint64_t)info.ftLastWriteTime.dwHighDateTime << 32) | (uint64_t)info.ftLastWriteTime.dwLowDateTime;
+		uint64_t mtime_posix = mtime / 10000 - 11644473600ll; // close enough POSIX conversion
+		ret = inode ^ device ^ (mtime_posix << 16);
+	}
+	CloseHandle(h);
+	return ret;
+}
+#elif defined(Q_OS_UNIX)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+static uint64_t get_file_identifier(const QString &path)
+{
+	auto native_path = path.toLocal8Bit();
+	uint64_t ret = 0u;
+
+	struct stat sb;
+	if(0 == stat(native_path.constData(), &sb)) {
+		uint64_t inode = sb.st_ino;
+		uint64_t device = sb.st_dev;
+		uint64_t mtime = ((uint64_t)sb.st_mtim.tv_sec); // nanosec timestamps not supported by ntfs-3g
+		ret = inode ^ (device << 32) ^ (mtime << 16);
+	}
+	return ret;
+}
+#else
+#error "util::get_file_identifier() not implemented for this OS"
 #endif
+
 
 #define SETT_LOCALE     QStringLiteral("window/language")
 #define SETT_LOCALE_OLD QStringLiteral("window/locale")
@@ -275,3 +327,21 @@ QStringList util::split(const QString& str, QChar separator)
 #endif
 	return str.split(separator, flags);
 }
+
+
+int util::is_same_file(const QString& path1, const QString& path2)
+{
+	// check if inode is the same
+	auto id1 = get_file_identifier(path1);
+	auto id2 = get_file_identifier(path2);
+
+	if (id1 == 0 || id2 == 0)
+		// could not open file(s)
+		return -1;
+
+	if (id1 == id2)
+		return 0;
+
+	return 1;
+}
+

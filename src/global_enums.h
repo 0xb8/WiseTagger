@@ -59,7 +59,9 @@ public:
 		FileName,          ///< Sort by file name only.
 		FileType,          ///< Sort by file type, then by file name.
 		FileSize,          ///< Sort by file size, then by file name.
-		ModificationDate   ///< Sort by modification date, then by file name.
+		ModificationDate,  ///< Sort by modification date, then by file name.
+		FileNameLength,    ///< Sort by file name length, then by file name.
+		TagCount,          ///< Sort by tag count, then by file name.
 	};
 	Q_ENUM(SortQueueBy)
 

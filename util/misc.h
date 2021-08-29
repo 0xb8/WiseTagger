@@ -75,6 +75,21 @@ bool                    backup_settings_to_file(const QString& path);
 /// Load settings from \p path
 bool                    restore_settings_from_file(const QString& path);
 
+/// Returns (hopefully) unique file identifier based on device id, inode and mtime.
+uint64_t                get_file_identifier(const QString& path);
+
+/*!
+ * \brief Returns whether \p path1 and \p path2 represent the same file.
+ *
+ * Files are compared by inode. In a case-insensitive filesystem, paths
+ * differing only in case are necessarily representing the same file.
+ *
+ * \retval  0 - paths represent the same file
+ * \retval  1 - paths represent different files
+ * \retval -1 - error opening the file(s)
+ */
+int                    is_same_file(const QString& path1, const QString& path2);
+
 } // namespace util
 
 #endif // UTIL_MISC_H
