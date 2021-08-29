@@ -622,6 +622,11 @@ void Tagger::setQueueFilter(QString filter_str)
 	m_file_queue.setSubstringFilter(filter);
 }
 
+void Tagger::setStatusText(QString left, QString right)
+{
+	m_picture.setStatusText(left, right);
+}
+
 void Tagger::keyPressEvent(QKeyEvent * e)
 {
 	if (e->key() == Qt::Key_Escape) {

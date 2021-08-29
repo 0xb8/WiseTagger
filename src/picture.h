@@ -60,6 +60,9 @@ public slots:
 	/// Clear media and display welcome text.
 	void clear();
 
+	/// Display status information on the bottom left and right
+	void setStatusText(const QString& left, const QString& right);
+
 protected:
 	void dragEnterEvent(QDragEnterEvent*) override;
 	void dragMoveEvent(QDragMoveEvent*)   override;
@@ -92,6 +95,9 @@ private:
 	Type      m_type;
 	bool      m_has_alpha;
 
+	QLabel    m_status_left;
+	QLabel    m_status_right;
+	QFont     m_status_font;
 };
 
 #endif // PICTURE_H

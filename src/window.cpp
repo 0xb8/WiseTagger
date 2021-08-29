@@ -31,7 +31,6 @@
 #include <QStyle>
 #include <QUrl>
 #include <QVersionNumber>
-#include <QStyleFactory>
 #include <memory>
 
 #include "window.h"
@@ -297,12 +296,16 @@ void Window::updateStatusBarText()
 		return;
 	}
 
+	QString left, right;
+
 	if(m_show_current_directory) {
 		auto last_modified = m_tagger.currentFileLastModified();
-		statusBar()->showMessage(tr("In directory:  %1      Last modified: %2 ago (%3)")
-			.arg(QDir::toNativeSeparators(m_tagger.currentDir()),
-			     util::duration(last_modified.secsTo(QDateTime::currentDateTime()), true, false),
-			     last_modified.toString("yyyy-MM-dd hh:mm:ss")));
+		left = tr("In directory:  %1      Last modified: %2 ago (%3)").arg(
+			QDir::toNativeSeparators(m_tagger.currentDir()),
+			util::duration(last_modified.secsTo(QDateTime::currentDateTime()), true, false),
+			last_modified.toString("yyyy-MM-dd hh:mm:ss"));
+
+		statusBar()->showMessage(left);
 	}
 	const auto current = m_tagger.queue().currentIndex() + 1u;
 	const auto qsize   = m_tagger.queue().size();
@@ -329,6 +332,13 @@ void Window::updateStatusBarText()
 		                               matches ? QStringLiteral("|&nbsp;&nbsp;<span style=\"color: %3;\">%1 / %2</span>&nbsp;&nbsp;").arg(current).arg(qsize).arg(color.name()) : ""));
 	}
 
+	right = m_statusbar_label.text();
+
+	if (!m_statusbar.isVisible()) {
+		m_tagger.setStatusText(left, right);
+	} else {
+		m_tagger.setStatusText(QString{}, QString{});
+	}
 }
 
 void Window::updateImageboardPostURL(QString url)
@@ -753,46 +763,6 @@ void Window::scheduleRestart()
 
 void Window::updateStyle()
 {
-	QSettings sett;
-	auto theme_name = sett.value(SETT_STYLE, QStringLiteral("Default")).toString();
-	if (theme_name == QStringLiteral("Dark")) {
-		auto fusion = QStyleFactory::create("fusion");
-		QApplication::setStyle(fusion);
-
-		QPalette palette;
-		palette.setColor(QPalette::Window, QColor(35, 35, 35));
-		palette.setColor(QPalette::WindowText, QColor(238, 238, 238));
-		palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(102, 102, 102));
-		palette.setColor(QPalette::Base, QColor(24, 24, 24));
-		palette.setColor(QPalette::AlternateBase, QColor(40, 40, 40));
-		palette.setColor(QPalette::ToolTipBase, Qt::white);
-		palette.setColor(QPalette::ToolTipText, QColor(53, 53, 53));
-		palette.setColor(QPalette::Text, QColor(220, 220, 220));
-		palette.setColor(QPalette::Disabled, QPalette::Text, QColor(127, 127, 127));
-		palette.setColor(QPalette::Dark, QColor(35, 35, 35));
-		palette.setColor(QPalette::Shadow, QColor(20, 20, 20));
-		palette.setColor(QPalette::Button, QColor(40, 40, 40));
-		palette.setColor(QPalette::Disabled, QPalette::Button, QColor(35, 35, 35));
-		palette.setColor(QPalette::ButtonText, QColor(240, 240, 240));
-		palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(127, 127, 127));
-		palette.setColor(QPalette::BrightText, Qt::red);
-		palette.setColor(QPalette::Link, QColor(0, 137, 204));
-
-		palette.setColor(QPalette::Active,   QPalette::Highlight, QColor(42, 130, 218));
-		palette.setColor(QPalette::Inactive, QPalette::Highlight, QColor(80, 80, 80));
-		palette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(60, 60, 60));
-
-		palette.setColor(QPalette::Active,   QPalette::HighlightedText, QColor(255, 255, 255));
-		palette.setColor(QPalette::Inactive, QPalette::HighlightedText, QColor(240, 240, 240));
-		palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
-		QApplication::setPalette(palette);
-
-	}
-	auto style_path = QStringLiteral(":/css/%1.css").arg(theme_name);
-	QFile styles_file(style_path);
-	bool open = styles_file.open(QIODevice::ReadOnly);
-	Q_ASSERT(open);
-	qApp->setStyleSheet(styles_file.readAll());
 	qApp->setWindowIcon(QIcon(QStringLiteral(":/wisetagger.svg")));
 	m_tray_icon.setIcon(QPixmap(QStringLiteral(":/wisetagger.svg"))); // BUG: cannot use QIcon on linux, but QPixmap works (might be related to QTBUG-55932)
 }
@@ -1125,12 +1095,15 @@ void Window::createActions()
 	};
 	connect(&a_set_queue_filter, &QAction::triggered, this, set_queue_filter);
 	connect(&m_statusbar_label, &QLabel::linkActivated, this, set_queue_filter);
-	connect(&m_tagger, &Tagger::linkActivated, this, [this](auto link){
+	connect(&m_tagger, &Tagger::linkActivated, this, [this, set_queue_filter](auto link){
 		if (link == QStringLiteral("#open_file")) {
 			fileOpenDialog();
 		}
 		if (link == QStringLiteral("#open_dir")) {
 			directoryOpenDialog();
+		}
+		if (link == QStringLiteral("#filter")) {
+			set_queue_filter(link);
 		}
 	});
 	connect(&a_next_file,   &QAction::triggered, this, [this]()

@@ -17,6 +17,8 @@
 #include <QLoggingCategory>
 #include <QThread>
 #include <QElapsedTimer>
+#include <QGridLayout>
+#include <QGraphicsDropShadowEffect>
 
 namespace logging_category {Q_LOGGING_CATEGORY(picture, "Picture")}
 #define pdbg qCDebug(logging_category::picture)
@@ -33,24 +35,65 @@ Picture::Picture(QWidget *parent) :
 	m_media_size{0,0},
 	m_movie(nullptr),
 	m_type{Type::WelcomeText},
-	m_has_alpha{false}
+	m_has_alpha{false},
+	m_status_left(this),
+	m_status_right(this)
 {
 	setFocusPolicy(Qt::ClickFocus);
 	setMinimumSize(1,1);
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 	setObjectName(QStringLiteral("Picture"));
 
-	// NOTE: support custom Qt themes
-	QPalette pal(palette());
-	pal.setColor(QPalette::Window, palette().color(QPalette::Base));
-	auto textcolor{palette().color(QPalette::Text)};
-	textcolor.setAlpha(140);
-	pal.setColor(QPalette::WindowText, textcolor);
+	QGridLayout* layout = new QGridLayout(this);
+	layout->addWidget(&m_status_left, 0, 0, Qt::AlignLeft | Qt::AlignTop);
+	layout->addWidget(&m_status_right, 0, 0, Qt::AlignRight | Qt::AlignBottom);
+	layout->setContentsMargins(3, 3, 3, 3);
 
 	setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 	setOpenExternalLinks(false);
 	setAutoFillBackground(true);
+
+	// NOTE: support custom Qt themes
+	QPalette pal(palette());
+	pal.setColor(QPalette::Window, qApp->palette().color(QPalette::Base));
+	auto textcolor{palette().color(QPalette::Text)};
+	textcolor.setAlpha(140);
+	pal.setColor(QPalette::WindowText, textcolor);
 	setPalette(pal);
+
+	auto make_effect = [](QColor color){
+		auto eff = new QGraphicsDropShadowEffect();
+		eff->setEnabled(true);
+		eff->setOffset(0, 0);
+		eff->setBlurRadius(12);
+		eff->setColor(color);
+		return eff;
+	};
+
+	auto shadow_color = pal.color(QPalette::Base);
+	QColor text_color;
+	if (shadow_color.lightness() > 128) {
+		shadow_color = Qt::white;
+		text_color = QColor(0, 0, 0, 160);
+	} else {
+		shadow_color = Qt::black;
+		text_color = QColor(255, 255, 255, 140);
+	}
+
+	QPalette pal2 = pal;
+	pal2.setColor(QPalette::WindowText, text_color);
+
+	m_status_left.setPalette(pal2);
+	m_status_left.setGraphicsEffect(make_effect(shadow_color));
+	m_status_left.setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+	m_status_left.setOpenExternalLinks(false);
+	m_status_right.setPalette(pal2);
+	m_status_right.setGraphicsEffect(make_effect(shadow_color));
+	m_status_right.setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+	m_status_right.setOpenExternalLinks(false);
+
+	connect(&m_status_left, &QLabel::linkActivated, this, &Picture::linkActivated);
+	connect(&m_status_right, &QLabel::linkActivated, this, &Picture::linkActivated);
 
 	connect(&m_resize_timer, &QTimer::timeout, this, [this]()
 	{
@@ -67,6 +110,9 @@ Picture::Picture(QWidget *parent) :
 	});
 	m_resize_timer.setSingleShot(true);
 
+	m_status_font.setPointSize(8);
+	m_status_left.setFont(m_status_font);
+	m_status_right.setFont(m_status_font);
 	clear();
 }
 
@@ -197,9 +243,9 @@ void Picture::resizeMedia()
 void Picture::updateStyle()
 {
 	if(hasAlpha()) {
-		setStyleSheet(QStringLiteral("background-image: url(://transparency.png);"));
+		setStyleSheet(QStringLiteral("QLabel#Picture { background-image: url(://transparency.png); }"));
 	} else {
-		setStyleSheet(QStringLiteral("background-image: none;"));
+		setStyleSheet(QStringLiteral("QLabel#Picture { background-image: none; }"));
 	}
 }
 
@@ -219,6 +265,12 @@ void Picture::clear()
 	clearState();
 	updateStyle();
 	setText(util::read_resource_html("welcome.html"));
+}
+
+void Picture::setStatusText(const QString& left, const QString& right)
+{
+	m_status_left.setText(left);
+	m_status_right.setText(right);
 }
 
 /* Restart timer on resize */

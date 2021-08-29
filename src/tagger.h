@@ -32,7 +32,6 @@
 #include "input.h"
 #include "file_queue.h"
 
-class ReverseSearch;
 
 /*!
  * \brief Main widget of the application.
@@ -244,6 +243,9 @@ public slots:
 
 	/// Set filter string that filename must match to be selected in queue.
 	void setQueueFilter(QString filter_str);
+
+	/// Display status information on the bottom left and right
+	void setStatusText(QString left, QString right);
 
 signals:
 	/// Emitted when media file has been successfully opened.

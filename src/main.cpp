@@ -15,6 +15,10 @@
 #include <QLoggingCategory>
 #include <QSettings>
 #include <QTranslator>
+#include <QStyleFactory>
+
+#define SETT_STYLE              QStringLiteral("window/style")
+
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(main, "Main")
@@ -76,6 +80,47 @@ int main(int argc, char *argv[])
 	} else {
 		pwarn << "failed to load" << wt_qm;
 	}
+
+	QSettings sett;
+	auto theme_name = sett.value(SETT_STYLE, QStringLiteral("Default")).toString();
+	if (theme_name == QStringLiteral("Dark")) {
+		auto fusion = QStyleFactory::create("fusion");
+		QApplication::setStyle(fusion);
+
+		QPalette palette;
+		palette.setColor(QPalette::Window, QColor(35, 35, 35));
+		palette.setColor(QPalette::WindowText, QColor(238, 238, 238));
+		palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(102, 102, 102));
+		palette.setColor(QPalette::Base, QColor(24, 24, 24));
+		palette.setColor(QPalette::AlternateBase, QColor(40, 40, 40));
+		palette.setColor(QPalette::ToolTipBase, Qt::white);
+		palette.setColor(QPalette::ToolTipText, QColor(53, 53, 53));
+		palette.setColor(QPalette::Text, QColor(220, 220, 220));
+		palette.setColor(QPalette::Disabled, QPalette::Text, QColor(127, 127, 127));
+		palette.setColor(QPalette::Dark, QColor(35, 35, 35));
+		palette.setColor(QPalette::Shadow, QColor(20, 20, 20));
+		palette.setColor(QPalette::Button, QColor(40, 40, 40));
+		palette.setColor(QPalette::Disabled, QPalette::Button, QColor(35, 35, 35));
+		palette.setColor(QPalette::ButtonText, QColor(240, 240, 240));
+		palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(127, 127, 127));
+		palette.setColor(QPalette::BrightText, Qt::red);
+		palette.setColor(QPalette::Link, QColor(0, 137, 204));
+
+		palette.setColor(QPalette::Active,   QPalette::Highlight, QColor(42, 130, 218));
+		palette.setColor(QPalette::Inactive, QPalette::Highlight, QColor(80, 80, 80));
+		palette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(60, 60, 60));
+
+		palette.setColor(QPalette::Active,   QPalette::HighlightedText, QColor(255, 255, 255));
+		palette.setColor(QPalette::Inactive, QPalette::HighlightedText, QColor(240, 240, 240));
+		palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
+		QApplication::setPalette(palette);
+	}
+
+	auto style_path = QStringLiteral(":/css/%1.css").arg(theme_name);
+	QFile styles_file(style_path);
+	bool open = styles_file.open(QIODevice::ReadOnly);
+	Q_ASSERT(open);
+	a.setStyleSheet(styles_file.readAll());
 
 	Window w;
 	w.show();
