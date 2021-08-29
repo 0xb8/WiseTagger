@@ -56,6 +56,7 @@ namespace logging_category {
 #define SETT_SHOW_MENU          QStringLiteral("window/show-menu")
 #define SETT_SHOW_STATUS        QStringLiteral("window/show-statusbar")
 #define SETT_SHOW_CURRENT_DIR   QStringLiteral("window/show-current-directory")
+#define SETT_SHOW_STATUS_MAIN   QStringLiteral("window/show-status-in-main")
 #define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
 #define SETT_STYLE              QStringLiteral("window/style")
 #define SETT_VIEW_MODE          QStringLiteral("window/view-mode")
@@ -334,7 +335,10 @@ void Window::updateStatusBarText()
 
 	right = m_statusbar_label.text();
 
-	if (!m_statusbar.isVisible()) {
+	QSettings settings;
+	if (!m_statusbar.isVisible() && settings.value(SETT_SHOW_STATUS_MAIN, true).toBool()) {
+		if (a_view_slideshow.isChecked())
+			left.clear();
 		m_tagger.setStatusText(left, right);
 	} else {
 		m_tagger.setStatusText(QString{}, QString{});

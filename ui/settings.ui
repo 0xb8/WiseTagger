@@ -535,6 +535,20 @@
          </property>
         </widget>
        </item>
+       <item row="4" column="2">
+        <widget class="QCheckBox" name="showStatusInMain">
+         <property name="toolTip">
+          <string>Display status text in main view when status bar is hidden</string>
+         </property>
+         <property name="text">
+          <string>Show Status Text
+In Main View</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="commands">

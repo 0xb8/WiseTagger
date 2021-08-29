@@ -30,6 +30,7 @@
 #define S_FONT_SIZE     QStringLiteral("window/font-size")
 #define S_FONT_SIZE_MIN QStringLiteral("window/font-size-minmode")
 #define S_SHOW_DIR      QStringLiteral("window/show-current-directory")
+#define S_SHOW_STATUS   QStringLiteral("window/show-status-in-main")
 #define S_STATISTICS    QStringLiteral("stats/enabled")
 #define S_VERCHECK      QStringLiteral("version-check-enabled")
 #define S_TRACK_TAGS    QStringLiteral("track-added-tags")
@@ -48,6 +49,7 @@
 #define D_FONT_SIZE     14
 #define D_FONT_SIZE_MIN 12
 #define D_SHOW_DIR      true
+#define D_SHOW_STATUS   true
 #define D_STATISTICS    true
 #define D_VERCHECK      true
 #define D_TRACK_TAGS    true
@@ -283,6 +285,7 @@ void SettingsDialog::reset()
 	ui->fontFamily->   setCurrentText(settings.value(S_FONT,          D_FONT).toString());
 	ui->proxyProtocol->setCurrentText(settings.value(S_PROXY_PROTO,   D_PROXY_PROTO).toString());
 	ui->showCurrentDir->setChecked(   settings.value(S_SHOW_DIR,      D_SHOW_DIR).toBool());
+	ui->showStatusInMain->setChecked( settings.value(S_SHOW_STATUS,   D_SHOW_STATUS).toBool());
 	ui->statsEnabled-> setChecked(    settings.value(S_STATISTICS,    D_STATISTICS).toBool());
 	ui->vercheckEnabled->setChecked(  settings.value(S_VERCHECK,      D_VERCHECK).toBool());
 	ui->trackAddedTags->setChecked(   settings.value(S_TRACK_TAGS,    D_TRACK_TAGS).toBool());
@@ -386,6 +389,7 @@ void SettingsDialog::apply()
 	settings.setValue(S_FONT_SIZE,     ui->fontSize->value());
 	settings.setValue(S_FONT_SIZE_MIN, ui->fontSize_min->value());
 	settings.setValue(S_SHOW_DIR,      ui->showCurrentDir->isChecked());
+	settings.setValue(S_SHOW_STATUS,   ui->showStatusInMain->isChecked());
 	settings.setValue(S_STATISTICS,    ui->statsEnabled->isChecked());
 	settings.setValue(S_VERCHECK,      ui->vercheckEnabled->isChecked());
 	settings.setValue(S_TRACK_TAGS,    ui->trackAddedTags->isChecked());
@@ -457,6 +461,7 @@ void SettingsDialog::restoreDefaults()
 	ui->fontFamily->   setCurrentText(D_FONT);
 	ui->proxyProtocol->setCurrentText(D_PROXY_PROTO);
 	ui->showCurrentDir->setChecked(   D_SHOW_DIR);
+	ui->showStatusInMain->setChecked( D_SHOW_STATUS);
 	ui->statsEnabled-> setChecked(    D_STATISTICS);
 	ui->vercheckEnabled->setChecked(  D_VERCHECK);
 	ui->trackAddedTags->setChecked(   D_TRACK_TAGS);
@@ -466,7 +471,7 @@ void SettingsDialog::restoreDefaults()
 	ui->proxyHost->    setText(       D_PROXY_HOST);
 	ui->proxyPort->    setValue(      D_PROXY_PORT);
 	ui->fontSize->     setValue(      D_FONT_SIZE);
-	ui->fontSize_min-> setValue(       D_FONT_SIZE_MIN);
+	ui->fontSize_min-> setValue(      D_FONT_SIZE_MIN);
 	ui->preloadCount-> setValue(      D_PRELOAD_CNT);
 	ui->cacheMemory->  setValue(      D_PRELOAD_MEM);
 }
