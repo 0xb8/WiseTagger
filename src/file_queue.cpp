@@ -91,20 +91,14 @@ void FileQueue::push(const QString &f)
 
 	if(fi.isFile() && checkExtension(fi)) {
 		m_files.push_back(fi.absoluteFilePath());
-
-		if (fileMatchesFilter(fi)) {
-			m_filtered_indices.push_back(m_files.size()-1);
-		}
+		m_accepted_by_filter.push_back(fileMatchesFilter(fi));
 
 	} else if(fi.isDir()) {
 		QDirIterator it(f, m_name_filters, QDir::Files);
 		while(it.hasNext() && !it.next().isNull()) {
 			auto fi = it.fileInfo();
 			m_files.push_back(fi.absoluteFilePath());
-
-			if (fileMatchesFilter(fi)) {
-				m_filtered_indices.push_back(m_files.size()-1);
-			}
+			m_accepted_by_filter.push_back(fileMatchesFilter(fi));
 		}
 	} else {
 		pwarn << "push() : extension not allowed by filter:" << fi.fileName();
@@ -340,10 +334,15 @@ void FileQueue::eraseCurrent()
 	}
 
 	m_files.erase(std::next(std::begin(m_files), m_current));
+	if (!m_accepted_by_filter.empty()) {
+		bool was_accepted = m_accepted_by_filter[m_current];
+		if (was_accepted)
+			--m_accepted_by_filter_count;
+		m_accepted_by_filter.erase(std::next(std::begin(m_accepted_by_filter), m_current));
+	}
+
 	if(m_current >= m_files.size())
 		m_current = 0u;
-
-	update_filter();
 }
 
 size_t FileQueue::saveToFile(const QString &path) const
@@ -483,87 +482,110 @@ size_t FileQueue::loadFromMemory(const QByteArray& memory)
 
 void FileQueue::update_filter()
 {
-	m_filtered_indices.clear();
-	m_filter_current = npos;
+	m_accepted_by_filter.clear();
+	m_accepted_by_filter_count = -1;
 
-	// filter is not set, nothiing to do
+	// filter is not set, nothing to do
 	if (!substringFilterActive())
 		return;
 
+	m_accepted_by_filter_count = 0u;
 	for (size_t i = 0; i < m_files.size(); ++i) {
 		auto file = m_files[i];
 		QFileInfo fi(file);
-		if (fileMatchesFilter(fi)) {
-			m_filtered_indices.push_back(i);
-			if (i == m_current) // current file matches the filter, keep it as current in the filtered queue
-				m_filter_current = m_filtered_indices.size() - 1;
-		}
+		bool accepted = fileMatchesFilter(fi);
+		m_accepted_by_filter.push_back(accepted);
+		m_accepted_by_filter_count += accepted;
 	}
-
-	// current file did not match the filter, select the first file that did.
-	if (m_filter_current == npos && !m_filtered_indices.empty())
-		m_filter_current = 0;
 }
 
 const QString& FileQueue::forward() noexcept
 {
-	static_assert(noexcept(m_files[m_current]), "");
-
-	if (!m_filtered_indices.empty()) {
-		if(m_filter_current >= m_filtered_indices.size()) {
-			pwarn << "forward(): filtered queue empty or index is out of bounds";
-			return m_empty;
-		}
-		if (++m_filter_current >= m_filtered_indices.size()) {
-			m_filter_current = 0u;
-		}
-		auto main_index = m_filtered_indices[m_filter_current];
-		m_current = main_index;
-		return m_files[m_current];
-	}
-
-	if(m_current >= m_files.size()) {
-		pwarn << "forward(): queue empty or index is out of bounds";
-		return m_empty;
-	}
-	if(++m_current >= m_files.size()) {
-		m_current = 0u;
-	}
-	return m_files[m_current];
+	static_assert(noexcept(m_files[0]), "");
+	return next(m_current);
 }
 
 const QString& FileQueue::backward() noexcept
 {
-	static_assert(noexcept(m_files[m_current]), "");
+	static_assert(noexcept(m_files[0]), "");
+	return prev(m_current);
+}
 
-	if (!m_filtered_indices.empty()) {
-		if(m_filter_current >= m_filtered_indices.size()) {
-			pwarn << "backward(): filtered queue empty or index is out of bounds";
-			return m_empty;
-		}
-		if (m_filter_current == 0u) {
-			m_filter_current = m_filtered_indices.size();
-		}
-		--m_filter_current;
-		auto main_index = m_filtered_indices[m_filter_current];
-		m_current = main_index;
-		return m_files[m_current];
+const QString & FileQueue::next(size_t& from) const noexcept
+{
+	if(from >= m_files.size()) {
+		pwarn << "forward(): queue empty or index is out of bounds";
+		return m_empty;
 	}
 
-	if(m_current >= m_files.size()) {
+	if (!filteredEmpty()) {
+		Q_ASSERT(m_accepted_by_filter.size() == m_files.size());
+
+		size_t next_filtered = from;
+		while(true) {
+
+			++next_filtered;
+
+			if (next_filtered >= m_files.size()) // wrap around
+				next_filtered -= m_files.size();
+
+			if (m_accepted_by_filter[next_filtered])
+				break;
+
+			// loop is guaranteed to finish, since at least one file is accepted by filter
+		}
+
+		from = next_filtered;
+		return m_files[from];
+	}
+
+
+	if(++from >= m_files.size()) { // wrap around
+		from = 0u;
+	}
+	return m_files[from];
+}
+
+const QString & FileQueue::prev(size_t& from) const noexcept
+{
+	if(from >= m_files.size()) {
 		pwarn << "backward(): queue empty or index is out of bounds";
 		return m_empty;
 	}
-	if(m_current == 0) {
-		m_current = m_files.size();
+
+	if (!filteredEmpty()) {
+		Q_ASSERT(m_accepted_by_filter.size() == m_files.size());
+
+		auto prev_filtered = static_cast<ptrdiff_t>(from);
+		const auto count = static_cast<ptrdiff_t>(m_accepted_by_filter.size());
+
+		while(true) {
+			--prev_filtered;
+
+			if (prev_filtered < 0) // wrap around
+				prev_filtered += count;
+
+			if (m_accepted_by_filter[prev_filtered])
+				break;
+
+			// loop is guaranteed to finish, since at least one file is accepted by filter
+		}
+
+		from = prev_filtered;
+		return m_files[from];
 	}
-	--m_current;
-	return m_files[m_current];
+
+
+	if(from == 0) { // wrap around
+		from = m_files.size();
+	}
+	--from;
+	return m_files[from];
 }
 
 const QString &FileQueue::nth(ptrdiff_t index) noexcept
 {
-	static_assert(noexcept(m_files[m_current]), "");
+	static_assert(noexcept(m_files[0]), "");
 
 	if(m_files.empty()) {
 		pwarn << "nth(): queue empty";
@@ -575,6 +597,7 @@ const QString &FileQueue::nth(ptrdiff_t index) noexcept
 
 	return m_files[std::abs(index) % m_files.size()];
 }
+
 
 size_t FileQueue::find(const QString &file) noexcept
 {
@@ -591,7 +614,7 @@ size_t FileQueue::find(const QString &file) noexcept
 
 const QString &FileQueue::current() const noexcept
 {
-	static_assert(noexcept(m_files[m_current]), "");
+	static_assert(noexcept(m_files[0]), "");
 
 	if(m_current >= m_files.size()) {
 		pwarn << "current(): queue empty or index is out of bounds";
@@ -605,11 +628,14 @@ bool FileQueue::currentFileMatchesQueueFilter() const noexcept
 	if (!substringFilterActive())
 		return true;
 
-	if (m_filter_current >= m_filtered_indices.size())
-		return false;
+	Q_ASSERT(m_accepted_by_filter.size() == m_files.size());
 
-	// current filtered index is the same as unfiltered index
-	return m_filtered_indices[m_filter_current] == m_current;
+	if (m_current >= m_files.size()) {
+		pwarn << "currentFileMatchesQueueFilter(): queue empty or index is out of bounds";
+		return false;
+	}
+
+	return m_accepted_by_filter[m_current];
 }
 
 bool FileQueue::fileMatchesFilter(const QFileInfo& file) const
@@ -699,12 +725,16 @@ size_t FileQueue::currentIndex() const noexcept
 
 size_t FileQueue::currentIndexFiltered() const noexcept
 {
-	static_assert(noexcept(m_filtered_indices.size()), "");
-	if(m_filter_current >= m_filtered_indices.size()) {
-		pwarn << "currentIndexFiltered(): filtered queue empty or index is out of bounds";
-		return FileQueue::npos;
+	if (m_accepted_by_filter.empty())
+		return m_current;
+
+	if (currentFileMatchesQueueFilter()) {
+		auto index = std::count_if(m_accepted_by_filter.begin(),
+					   std::next(m_accepted_by_filter.begin(), m_current),
+					   [](auto&& v) { return v; });
+		return index;
 	}
-	return m_filter_current;
+	return m_current;
 }
 
 bool FileQueue::empty() const noexcept
@@ -715,7 +745,7 @@ bool FileQueue::empty() const noexcept
 
 bool FileQueue::filteredEmpty() const noexcept
 {
-	return m_filtered_indices.empty();
+	return m_accepted_by_filter_count <= 0;
 }
 
 size_t FileQueue::size() const noexcept
@@ -726,15 +756,18 @@ size_t FileQueue::size() const noexcept
 
 size_t FileQueue::filteredSize() const noexcept
 {
-	static_assert(noexcept(m_filtered_indices.size()), "");
-	return m_filtered_indices.size();
+	if (m_accepted_by_filter_count < 0)
+		return m_files.size();
+
+	return m_accepted_by_filter_count;
+
 }
 
 void FileQueue::clear() noexcept
 {
 	static_assert(noexcept(m_files.clear()), "");
 	m_files.clear();
-	m_filtered_indices.clear();
+	m_accepted_by_filter.clear();
 	m_current = 0u;
-	m_filter_current = npos;
+	m_accepted_by_filter_count = -1;
 }

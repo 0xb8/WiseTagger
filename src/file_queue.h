@@ -118,6 +118,9 @@ public:
 
 	/*!
 	 * \brief Select next file in queue, possibly wrapping around.
+	 *
+	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 *
 	 * \return Next file.
 	 * \retval EmptyString Queue is empty.
 	 */
@@ -125,11 +128,38 @@ public:
 
 
 	/*!
+	 * \brief Return next file in queue, possibly wrapping around.
+	 *
+	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 *
+	 * \param[inout] from Starting index, on success set to the index of next file.
+	 * \return Next file.
+	 * \retval EmptyString Queue is empty. \p from is not modified.
+	 */
+	const QString& next(size_t& from) const noexcept;
+
+
+	/*!
 	 * \brief Select previous file in queue, possibly wrapping around.
+	 *
+	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 *
 	 * \return Previous file.
 	 * \retval EmptyString Queue is empty.
 	 */
 	const QString& backward() noexcept;
+
+
+	/*!
+	 * \brief Return previous file in queue, possibly wrapping around.
+	 *
+	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 *
+	 * \param[inout] from Starting index, on success set to the index of previous file.
+	 * \return Previous file.
+	 * \retval EmptyString Queue is empty. \p from is not modified.
+	 */
+	const QString& prev(size_t& from) const noexcept;
 
 
 	/*!
@@ -180,7 +210,7 @@ public:
 
 
 	/*!
-	 * \brief Check if filtered queue is empty;
+	 * \brief Check if filtered queue is empty.
 	 * \return
 	 */
 	bool   filteredEmpty() const noexcept;
@@ -277,12 +307,12 @@ private:
 
 	static const QString m_empty;
 	std::deque<QString>  m_files;
-	std::deque<size_t>   m_filtered_indices;
+	std::vector<bool>    m_accepted_by_filter;
 	QStringList          m_name_filters;
 	QStringList          m_substr_filter_include;
 	QStringList          m_substr_filter_exclude;
 	size_t               m_current = npos;
-	size_t               m_filter_current = npos;
+	ptrdiff_t            m_accepted_by_filter_count = -1;
 	SortQueueBy          m_sort_by = SortQueueBy::FileName;
 };
 

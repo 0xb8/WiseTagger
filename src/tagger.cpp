@@ -1023,20 +1023,27 @@ bool Tagger::loadCurrentFile()
 	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), true).toBool())
 		return true;
 
-	int preloadcount = abs(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
-	preloadcount = std::max(std::min(preloadcount, 16), 1);
-	for(int i = -preloadcount; i <= preloadcount; ++i)
-	{
-		if(i == 0)
-			continue;
-		auto idx = ptrdiff_t(m_file_queue.currentIndex())+i;
-
-		auto filepath = m_file_queue.nth(idx);
+	auto try_cache_file = [this](const auto& filepath) {
 		if (QDir::match(util::supported_image_formats_namefilter(),
 		                QFileInfo(filepath).fileName())) {
 
 			m_picture.cache.addFile(filepath, m_picture.size(), m_picture.devicePixelRatioF());
 		}
+	};
+
+	int preloadcount = abs(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
+	preloadcount = std::max(std::min(preloadcount, 16), 1);
+
+	size_t index = m_file_queue.currentIndex();
+	for (int i = 0; i < preloadcount; ++i) {
+		const auto& filepath = m_file_queue.next(index);
+		try_cache_file(filepath);
+	}
+
+	index = m_file_queue.currentIndex();
+	for(int i = 0; i < preloadcount; ++i) {
+		const auto& filepath = m_file_queue.prev(index);
+		try_cache_file(filepath);
 	}
 
 	return true;
@@ -1098,19 +1105,18 @@ bool Tagger::selectWithFixableTags(int direction)
 		return false;
 	};
 
-	size_t original_index = m_file_queue.currentIndex();
+	size_t index = m_file_queue.currentIndex();
 
 	for (size_t i = 0; i < m_file_queue.size(); ++i) {
 		// check next or previous file in queue
-		direction > 0 ? m_file_queue.forward() : m_file_queue.backward();
-		if (check_fixable()) {
-			// found fixable, queue index is already set
+		const auto& file_path = direction > 0 ? m_file_queue.next(index) : m_file_queue.prev(index);
+		if (check_fixable(file_path)) {
+			openFileInQueue(index);
 			return true;
 		}
 	}
 
 	// no fixable files found
-	m_file_queue.select(original_index);
 	findTagsFiles();
 	return false;
 }
