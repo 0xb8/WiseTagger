@@ -210,6 +210,7 @@ void TagInput::loadTagData(const QByteArray& data)
 	m_completer->setCompletionRole(Qt::UserRole);
 	m_completer->setCompletionMode(QCompleter::PopupCompletion);
 	setCompleter(m_completer.get());
+	updateText(text());
 }
 
 static void set_line_edit_text_formats(QLineEdit& input, const std::vector<QTextLayout::FormatRange>& formats)

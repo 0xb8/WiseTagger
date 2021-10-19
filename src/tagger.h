@@ -320,6 +320,7 @@ private:
 	void clear();
 	void tagsFetched(QString file, QString tags);
 	void getTagDifference(QStringList current_tags, QStringList new_tags, QString& added, QString& removed, bool show_merge_hint);
+	QByteArray read_tag_data(const QStringList& tags_files);
 
 	static constexpr int m_tag_input_layout_margin = 10;
 

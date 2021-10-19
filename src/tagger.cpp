@@ -203,10 +203,10 @@ void Tagger::nextFile(RenameOptions options, SkipOptions skip_option)
 	if (skip_option & SkipOption::SkipToFixable) {
 		bool found = selectWithFixableTags(+1);
 		if (!found) {
-			QMessageBox::warning(this,
-			                     tr("Could not find next fixable file"),
-			                     tr("<p>Could not find next fixable file in queue.</p>"
-			                        "<p>Perhaps all files in the queue are fixed?</p>"));
+			QMessageBox::information(this,
+			                         tr("Could not find next fixable file"),
+			                         tr("<p>Could not find next fixable file in queue.</p>"
+			                            "<p>Perhaps all files in the queue are fixed?</p>"));
 		}
 	} else {
 		m_file_queue.forward();
@@ -223,10 +223,10 @@ void Tagger::prevFile(RenameOptions options, SkipOptions skip_option)
 	if (skip_option & SkipOption::SkipToFixable) {
 		bool found = selectWithFixableTags(-1);
 		if (!found) {
-			QMessageBox::warning(this,
-			                     tr("Could not find previous fixable file"),
-			                     tr("<p>Could not find previous fixable file in queue.</p>"
-			                        "<p>Perhaps all files in  the queue are fixed?</p>"));
+			QMessageBox::information(this,
+			                         tr("Could not find previous fixable file"),
+			                         tr("<p>Could not find previous fixable file in queue.</p>"
+			                            "<p>Perhaps all files in  the queue are fixed?</p>"));
 		}
 	} else {
 		m_file_queue.backward();
@@ -694,10 +694,9 @@ void Tagger::reloadTags()
 	findTagsFiles(true);
 }
 
-void Tagger::reloadTagsContents()
-{
+QByteArray Tagger::read_tag_data(const QStringList& tags_files) {
 	QByteArray data;
-	for(const auto& filename : qAsConst(m_current_tag_files)) {
+	for(const auto& filename : qAsConst(tags_files)) {
 		QFile file(filename);
 		if(!file.open(QIODevice::ReadOnly|QIODevice::Text)) {
 			QMessageBox::warning(this,
@@ -711,7 +710,12 @@ void Tagger::reloadTagsContents()
 	}
 
 	data.push_back(m_temp_tags.toUtf8());
+	return data;
+}
 
+void Tagger::reloadTagsContents()
+{
+	auto data = read_tag_data(m_current_tag_files);
 	m_input.loadTagData(data);
 	m_input.clearTagEditState();
 }
@@ -745,60 +749,32 @@ void Tagger::openTagFilesInShell()
 	}
 }
 
-void Tagger::findTagsFiles(bool force)
-{
-	if(isEmpty())
-		return;
-
-	const auto c = currentDir();
-	if(c == m_previous_dir && !force)
-		return;
-
-	m_previous_dir = c;
-	m_current_tag_files.clear();
-	m_input.clearTagData();
-	m_input.clearTagEditState();
-
-	if (!fileRenameable())
-		return;
-
-	QFileInfo fi(m_file_queue.current());
-
-	const QSettings settings;
-	const auto tagsfile = settings.value(QStringLiteral("tags/normal"),
-					     QStringLiteral("*.tags.txt")).toString();
-
-	const auto override = settings.value(QStringLiteral("tags/override"),
-					     QStringLiteral("*.tags!.txt")).toString();
-
-	QList<QDir> search_dirs;
-	QDir current_dir = fi.absoluteDir();
-
+static void find_tag_files_in_dir(QDir current_dir,
+                                  const QString& tagsfile,
+                                  const QString& override,
+                                  std::vector<QDir>& search_dirs,
+                                  QStringList& tags_files) {
 
 	int max_height = 100; // NOTE: to avoid infinite loop with symlinks etc.
 	do {
-		search_dirs.append(current_dir);
+		search_dirs.push_back(current_dir);
 	} while(max_height --> 0 && current_dir.cdUp());
 
 
 	for(const auto& loc : QStandardPaths::standardLocations(QStandardPaths::AppDataLocation))
 	{
-		search_dirs.append(QDir{loc});
+		search_dirs.push_back(QDir{loc});
 	}
 
 
-	auto add_tag_files = [this](const QFileInfoList& list)
+	auto add_tag_files = [&tags_files](const QFileInfoList& list)
 	{
 		for(const auto& f : qAsConst(list)) {
-			m_current_tag_files.push_back(f.absoluteFilePath());
+			tags_files.push_back(f.absoluteFilePath());
 		}
 	};
 
-	QStringList search_paths_list;
-	search_paths_list.reserve(search_dirs.size());
-
 	for(const auto& dir : qAsConst(search_dirs)) {
-		search_paths_list.push_back(dir.path());
 		if(!dir.exists()) continue;
 
 		auto filter = QDir::Files | QDir::Hidden;
@@ -829,12 +805,60 @@ void Tagger::findTagsFiles(bool force)
 		}
 	}
 
-	m_current_tag_files.removeDuplicates();
+	tags_files.removeDuplicates();
 
-	pdbg << m_current_tag_files;
+	// search order is leaves -> root, but tag file data should be loaded in root -> leaves order
+	std::reverse(tags_files.begin(), tags_files.end());
+}
+
+static QString normal_tag_file_pattern()
+{
+	const QSettings settings;
+	return settings.value(QStringLiteral("tags/normal"), QStringLiteral("*.tags.txt")).toString();
+}
+
+static QString override_tag_file_pattern()
+{
+	const QSettings settings;
+	return settings.value(QStringLiteral("tags/override"), QStringLiteral("*.tags!.txt")).toString();
+}
+
+void Tagger::findTagsFiles(bool force)
+{
+	if(isEmpty())
+		return;
+
+	const auto current_dir = currentDir();
+	if(current_dir == m_previous_dir && !force)
+		return;
+
+	if (!fileRenameable())
+		return;
+
+	m_previous_dir = current_dir;
+
+	const QString tagsfile = normal_tag_file_pattern();
+	const QString override = override_tag_file_pattern();
+
+	std::vector<QDir> search_dirs;
+	{
+		QStringList tag_files;
+		find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tag_files);
+
+		if (tag_files == m_current_tag_files && !force) {
+			pdbg << "same tag files, skipping";
+			return;
+		}
+
+		m_current_tag_files = std::move(tag_files);
+	}
+
+	m_input.clearTagData();
+	m_input.clearTagEditState();
 
 	if(Q_LIKELY(!m_current_tag_files.isEmpty())) {
-		std::reverse(m_current_tag_files.begin(), m_current_tag_files.end());
+		pdbg << "found tag files:" << m_current_tag_files;
+
 		m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
 		m_fs_watcher->addPaths(m_current_tag_files);
 		connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, this, [this](const auto& f)
@@ -845,6 +869,10 @@ void Tagger::findTagsFiles(bool force)
 		});
 		reloadTagsContents();
 	} else {
+		QStringList search_paths_list;
+		for (const auto& dir : qAsConst(search_dirs)) {
+			search_paths_list.append(dir.path());
+		}
 		emit tagFilesNotFound(tagsfile, override, search_paths_list);
 	}
 }
@@ -1063,46 +1091,67 @@ bool Tagger::isFileRenameable(const QFileInfo & fi)
 
 bool Tagger::selectWithFixableTags(int direction)
 {
-	auto check_fixable = [this]() {
-		const QFileInfo file(m_file_queue.current());
-		if (isFileRenameable(file)) {
-			findTagsFiles();
+	TagParser parser;
+	QDir prev_dir;
+	QStringList prev_tags_files;
+	std::vector<QDir> search_dirs;
 
-			auto orig_tags = file.completeBaseName();
-			if (util::is_hex_string(orig_tags))
-				return true;
+	const QString tagsfile = normal_tag_file_pattern();
+	const QString override = override_tag_file_pattern();
 
-			auto orig_tags_list = util::split(orig_tags);
+	auto check_fixable = [&](const auto& file_path)
+	{
+		const QFileInfo file(file_path);
 
-			// check if all tags are unknown, or if some tags are removed/replaced
-			bool all_unknown = true;
-			bool any_removed = false;
-			for (const auto& tag : qAsConst(orig_tags_list)) {
-				auto kind = m_input.tag_parser().classify(tag, orig_tags_list);
-				if (!(kind & TagParser::TagKind::Unknown))
-					all_unknown = false;
-				if (kind & TagParser::TagKind::Removed)
-					any_removed = true;
-				if (kind & TagParser::TagKind::Replaced)
-					any_removed = true;
+		const auto current_dir = file.absoluteDir();
+		if (current_dir != prev_dir) {
+			prev_dir = current_dir;
+			search_dirs.clear();
+
+			QStringList tags_files;
+			find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tags_files);
+
+			if (tags_files != prev_tags_files) {
+				pdbg << "found tag files:" << tags_files;
+				auto tag_data = this->read_tag_data(tags_files);
+				parser.loadTagData(tag_data);
+				prev_tags_files = std::move(tags_files);
 			}
-
-			if (all_unknown || any_removed)
-				return true;
-
-			// full tag fixing fallback (checks for sorting too)
-			TagEditState state;
-			auto options = TagParser::FixOptions::from_settings();
-			options.sort = true;
-
-			// Autofix imageboard tags before comparing
-			util::replace_special(orig_tags);
-			auto fixed_tags_list = m_input.tag_parser().fixTags(state, orig_tags, options);
-			auto new_tags = util::join(fixed_tags_list);
-
-			return orig_tags != new_tags;
 		}
-		return false;
+
+		auto orig_tags = file.completeBaseName();
+		if (util::is_hex_string(orig_tags))
+			return true;
+
+		auto orig_tags_list = util::split(orig_tags);
+
+		// check if all tags are unknown, or if some tags are removed/replaced
+		bool all_unknown = true;
+		bool any_removed = false;
+		for (const auto& tag : qAsConst(orig_tags_list)) {
+			auto kind = parser.classify(tag, orig_tags_list);
+			if (!(kind & TagParser::TagKind::Unknown))
+				all_unknown = false;
+			if (kind & TagParser::TagKind::Removed)
+				any_removed = true;
+			if (kind & TagParser::TagKind::Replaced)
+				any_removed = true;
+		}
+
+		if (all_unknown || any_removed)
+			return true;
+
+		// full tag fixing fallback (checks for sorting too)
+		TagEditState state;
+		auto options = TagParser::FixOptions::from_settings();
+		options.sort = true;
+
+		// Autofix imageboard tags before comparing
+		util::replace_special(orig_tags);
+		auto fixed_tags_list = parser.fixTags(state, orig_tags, options);
+		auto new_tags = util::join(fixed_tags_list);
+
+		return orig_tags != new_tags;
 	};
 
 	size_t index = m_file_queue.currentIndex();
@@ -1117,7 +1166,6 @@ bool Tagger::selectWithFixableTags(int direction)
 	}
 
 	// no fixable files found
-	findTagsFiles();
 	return false;
 }
 
