@@ -2,8 +2,8 @@
 [Setup]
 AppName=WiseTagger
 AppCopyright=Copyright (C) 2021 catgirl
-AppVersion=0.6.0
-VersionInfoVersion=0.6.0
+AppVersion=0.6.1
+VersionInfoVersion=0.6.1
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -50,6 +50,9 @@ Type: files; Name: "{app}\libicuuc65.dll"
 Type: files; Name: "{app}\libicudt67.dll"
 Type: files; Name: "{app}\libicuin67.dll"
 Type: files; Name: "{app}\libicuuc67.dll"
+Type: files; Name: "{app}\libicudt68.dll"
+Type: files; Name: "{app}\libicuin68.dll"
+Type: files; Name: "{app}\libicuuc68.dll"
 Type: files; Name: "{app}\imageformats\qmng.dll"
 Type: files; Name: "{app}\platforms\qminimal.dll"
 Type: files; Name: "{app}\platforms\qoffscreen.dll"

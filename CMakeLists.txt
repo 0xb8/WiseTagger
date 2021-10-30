@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.4)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(APP_VERSION "0.6")
+set(APP_VERSION "0.6.1")
 set(TARGET_PRODUCT "WiseTagger")
 set(TARGET_COMPANY "catgirl")
 
