@@ -724,7 +724,16 @@ void Tagger::reloadTagsContents()
 
 void Tagger::openTagFilesInEditor()
 {
-	for(const auto& file : qAsConst(m_current_tag_files)) {
+	bool ok = false;
+	auto file = QInputDialog::getItem(this,
+	                                  tr("Choose tag file to edit"),
+	                                  tr("<p>Choose the tag file to edit:</p>"),
+	                                  m_current_tag_files,
+	                                  0,
+	                                  false,
+	                                  &ok);
+
+	if (ok) {
 		QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 	}
 }
