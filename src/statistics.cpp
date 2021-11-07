@@ -6,8 +6,9 @@
  */
 
 #include "statistics.h"
-#include "util/size.h"
 #include "util/misc.h"
+#include "util/size.h"
+#include "util/strings.h"
 #include <cmath>
 #include <QLoggingCategory>
 #include <QFileInfo>

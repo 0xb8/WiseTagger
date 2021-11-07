@@ -7,7 +7,7 @@
 
 #include "input.h"
 #include "global_enums.h"
-#include "util/misc.h"
+#include "util/strings.h"
 
 #include <vector>
 #include <QKeyEvent>

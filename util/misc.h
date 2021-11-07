@@ -42,9 +42,6 @@ QLocale::Language       language_code(const QString& name);
 /// Language name string from language \p code
 QString                 language_name(QLocale::Language code);
 
-/// String with human-readable time duration. E.g. "1 year 3 months 12 days 3 hours 8 minutes 1 second"
-QString                 duration(uint64_t seconds, bool with_minutes=true, bool with_seconds=true);
-
 /// Load icon from executable file (windows-only)
 QIcon                   get_icon_from_executable(const QString& path);
 
@@ -56,18 +53,6 @@ QStringList             supported_video_formats_namefilter();
 
 /// Guessed image format for \p filename
 QByteArray              guess_image_format(const QString& filename);
-
-/// Join list of strings with \p separator
-QString                 join(const QStringList&, QChar separator = QChar(' '));
-
-/// Split string by \p separator. Empty parts are skipped.
-QStringList             split(const QString& str, QChar separator = QChar(' '));
-
-/// Tests whether the string contains only hexadecimal digits
-bool                    is_hex_string(const QString& str);
-
-/// Replace reserved special characters in a string.
-void                    replace_special(QString& str);
 
 /// Save current settings into \p path file
 bool                    backup_settings_to_file(const QString& path);

@@ -38,6 +38,7 @@
 #include "util/open_graphical_shell.h"
 #include "util/command_placeholders.h"
 #include "util/size.h"
+#include "util/strings.h"
 #include "util/misc.h"
 #include "util/network.h"
 #include "statistics.h"

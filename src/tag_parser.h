@@ -81,6 +81,9 @@ public:
 		/// Do tag sorting.
 		bool sort = true;
 
+		/// Remove unknown tags.
+		bool remove_unknown = false;
+
 		/// Returns FixOptions from settings.
 		static FixOptions from_settings();
 	};

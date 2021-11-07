@@ -20,9 +20,11 @@
 #include <algorithm>
 #include <cmath>
 #include "global_enums.h"
-#include "util/size.h"
 #include "util/misc.h"
+#include "util/size.h"
+#include "util/strings.h"
 #include "util/open_graphical_shell.h"
+#include "util/tag_file.h"
 #include "window.h"
 #include "statistics.h"
 
@@ -749,68 +751,6 @@ void Tagger::openTagFilesInShell()
 	}
 }
 
-static void find_tag_files_in_dir(QDir current_dir,
-                                  const QString& tagsfile,
-                                  const QString& override,
-                                  std::vector<QDir>& search_dirs,
-                                  QStringList& tags_files) {
-
-	int max_height = 100; // NOTE: to avoid infinite loop with symlinks etc.
-	do {
-		search_dirs.push_back(current_dir);
-	} while(max_height --> 0 && current_dir.cdUp());
-
-
-	for(const auto& loc : QStandardPaths::standardLocations(QStandardPaths::AppDataLocation))
-	{
-		search_dirs.push_back(QDir{loc});
-	}
-
-
-	auto add_tag_files = [&tags_files](const QFileInfoList& list)
-	{
-		for(const auto& f : qAsConst(list)) {
-			tags_files.push_back(f.absoluteFilePath());
-		}
-	};
-
-	for(const auto& dir : qAsConst(search_dirs)) {
-		if(!dir.exists()) continue;
-
-		auto filter = QDir::Files | QDir::Hidden;
-		auto sort_by = QDir::Name;
-		auto list_override = dir.entryInfoList({override}, filter, sort_by);
-		auto list_normal   = dir.entryInfoList({tagsfile}, filter, sort_by);
-
-		add_tag_files(list_override);
-
-		if(!list_override.isEmpty())
-			break;
-
-		add_tag_files(list_normal);
-
-		// support old files
-		if(list_override.isEmpty() && list_normal.isEmpty()) {
-
-			auto legacy_override_list = dir.entryInfoList({override.mid(2)});
-			auto legacy_normal_list   = dir.entryInfoList({tagsfile.mid(2)});
-
-			add_tag_files(legacy_override_list);
-			if(!legacy_override_list.isEmpty())
-				break;
-
-			add_tag_files(legacy_normal_list);
-			if(!legacy_normal_list.isEmpty())
-				break;
-		}
-	}
-
-	tags_files.removeDuplicates();
-
-	// search order is leaves -> root, but tag file data should be loaded in root -> leaves order
-	std::reverse(tags_files.begin(), tags_files.end());
-}
-
 static QString normal_tag_file_pattern()
 {
 	const QSettings settings;
@@ -843,7 +783,7 @@ void Tagger::findTagsFiles(bool force)
 	std::vector<QDir> search_dirs;
 	{
 		QStringList tag_files;
-		find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tag_files);
+		util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tag_files);
 
 		if (tag_files == m_current_tag_files && !force) {
 			pdbg << "same tag files, skipping";
@@ -1109,7 +1049,7 @@ bool Tagger::selectWithFixableTags(int direction)
 			search_dirs.clear();
 
 			QStringList tags_files;
-			find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tags_files);
+			util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tags_files);
 
 			if (tags_files != prev_tags_files) {
 				pdbg << "found tag files:" << tags_files;

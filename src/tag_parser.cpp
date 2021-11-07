@@ -10,7 +10,7 @@
 #include <QLoggingCategory>
 #include <QTextStream>
 #include <QSettings>
-#include "util/misc.h"
+#include "util/strings.h"
 
 namespace logging_category {
 	Q_LOGGING_CATEGORY(parser, "TagParser")
@@ -85,11 +85,18 @@ QStringList TagParser::fixTags(TagEditState& state,
 	// remove tags by negation
 	remove_explicit(state, text_list);
 
+	// remove unknown if options say so
+	auto is_unknown = [&options, this, &text_list](const auto& tag) {
+		return options.remove_unknown && classify(tag, text_list) & TagKind::Unknown;
+	};
+
 	text_list.erase(
 		std::remove_if(
 			text_list.begin(),
 			text_list.end(),
-			[](const auto& s){ return s.isEmpty() || is_negation_token(s[0]); }),
+			[&is_unknown](const auto& s){
+				return s.isEmpty() || is_negation_token(s[0]) || is_unknown(s);
+			}),
 		text_list.end());
 
 	// order matters here, cannot use std::unique :(

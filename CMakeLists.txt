@@ -24,7 +24,9 @@ set(wt_srcs
 	src/window.cpp
 	util/imagecache.cpp
 	util/misc.cpp
+	util/strings.cpp
 	util/tag_fetcher.cpp
+	util/tag_file.cpp
 	util/open_graphical_shell.cpp
 	resources/resources.qrc
 )
