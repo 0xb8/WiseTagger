@@ -338,11 +338,20 @@ void FileQueue::eraseCurrent()
 		bool was_accepted = m_accepted_by_filter[m_current];
 		if (was_accepted)
 			--m_accepted_by_filter_count;
+
+		// remove the filter bit for this file as well
 		m_accepted_by_filter.erase(std::next(std::begin(m_accepted_by_filter), m_current));
+		Q_ASSERT(m_accepted_by_filter.size() == m_files.size());
 	}
 
 	if(m_current >= m_files.size())
 		m_current = 0u;
+
+	if (!m_accepted_by_filter.empty()) {
+		// if newly selected file is not accepted by filter, choose next file that is accepted.
+		if (!m_accepted_by_filter[m_current])
+			forward();
+	}
 }
 
 size_t FileQueue::saveToFile(const QString &path) const
