@@ -160,7 +160,7 @@ QString TagParser::getComment(const QString & tag) const
 	return ret;
 }
 
-
+#ifdef QT_GUI_LIB
 QColor TagParser::getColor(const QString & tag) const
 {
 	QColor ret;
@@ -171,6 +171,22 @@ QColor TagParser::getColor(const QString & tag) const
 	return ret;
 }
 
+
+QColor TagParser::getCustomKindColor(TagKind kind) const
+{
+	switch (kind) {
+	case TagKind::Consequent:
+		return m_custom_implication_color;
+	case TagKind::Removed:
+		return m_custom_removal_color;
+	case TagKind::Replaced:
+		return m_custom_replacement_color;
+	default:
+		break;
+	}
+	return QColor{};
+}
+#endif
 
 QString TagParser::getReplacement(const QString & tag) const
 {
@@ -204,13 +220,15 @@ bool TagParser::loadTagData(const QByteArray& data)
 	m_replaced_tags.clear();
 	m_removed_tags.clear();
 	m_comment_tooltips.clear();
-	m_tag_colors.clear();
 	m_regexps.clear();
 	m_tags_classification.clear();
 
+#ifdef QT_GUI_LIB
+	m_tag_colors.clear();
 	m_custom_implication_color = QColor();
 	m_custom_removal_color = QColor();
 	m_custom_replacement_color = QColor();
+#endif
 
 	if(data.isEmpty()) {
 		return false;
@@ -236,22 +254,6 @@ bool TagParser::isTagRemoved(const QString & tag) const
 }
 
 
-QColor TagParser::getCustomKindColor(TagKind kind) const
-{
-	switch (kind) {
-	case TagKind::Consequent:
-		return m_custom_implication_color;
-	case TagKind::Removed:
-		return m_custom_removal_color;
-	case TagKind::Replaced:
-		return m_custom_replacement_color;
-	default:
-		break;
-	}
-	return QColor{};
-}
-
-
 bool TagParser::is_negation_token(QChar ch) noexcept
 {
 	const auto negation_symbol = QChar(0x00AC);    // ¬
@@ -273,7 +275,9 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 	QString regex_source;
 	QStringList main_tags_list, removed_tags_list, replaced_tags_list, consequent_tags_list;
 
+#ifdef QT_GUI_LIB
 	std::unordered_map<QString, QColor> custom_categories;
+#endif
 
 	auto allowed_in_tag = [](QChar c, bool within=false)
 	{
@@ -365,8 +369,10 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		if (current_line.isEmpty())
 			continue;
 
+#ifdef QT_GUI_LIB
 		if (parse_pragma(current_line, custom_categories))
 			continue;
+#endif
 
 		main_tag.clear();
 		removed_tag.clear();
@@ -528,6 +534,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			consequent_tags_list.push_back(consequent_tag);
 		}
 
+#ifdef QT_GUI_LIB
 		QString color_name;
 		QColor tag_color = parse_color(comment, &color_name);
 		if (!tag_color.isValid()) {
@@ -542,6 +549,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 				}
 			}
 		}
+#endif
 
 		if(!main_tag.isEmpty()) {
 			main_tags_list.push_back(main_tag);
@@ -550,11 +558,13 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			if(!comment.isEmpty()) {
 				comment = comment.trimmed();
 
+#ifdef QT_GUI_LIB
 				if (tag_color.isValid()) {
 					m_tag_colors.emplace(main_tag, tag_color);
 					comment.remove(color_name);
 					comment = comment.trimmed();
 				}
+#endif
 
 				auto it = m_comment_tooltips.find(main_tag);
 				if(it != m_comment_tooltips.end()) {
@@ -569,10 +579,11 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 		for(const auto& remtag : qAsConst(removed_tags_list)) {
 			m_removed_tags.emplace(remtag);
 			add_tag_kind(remtag, TagKind::Removed);
-
+#ifdef QT_GUI_LIB
 			// add removed tag color
 			if (tag_color.isValid())
 				m_tag_colors.emplace(remtag, tag_color);
+#endif
 		}
 
 		for (const auto& repltag : qAsConst(replaced_tags_list)) {
@@ -589,6 +600,8 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 	return main_tags_list;
 }
 
+
+#ifdef QT_GUI_LIB
 QColor TagParser::parse_color(const QString& input, QString * color_name)
 {
 	QColor tag_color;
@@ -678,6 +691,7 @@ bool TagParser::parse_pragma(const QString& line, std::unordered_map<QString, QC
 	}
 	return false;
 }
+#endif
 
 QStringList TagParser::related_tags(TagEditState& state, const QString &tag) const
 {

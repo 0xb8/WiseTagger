@@ -15,7 +15,9 @@
 #include <QStringList>
 #include <QVector>
 #include <QRegularExpression>
-#include <QColor>
+#ifdef QT_GUI_LIB // WiseTaggerCli does not link QtGui, so no QColor :(
+	#include <QColor>
+#endif
 #include <unordered_set>
 #include "util/unordered_map_qt.h"
 
@@ -141,11 +143,13 @@ public:
 	 */
 	QString getComment(const QString& tag) const;
 
+#ifdef QT_GUI_LIB
 	/*!
 	 * \brief Get custom color for a tag.
 	 * \retval Invalid color if custom color was not found.
 	 */
 	QColor getColor(const QString& tag) const;
+#endif
 
 	/*!
 	 * \brief Get replacement for a tag.
@@ -273,8 +277,10 @@ private:
 	/// Map of tag comments.
 	std::unordered_map<QString,QString> m_comment_tooltips;
 
+#ifdef QT_GUI_LIB
 	/// Map of tag custom colors.
 	std::unordered_map<QString,QColor> m_tag_colors;
+#endif
 
 	/// Multimap used to keep track of related tags.
 	std::unordered_multimap <QString,QString> m_related_tags;
@@ -296,6 +302,7 @@ private:
 	 */
 	QVector<QPair<QRegularExpression, QString>> m_regexps;
 
+#ifdef QT_GUI_LIB
 	/// Custom consequent tags color (#pragma implied_color)
 	QColor m_custom_implication_color;
 
@@ -304,6 +311,7 @@ private:
 
 	/// Custom removed tags color (#pragma removed_color)
 	QColor m_custom_removal_color;
+#endif
 
 };
 
