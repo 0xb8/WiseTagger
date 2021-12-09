@@ -809,7 +809,33 @@ void Tagger::findTagsFiles(bool force)
 		pdbg << "found tag files:" << m_current_tag_files;
 
 		m_fs_watcher = std::make_unique<QFileSystemWatcher>(nullptr);
-		m_fs_watcher->addPaths(m_current_tag_files);
+
+
+		auto tag_files_to_watch = m_current_tag_files;
+
+		for (const auto& file : qAsConst(m_current_tag_files)) {
+			QFileInfo fi;
+			fi.setFile(file);
+
+			if (fi.isSymbolicLink()) {
+				QStringList sequence;
+				auto resolved = util::resolve_symlink_to_file(fi.filePath(), 30, &sequence);
+				if (resolved.isEmpty()) {
+					pwarn << "Could not resolve symbolic link:" << fi.filePath();
+				} else {
+					// add intermediate links to watch set too (skip first, it's already in the list)
+					for (int i = 1; i < sequence.size(); ++i)
+						tag_files_to_watch.append(sequence[i]);
+
+					// add resolved tag file
+					tag_files_to_watch.append(resolved);
+				}
+			}
+		}
+
+		pdbg << "watch set:" << tag_files_to_watch;
+
+		m_fs_watcher->addPaths(tag_files_to_watch);
 		connect(m_fs_watcher.get(), &QFileSystemWatcher::fileChanged, this, [this](const auto& f)
 		{
 			this->reloadTags();

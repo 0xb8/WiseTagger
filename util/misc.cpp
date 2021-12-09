@@ -282,3 +282,29 @@ int util::is_same_file(const QString& path1, const QString& path2)
 	return 1;
 }
 
+
+QString util::resolve_symlink_to_file(const QString & path, int max_depth, QStringList* sequence)
+{
+	QFileInfo fi;
+	fi.setCaching(false);
+
+	QString tmp_path = path;
+	int i = max_depth;
+	while (i --> 0) {
+		fi.setFile(tmp_path);
+		if (fi.exists() && fi.isFile()) {
+			if (!fi.isSymbolicLink()) {
+				return fi.absoluteFilePath();
+			} else {
+				if (sequence)
+					sequence->append(tmp_path);
+
+				tmp_path = fi.symLinkTarget();
+				Q_ASSERT(!tmp_path.isEmpty());
+			}
+		} else {
+			break;
+		}
+	}
+	return QString{};
+}

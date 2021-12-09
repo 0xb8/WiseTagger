@@ -75,6 +75,20 @@ uint64_t                get_file_identifier(const QString& path);
  */
 int                    is_same_file(const QString& path1, const QString& path2);
 
+/*!
+ * \brief Attempt to resolve a symlink target file recursively.
+ *
+ * Since on live system any of intermediate links can change while resolving,
+ * there is no 100% reliable way to resolve the target path.
+ *
+ * \param[in]  path        Symlink path.
+ * \param[in]  max_depth   Maximum recursion depth for resolving.
+ * \param[out] sequence    Intermediate symbolic links (optional).
+ *
+ * \return                 Resolved file path or empty string on error.
+ */
+QString                resolve_symlink_to_file(const QString& path, int max_depth=30, QStringList* sequence = nullptr);
+
 } // namespace util
 
 #endif // UTIL_MISC_H
