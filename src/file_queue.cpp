@@ -115,7 +115,7 @@ void FileQueue::assign(const QStringList& paths)
 	cont_t tmp;
 	QFileInfo fi;
 	for(const auto & p : qAsConst(paths)) {
-		fi = p;
+		fi.setFile(p);
 		if(fi.isFile()) {
 			tmp.push_back(fi.absoluteFilePath());
 		}

@@ -175,13 +175,13 @@ int FilterTagsModel::rowCount(const QModelIndex & parent) const
 
 QVariant FilterTagsModel::data(const QModelIndex& proxy_index, int role) const
 {
-	if (!m_source_model || !(role == Qt::DisplayRole || role == Qt::UserRole || role == Qt::TextColorRole))
+	if (!m_source_model || !(role == Qt::DisplayRole || role == Qt::UserRole || role == Qt::ForegroundRole))
 		return QVariant();
 
 	auto src_index= m_source_model->index(proxy_index.row() % m_source_model->rowCount(), 0);
 	Q_ASSERT(m_source_model->checkIndex(src_index));
 
-	if (role == Qt::TextColorRole) {
+	if (role == Qt::ForegroundRole) {
 		return m_source_model->data(src_index, role);
 	}
 

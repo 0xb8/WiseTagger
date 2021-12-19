@@ -20,6 +20,7 @@
 #include <vector>
 #include <QMainWindow>
 #include <QAction>
+#include <QActionGroup>
 #include <QString>
 #include <QMenu>
 #include <QStatusBar>

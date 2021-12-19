@@ -258,6 +258,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 
 SettingsDialog::~SettingsDialog()
 {
+	pdbg << "Deleting" << this << "...";
 	delete ui;
 }
 

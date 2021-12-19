@@ -49,7 +49,7 @@ Tagger::Tagger(QWidget *_parent) :
 	m_file_queue.setNameFilter(util::supported_image_formats_namefilter() +
 	                           util::supported_video_formats_namefilter());
 
-	m_main_layout.setMargin(0);
+	m_main_layout.setContentsMargins(0, 0, 0, 0);
 	m_main_layout.setSpacing(0);
 
 	m_tag_input_layout.addWidget(&m_input);
@@ -670,20 +670,26 @@ void Tagger::setInputVisible(bool visible)
 
 	m_separator.setVisible(visible);
 	if(visible) {
-		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
+		m_tag_input_layout.setContentsMargins(m_tag_input_layout_margin,
+		                                      m_tag_input_layout_margin,
+		                                      m_tag_input_layout_margin,
+		                                      m_tag_input_layout_margin);
 	} else {
-		m_tag_input_layout.setMargin(0);
+		m_tag_input_layout.setContentsMargins(0, 0, 0, 0);
 	}
 }
 
 void Tagger::setViewMode(ViewMode view_mode)
 {
 	if(view_mode == ViewMode::Minimal) {
-		m_tag_input_layout.setMargin(0);
+		m_tag_input_layout.setContentsMargins(0, 0, 0, 0);
 		m_separator.hide();
 	}
 	if(view_mode == ViewMode::Normal) {
-		m_tag_input_layout.setMargin(m_tag_input_layout_margin);
+		m_tag_input_layout.setContentsMargins(m_tag_input_layout_margin,
+		                                      m_tag_input_layout_margin,
+		                                      m_tag_input_layout_margin,
+		                                      m_tag_input_layout_margin);
 		m_separator.show();
 	}
 	m_input.setViewMode(view_mode);
@@ -1177,7 +1183,7 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 #ifdef Q_OS_WIN
 	auto tpos = std::remove_if(new_file_path.begin(), new_file_path.end(), [](QChar c)
 	{
-		return c < 31;
+		return c.unicode() < 31;
 	});
 	if(tpos != new_file_path.end()) {
 		pdbg << "Removing reserved characters from filename...";

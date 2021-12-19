@@ -190,7 +190,7 @@ static int update_model(QStandardItemModel& model, const TagParser& parser)
 
 		auto color = parser.getColor(tag);
 		if (Q_UNLIKELY(color.isValid())) {
-			if(Q_UNLIKELY(!model.setData(index, color, Qt::TextColorRole)))
+			if(Q_UNLIKELY(!model.setData(index, color, Qt::ForegroundRole)))
 				pwarn << "could not set tag color role:" << tag << color;
 		}
 	}

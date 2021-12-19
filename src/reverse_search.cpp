@@ -105,7 +105,7 @@ void ReverseSearch::upload_file()
 				return;
 			}
 			image_data_size = m_image_scaled_data.size();
-			pdbg << "Scaled" << m_image_file << "to" << dimensions << "/" << image_data_size << "bytes";
+			pdbg << "Scaled" << m_image_file.fileName() << "to" << dimensions << "/" << image_data_size << "bytes";
 		}
 
 	}

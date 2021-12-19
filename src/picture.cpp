@@ -16,6 +16,7 @@
 #include <QApplication>
 #include <QLoggingCategory>
 #include <QThread>
+#include <QFile>
 #include <QElapsedTimer>
 #include <QGridLayout>
 #include <QGraphicsDropShadowEffect>
