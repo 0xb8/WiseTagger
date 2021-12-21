@@ -31,7 +31,7 @@ Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [Files]
 Source: "WiseTagger.exe"; DestDir: "{app}"; DestName: "WiseTagger.exe"
-Source: *; Excludes: "*.iss"; DestDir: "{app}" ; Flags: recursesubdirs
+Source: *; Excludes: "*.iss"; DestDir: "{app}" ; Flags: recursesubdirs replacesameversion
 
 [Icons]
 Name: "{group}\WiseTagger"; Filename: "{app}\WiseTagger.exe"
