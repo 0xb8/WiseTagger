@@ -24,7 +24,7 @@ QMAKE_TARGET_PRODUCT = WiseTagger
 QMAKE_TARGET_DESCRIPTION = WiseTagger: Simple picture tagging tool
 QMAKE_TARGET_COPYRIGHT = cat@wolfgirl.org
 
-VERSION = "0.6.1"
+VERSION = "0.6.2"
 Release:DEFINES += QT_NO_DEBUG_OUTPUT QT_NO_INFO_OUTPUT
 
 DEFINES +=                                           \
