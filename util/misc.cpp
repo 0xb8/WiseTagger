@@ -54,7 +54,7 @@ uint64_t util::get_file_identifier(const QString& path)
 #include <sys/stat.h>
 #include <unistd.h>
 
-static uint64_t get_file_identifier(const QString &path)
+uint64_t util::get_file_identifier(const QString &path)
 {
 	auto native_path = path.toLocal8Bit();
 	uint64_t ret = 0u;
