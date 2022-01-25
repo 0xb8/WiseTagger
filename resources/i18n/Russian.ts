@@ -706,22 +706,20 @@ In Main View</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл мог быть переименован или удален другим приложением.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="736"/>
         <source>Open all?</source>
-        <translation>Открыть все?</translation>
+        <translation type="vanished">Открыть все?</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="737"/>
         <source>&lt;p&gt;Open all the tag files?&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Открыть все имеющиеся файлы тегов?&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Открыть все имеющиеся файлы тегов?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="743"/>
+        <location filename="../../src/tagger.cpp" line="739"/>
         <source>Choose tag file to edit</source>
         <translation>Выберите файл тегов для редактирования</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="744"/>
+        <location filename="../../src/tagger.cpp" line="740"/>
         <source>&lt;p&gt;Choose the tag file to edit:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Выберите файл тегов для редактирования:&lt;/p&gt;</translation>
     </message>
@@ -805,6 +803,11 @@ In Main View</source>
         <location filename="../../src/tagger.cpp" line="424"/>
         <source>Tags that will be removed:</source>
         <translation>Теги, которые будут удалены:</translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="736"/>
+        <source> ( open all the tag files present ) </source>
+        <translation> ( открыть все имеющиеся файлы тегов ) </translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="924"/>

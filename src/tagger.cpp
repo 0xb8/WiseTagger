@@ -732,25 +732,25 @@ void Tagger::openTagFilesInEditor()
 {
 	bool ok = false;
 
-	if (QMessageBox::Yes == QMessageBox(QMessageBox::Question,
-	                                    tr("Open all?"),
-	                                    tr("<p>Open all the tag files?</p>"),
-	                                    QMessageBox::Yes|QMessageBox::No).exec()) {
+	auto selections = m_current_tag_files;
+	selections.prepend(tr(" ( open all the tag files present ) "));
 
-		for(const auto& file : qAsConst(m_current_tag_files)) QDesktopServices::openUrl(QUrl::fromLocalFile(file));
-	} else {
-		auto file = QInputDialog::getItem(this,
-						tr("Choose tag file to edit"),
-						tr("<p>Choose the tag file to edit:</p>"),
-						m_current_tag_files,
-						0,
-						false,
-						&ok);
+	auto file = QInputDialog::getItem(this,
+	                                  tr("Choose tag file to edit"),
+	                                  tr("<p>Choose the tag file to edit:</p>"),
+	                                  selections,
+	                                  0,
+	                                  false,
+	                                  &ok);
 
-		if (ok) {
+	if (ok) {
+		if (file != selections[0]) {
 			QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+		} else {
+			for(const auto& file : qAsConst(m_current_tag_files)) QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 		}
 	}
+
 }
 
 void Tagger::openTempTagFileEditor()

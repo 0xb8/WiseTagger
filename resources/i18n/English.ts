@@ -704,21 +704,16 @@ In Main View</source>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="736"/>
-        <source>Open all?</source>
+        <source> ( open all the tag files present ) </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="737"/>
-        <source>&lt;p&gt;Open all the tag files?&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/tagger.cpp" line="743"/>
+        <location filename="../../src/tagger.cpp" line="739"/>
         <source>Choose tag file to edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="744"/>
+        <location filename="../../src/tagger.cpp" line="740"/>
         <source>&lt;p&gt;Choose the tag file to edit:&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
