@@ -706,68 +706,78 @@ In Main View</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл мог быть переименован или удален другим приложением.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="735"/>
+        <location filename="../../src/tagger.cpp" line="736"/>
+        <source>Open all?</source>
+        <translation>Открыть все?</translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="737"/>
+        <source>&lt;p&gt;Open all the tag files?&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Открыть все имеющиеся файлы тегов?&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="743"/>
         <source>Choose tag file to edit</source>
         <translation>Выберите файл тегов для редактирования</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="736"/>
+        <location filename="../../src/tagger.cpp" line="744"/>
         <source>&lt;p&gt;Choose the tag file to edit:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Выберите файл тегов для редактирования:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="751"/>
+        <location filename="../../src/tagger.cpp" line="760"/>
         <source>Edit temporary tags</source>
         <translation>Редактор временных тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="752"/>
+        <location filename="../../src/tagger.cpp" line="761"/>
         <source>Temporary tags:</source>
         <translation>Временные теги:</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="955"/>
+        <location filename="../../src/tagger.cpp" line="964"/>
         <source>Renaming disabled: User has no write permission in this directory.</source>
         <translation>Переименование невозможно: Нет прав на запись в этой директории.</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="974"/>
-        <location filename="../../src/tagger.cpp" line="1201"/>
+        <location filename="../../src/tagger.cpp" line="983"/>
+        <location filename="../../src/tagger.cpp" line="1210"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File path is too long: %2 characters, max 259.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Путь к файлу слишком длинный: %2 символов, максимальная длина - 259 символов.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="986"/>
+        <location filename="../../src/tagger.cpp" line="995"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Could not add media to playlist.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Не удалось добавить файл в плейлист.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1171"/>
+        <location filename="../../src/tagger.cpp" line="1180"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File name is too long: &lt;b&gt;%2&lt;/b&gt; characters, but maximum allowed file name length is %3 characters.&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось переименовать &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Имя файла слишком длинное: &lt;b&gt;%2&lt;/b&gt; символа, но максимальная длина имени файла &amp;ndash; %3 символов.&lt;/p&gt;&lt;p&gt;Измените теги и попробуйте снова.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1265"/>
+        <location filename="../../src/tagger.cpp" line="1274"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application, file with this name may already exist in the current directory or exceed the character limit.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось переименовать &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл мог быть переименован или удалён другой программой, либо файл с таким именем уже существует в текущей директории, либо длина пути к файлу превышает лимит системы.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1280"/>
+        <location filename="../../src/tagger.cpp" line="1289"/>
         <source>&lt;p&gt;Cannot rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File with this name already exists in &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось переименовать &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл с таким именем уже существует в &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Измените теги и попробуйте снова.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="86"/>
-        <location filename="../../src/tagger.cpp" line="942"/>
-        <location filename="../../src/tagger.cpp" line="973"/>
-        <location filename="../../src/tagger.cpp" line="985"/>
-        <location filename="../../src/tagger.cpp" line="1200"/>
+        <location filename="../../src/tagger.cpp" line="951"/>
+        <location filename="../../src/tagger.cpp" line="982"/>
+        <location filename="../../src/tagger.cpp" line="994"/>
+        <location filename="../../src/tagger.cpp" line="1209"/>
         <source>Error opening media</source>
         <translation>Не удалось открыть медиафайл</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="914"/>
-        <location filename="../../src/tagger.cpp" line="925"/>
+        <location filename="../../src/tagger.cpp" line="923"/>
+        <location filename="../../src/tagger.cpp" line="934"/>
         <source>Error opening file</source>
         <translation>Не удалось открыть файл</translation>
     </message>
@@ -797,48 +807,48 @@ In Main View</source>
         <translation>Теги, которые будут удалены:</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="915"/>
+        <location filename="../../src/tagger.cpp" line="924"/>
         <source>&lt;p&gt;Directory &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;File from another directory will be opened instead.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Папка &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;&lt;p&gt;Будет открыт файл из другой директории.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="926"/>
+        <location filename="../../src/tagger.cpp" line="935"/>
         <source>&lt;p&gt;File &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Файл &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;&lt;p&gt;Будет открыт следующий файл.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="943"/>
+        <location filename="../../src/tagger.cpp" line="952"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File format is not supported or file corrupted.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Формат файла не поддерживается, или файл был повреждён.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1233"/>
+        <location filename="../../src/tagger.cpp" line="1242"/>
         <source>&lt;p&gt;Rename &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;</source>
         <translation>&lt;p&gt;Переименовать &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1279"/>
+        <location filename="../../src/tagger.cpp" line="1288"/>
         <source>Cannot rename file</source>
         <translation>Не удалось переименовать файл</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1232"/>
+        <location filename="../../src/tagger.cpp" line="1241"/>
         <source>Rename file?</source>
         <translation>Переименовать файл?</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1237"/>
+        <location filename="../../src/tagger.cpp" line="1246"/>
         <source>Rename</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1238"/>
+        <location filename="../../src/tagger.cpp" line="1247"/>
         <source>Discard</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1170"/>
-        <location filename="../../src/tagger.cpp" line="1264"/>
+        <location filename="../../src/tagger.cpp" line="1179"/>
+        <location filename="../../src/tagger.cpp" line="1273"/>
         <source>Could not rename file</source>
         <translation>Не удалось переименовать файл</translation>
     </message>
