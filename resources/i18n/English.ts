@@ -703,21 +703,6 @@ In Main View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="736"/>
-        <source> ( open all the tag files present ) </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/tagger.cpp" line="739"/>
-        <source>Choose tag file to edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../src/tagger.cpp" line="740"/>
-        <source>&lt;p&gt;Choose the tag file to edit:&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../src/tagger.cpp" line="760"/>
         <source>Edit temporary tags</source>
         <translation type="unfinished"></translation>
@@ -780,6 +765,21 @@ In Main View</source>
     <message>
         <location filename="../../src/tagger.cpp" line="427"/>
         <source>press &lt;i&gt;Merge tags&lt;/i&gt; to keep</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="736"/>
+        <source> ( open all the tag files loaded ) </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="739"/>
+        <source>Choose a tag file to edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="740"/>
+        <source>&lt;p&gt;Discovered tag files:&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

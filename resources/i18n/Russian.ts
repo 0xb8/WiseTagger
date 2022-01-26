@@ -714,14 +714,12 @@ In Main View</source>
         <translation type="vanished">&lt;p&gt;Открыть все имеющиеся файлы тегов?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="739"/>
         <source>Choose tag file to edit</source>
-        <translation>Выберите файл тегов для редактирования</translation>
+        <translation type="vanished">Выберите файл тегов для редактирования</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="740"/>
         <source>&lt;p&gt;Choose the tag file to edit:&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Выберите файл тегов для редактирования:&lt;/p&gt;</translation>
+        <translation type="vanished">&lt;p&gt;Выберите файл тегов для редактирования:&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="760"/>
@@ -805,9 +803,8 @@ In Main View</source>
         <translation>Теги, которые будут удалены:</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="736"/>
         <source> ( open all the tag files present ) </source>
-        <translation> ( открыть все имеющиеся файлы тегов ) </translation>
+        <translation type="vanished"> ( открыть все имеющиеся файлы тегов ) </translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="924"/>
@@ -838,6 +835,21 @@ In Main View</source>
         <location filename="../../src/tagger.cpp" line="1241"/>
         <source>Rename file?</source>
         <translation>Переименовать файл?</translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="736"/>
+        <source> ( open all the tag files loaded ) </source>
+        <translation> ( открыть все используемые файлы тегов ) </translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="739"/>
+        <source>Choose a tag file to edit</source>
+        <translation>Выберите файл тегов для редактирования</translation>
+    </message>
+    <message>
+        <location filename="../../src/tagger.cpp" line="740"/>
+        <source>&lt;p&gt;Discovered tag files:&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Найденные файлы тегов:&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../../src/tagger.cpp" line="1246"/>
