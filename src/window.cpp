@@ -1145,7 +1145,7 @@ void Window::createActions()
 	});
 	connect(&a_open_loc,    &QAction::triggered, this, [this]()
 	{
-		util::open_file_in_gui_shell(m_tagger.currentFile());
+		util::open_files_in_gui_shell(QStringList{m_tagger.currentFile()});
 	});
 	connect(&a_ib_replace,  &QAction::triggered, [](bool checked)
 	{

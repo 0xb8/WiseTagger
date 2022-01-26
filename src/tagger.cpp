@@ -733,11 +733,11 @@ void Tagger::openTagFilesInEditor()
 	bool ok = false;
 
 	auto selections = m_current_tag_files;
-	selections.prepend(tr(" ( open all the tag files loaded ) "));
+	selections.prepend(tr("[ edit all tag files ]"));
 
 	auto file = QInputDialog::getItem(this,
-	                                  tr("Choose a tag file to edit"),
-	                                  tr("<p>Discovered tag files:</p>"),
+	                                  tr("Edit Tag File"),
+	                                  tr("<p>Select tag file to edit:</p>"),
 	                                  selections,
 	                                  0,
 	                                  false,
@@ -747,7 +747,8 @@ void Tagger::openTagFilesInEditor()
 		if (file != selections[0]) {
 			QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 		} else {
-			for(const auto& file : qAsConst(m_current_tag_files)) QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+			for(const auto& file : qAsConst(m_current_tag_files))
+				QDesktopServices::openUrl(QUrl::fromLocalFile(file));
 		}
 	}
 
@@ -770,14 +771,7 @@ void Tagger::openTempTagFileEditor()
 
 void Tagger::openTagFilesInShell()
 {
-	QString last_invoked_dir = "";
-	for(const auto& file : qAsConst(m_current_tag_files)) {
-		auto lastDash = file.lastIndexOf("/");
-		if (last_invoked_dir != file.mid(0, lastDash)) {
-			last_invoked_dir = file.mid(0, lastDash);
-			util::open_file_in_gui_shell(file);
-		}
-	}
+	util::open_files_in_gui_shell(m_current_tag_files);
 }
 
 static QString normal_tag_file_pattern()

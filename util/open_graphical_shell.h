@@ -16,8 +16,8 @@
 
 namespace util {
 
-/// Open \p file in GUI file manager.
-void open_file_in_gui_shell(const QString& file);
+/// Open \p files in GUI file manager.
+void open_files_in_gui_shell(const QStringList& files);
 
 }
 
