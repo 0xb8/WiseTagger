@@ -88,6 +88,8 @@ protected:
 	void closeEvent(QCloseEvent*) override;
 	void showEvent(QShowEvent*) override;
 	void hideEvent(QHideEvent*) override;
+	void mousePressEvent(QMouseEvent*) override;
+	void wheelEvent(QWheelEvent*) override;
 
 private slots:
 	void fileOpenDialog();

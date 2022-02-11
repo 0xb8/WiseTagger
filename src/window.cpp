@@ -552,6 +552,38 @@ void Window::hideEvent(QHideEvent *e)
 	e->accept();
 }
 
+void Window::mousePressEvent(QMouseEvent * ev)
+{
+	if (ev->buttons() & Qt::ForwardButton) {
+		a_next_file.trigger();
+		ev->accept();
+	}
+
+	if (ev->buttons() & Qt::BackButton) {
+		a_prev_file.trigger();
+		ev->accept();
+	}
+	QMainWindow::mousePressEvent(ev);
+}
+
+void Window::wheelEvent(QWheelEvent *ev)
+{
+	QSettings s;
+	bool modifier_not_required = s.value(QStringLiteral("window/scroll-navigation"), false).toBool();
+	if (ev->modifiers() & Qt::ControlModifier || ev->modifiers() & Qt::ShiftModifier || modifier_not_required) {
+		ev->accept();
+		auto delta = ev->angleDelta().y();
+		if (delta > 0) {
+			a_next_file.trigger();
+		}
+		if (delta < 0) {
+			a_prev_file.trigger();
+		}
+	}
+	QMainWindow::wheelEvent(ev);
+}
+
+
 //------------------------------------------------------------------------------
 void Window::parseCommandLineArguments()
 {
