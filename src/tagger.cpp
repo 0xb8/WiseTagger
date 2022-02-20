@@ -618,7 +618,7 @@ void Tagger::setMediaMuted(bool muted)
 
 void Tagger::setQueueFilter(QString filter_str)
 {
-	auto filter = util::split(filter_str);
+	auto filter = util::split_unquoted(filter_str);
 	filter.removeDuplicates();
 	m_queue_filter_src = util::join(filter);
 	m_file_queue.setSubstringFilter(filter);

@@ -32,6 +32,9 @@ namespace util {
 	/// Split string by \p separator. Empty parts are skipped.
 	QStringList split(const QString& str, QChar separator = QChar(' '));
 
+	/// Split string by \p separator. Empty parts are skipped. Separators inside quotes don't count.
+	QStringList split_unquoted(const QString& str, QChar separator = QChar(' '));
+
 	/// Tests whether the string contains only hexadecimal digits
 	bool        is_hex_string(const QString& str);
 

@@ -77,3 +77,26 @@ QStringList util::split(const QString& str, QChar separator)
 #endif
 	return str.split(separator, flags);
 }
+
+QStringList util::split_unquoted(const QString& str, QChar separator)
+{
+	QStringList res;
+	bool quote_found = false;
+	int part_begin = 0;
+
+	for (int i = 0; i < str.size(); ++i) {
+		if (str[i] == QChar('"'))
+			quote_found = !quote_found;
+
+		bool is_sep = str[i] == separator;
+		bool at_end = i == str.size() - 1;
+
+		if ((is_sep && !quote_found) || at_end) {
+			auto s = str.mid(part_begin, i - part_begin + at_end).trimmed();
+			if(!s.isEmpty())
+				res.push_back(s);
+			part_begin = i;
+		}
+	}
+	return res;
+}
