@@ -575,8 +575,15 @@ bool Tagger::canExit(Tagger::RenameStatus status)
 void Tagger::updateSettings()
 {
 	QSettings s;
-	m_picture.cache.setMemoryLimitKiB(s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024);
-	m_picture.cache.setMaxConcurrentTasks(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2);
+	auto mem_limit_kb = s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024ull;
+	if (mem_limit_kb) {
+		m_picture.cache.setMemoryLimitKiB(mem_limit_kb);
+	}
+
+	auto thread_count = s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2;
+	if (thread_count) {
+		m_picture.cache.setMaxConcurrentTasks(thread_count);
+	}
 }
 
 void Tagger::pauseMedia()

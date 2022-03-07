@@ -70,7 +70,7 @@ struct LoadResizeImageTask : public QRunnable
 ImageCache::ImageCache()
 {
 	m_file_id_cache.reserve(DEFAULT_CACHE_SIZE_KB / 512);
-	m_image_cache.setMaxCost(DEFAULT_CACHE_SIZE_KB);
+	m_image_cache.setMaxCost(DEFAULT_CACHE_SIZE_KB * 1024);
 	m_shutting_down.store(false, std::memory_order_relaxed);
 }
 
@@ -270,6 +270,11 @@ void ImageCache::insertResizedImage(uint64_t unique_id, QImage&& image, QSize or
 #endif
 	bool need_realloc = false;
 	std::unique_ptr<Entry> entry;
+
+	if (cost > m_image_cache.maxCost()) {
+		pwarn << "Image size exceeds cache capacity, skipping...";
+		return;
+	}
 
 	{ // fast path
 		QWriteLocker _{&m_image_cache_lock};
