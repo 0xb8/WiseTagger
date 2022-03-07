@@ -1,9 +1,9 @@
 
 [Setup]
 AppName=WiseTagger
-AppCopyright=Copyright (C) 2021 catgirl
-AppVersion=0.6.2
-VersionInfoVersion=0.6.2
+AppCopyright=Copyright (C) 2022 catgirl
+AppVersion=0.6.3
+VersionInfoVersion=0.6.3
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
