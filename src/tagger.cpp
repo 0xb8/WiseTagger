@@ -815,7 +815,7 @@ void Tagger::findTagsFiles(bool force)
 		QStringList tag_files;
 		util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tag_files);
 
-		if (tag_files == m_current_tag_files && !force) {
+		if (!tag_files.isEmpty() && tag_files == m_current_tag_files && !force) {
 			pdbg << "same tag files, skipping";
 			return;
 		}
