@@ -972,7 +972,7 @@ void Window::createCommands()
 					to_native(remove_ext(m_tagger.currentFileName())));
 
 			}
-			auto success = QProcess::startDetached(binary, cmd_tmp);
+			auto success = QProcess::startDetached(binary, cmd_tmp, m_tagger.currentDir());
 			pdbg <<       "QProcess::startDetached(" << binary << "," << cmd_tmp << ") =>" << success;
 			if(!success) {
 				QMessageBox::critical(this,
