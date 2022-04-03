@@ -1173,7 +1173,8 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	const QFileInfo file(m_file_queue.current());
 	QString new_file_path;
 
-	m_input.fixTags();
+	// DISABLING this since it's already done in input.cpp while handling key presses
+	// m_input.fixTags();
 	auto filename = m_input.text();
 	filename.append('.');
 	filename.append(file.suffix());

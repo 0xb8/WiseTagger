@@ -128,7 +128,8 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 
 	if(m_event->key() == Qt::Key_Enter || m_event->key()== Qt::Key_Return)
 	{
-		fixTags();
+		// NOTE: Shift suppresses tag sorting in case one needs an unsorted filename for once
+		fixTags(!(m_event->modifiers() & Qt::ShiftModifier));
 		releaseKeyboard();
 		parentWidget()->setFocus();
 		return;
