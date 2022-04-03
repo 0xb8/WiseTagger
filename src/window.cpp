@@ -61,6 +61,7 @@ namespace logging_category {
 #define SETT_SHOW_INPUT         QStringLiteral("window/show-input")
 #define SETT_STYLE              QStringLiteral("window/style")
 #define SETT_VIEW_MODE          QStringLiteral("window/view-mode")
+#define SETT_EDIT_MODE          QStringLiteral("window/edit-mode")
 
 #define SETT_PLAY_MUTE          QStringLiteral("window/video_mute")
 
@@ -105,6 +106,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_open_tags(       tr("Open Tag File &Location"), nullptr)
 	, a_edit_tags(       tr("&Edit Tag File"), nullptr)
 	, a_edit_temp_tags(  tr("Edit Temporary Tags..."), nullptr)
+	, a_edit_mode(       QString{}, nullptr)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_tag_forcefirst(  tr("&Force Author Tags First"), nullptr)
@@ -139,6 +141,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, menu_options(      tr("&Options"))
 	, menu_commands(     tr("&Commands"))
 	, menu_help(	     tr("&Help"))
+	, menu_short_notification()
 	, menu_notifications()
 	, menu_tray()
 	, m_statusbar()
@@ -390,6 +393,13 @@ void Window::removeNotification(QString title) {
 		hideNotificationsMenu();
 	}
 	m_tray_icon.setVisible(!isVisible());
+}
+
+void Window::showShortNotificationMenu(QString title)
+{
+	menu_short_notification.setTitle(title);
+	m_short_notification_display_timer.setSingleShot(true);
+	m_short_notification_display_timer.start(8000);
 }
 
 void Window::showNotificationsMenu()
@@ -656,6 +666,9 @@ void Window::initSettings()
 
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
+	auto edit_mode = sett.value(SETT_EDIT_MODE).value<EditMode>();
+	setEditMode(edit_mode);
+
 	updateProxySettings();
 }
 
@@ -812,6 +825,26 @@ void Window::setViewMode(ViewMode mode)
 		m_statusbar.setVisible(a_view_statusbar.isChecked());
 	}
 	m_tagger.setViewMode(mode);
+}
+
+void Window::setEditMode(EditMode mode)
+{
+	m_tagger.setEditMode(mode);
+	auto get_mode_str = [](EditMode mode){
+		QString current_mode_str;
+		switch(mode) {
+		case EditMode::Naming:
+			current_mode_str = tr("Naming mode");
+			break;
+		case EditMode::Tagging:
+			current_mode_str = tr("Tagging mode");
+			break;
+		}
+		return current_mode_str;
+	};
+	showShortNotificationMenu(get_mode_str(mode));
+	a_edit_mode.setText(get_mode_str(GlobalEnums::next_edit_mode(mode)));
+	updateMenus();
 }
 
 void Window::setSlideShow(bool slide_show)
@@ -1017,6 +1050,7 @@ void Window::createActions()
 	a_play_pause.setShortcut(   QKeySequence(Qt::Key_Space));
 	a_play_mute.setShortcut(    QKeySequence(Qt::Key_M));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
+	a_edit_mode.setShortcut(    QKeySequence(Qt::Key_F2));
 
 	a_view_sort_name.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_N));
 	a_view_sort_type.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_T));
@@ -1078,6 +1112,12 @@ void Window::createActions()
 	connect(&a_open_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInShell);
 	connect(&a_edit_tags,   &QAction::triggered, &m_tagger, &Tagger::openTagFilesInEditor);
 	connect(&a_edit_temp_tags, &QAction::triggered, &m_tagger, &Tagger::openTempTagFileEditor);
+	connect(&a_edit_mode,   &QAction::triggered, this, [this](){
+		auto next_mode = GlobalEnums::next_edit_mode(m_tagger.editMode());
+		setEditMode(next_mode);
+		QSettings s;
+		s.setValue(SETT_EDIT_MODE, QVariant::fromValue(next_mode));
+	});
 	connect(&a_stats,       &QAction::triggered, &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
@@ -1287,6 +1327,9 @@ void Window::createActions()
 		this->menu_notifications.setTitle(title);
 		which = !which;
 	});
+	connect(&m_short_notification_display_timer, &QTimer::timeout, this, [this](){
+		this->menu_short_notification.setTitle(QString{});
+	});
 	connect(&m_tagger, &Tagger::sessionOpened, [](const QString& path)
 	{
 		QSettings s; s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(path).absolutePath());
@@ -1458,6 +1501,7 @@ void Window::createMenus()
 	add_action(menu_tray, a_view_input);
 	add_action(menu_tray, a_view_statusbar);
 	add_separator(menu_tray);
+	add_action(menu_tray, a_edit_mode);
 	add_action(menu_tray, a_ib_replace);
 	add_action(menu_tray, a_ib_restore);
 	add_action(menu_tray, a_tag_forcefirst);
@@ -1528,6 +1572,7 @@ void Window::createMenus()
 	a_view_sort_tagcnt.setData(QVariant::fromValue(SortQueueBy::TagCount));
 
 	// Options menu actions
+	add_action(menu_options, a_edit_mode);
 	add_action(menu_options, a_ib_replace);
 	add_action(menu_options, a_ib_restore);
 	add_separator(menu_options);
@@ -1588,6 +1633,7 @@ void Window::createMenus()
 	menuBar()->addMenu(&menu_options);
 	menuBar()->addMenu(&menu_help);
 	menuBar()->addSeparator();
+	menuBar()->addMenu(&menu_short_notification);
 	menuBar()->addMenu(&menu_notifications);
 
 	// Tray context menu
@@ -1622,7 +1668,6 @@ void Window::updateMenus()
 	a_next_fixable.setDisabled(val);
 	a_prev_fixable.setDisabled(val);
 	a_delete_file.setDisabled(val);
-	a_fix_tags.setDisabled(val);
 	a_fetch_tags.setDisabled(val || !m_tagger.fileRenameable());
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);
@@ -1657,6 +1702,12 @@ void Window::updateMenus()
 	a_reload_tags.setEnabled(val);
 	a_open_tags.setEnabled(val);
 	a_edit_tags.setEnabled(val);
+
+	val = m_tagger.editMode() == EditMode::Naming;
+	a_ib_replace.setDisabled(val);
+	a_ib_restore.setDisabled(val);
+	a_tag_forcefirst.setDisabled(val);
+	a_fix_tags.setDisabled(val || m_tagger.isEmpty());
 }
 
 //------------------------------------------------------------------------------

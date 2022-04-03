@@ -37,6 +37,9 @@ TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
 
 void TagInput::fixTags(bool sort)
 {
+	if (m_edit_mode != EditMode::Tagging)
+		return;
+
 	auto opts = TagParser::FixOptions::from_settings();
 	opts.sort = sort;
 	m_text_list = m_tag_parser.fixTags(m_edit_state, text(), opts);
@@ -111,22 +114,22 @@ const TagParser & TagInput::tag_parser() const
 	return m_tag_parser;
 }
 
-void TagInput::keyPressEvent(QKeyEvent *m_event)
+void TagInput::keyPressEvent(QKeyEvent *event)
 {
-	if(m_event->key() == Qt::Key_Tab) {
+	if(event->key() == Qt::Key_Tab) {
 		if((!next_completer())&&(!next_completer()))
 			return;
 		updateText(m_completer->currentCompletion());
 		return;
 	}
 
-	if(m_event->key() == Qt::Key_Escape) {
+	if(event->key() == Qt::Key_Escape) {
 		releaseKeyboard();
 		parentWidget()->setFocus();
 		return;
 	}
 
-	if(m_event->key() == Qt::Key_Enter || m_event->key()== Qt::Key_Return)
+	if(event->key() == Qt::Key_Enter || event->key()== Qt::Key_Return)
 	{
 		fixTags();
 		releaseKeyboard();
@@ -134,12 +137,12 @@ void TagInput::keyPressEvent(QKeyEvent *m_event)
 		return;
 	}
 	// NOTE: Shift+Space - workaround for space not working as expected when typing in the middle of the word.
-	if(m_event->key() == Qt::Key_Space && !(m_event->modifiers() & Qt::ShiftModifier)) {
+	if(event->key() == Qt::Key_Space && !(event->modifiers() & Qt::ShiftModifier)) {
 		/* Don't sort tags, haven't finished editing yet */
 		fixTags(false);
 	}
 
-	QLineEdit::keyPressEvent(m_event);
+	QLineEdit::keyPressEvent(event);
 	m_completer->setCompletionPrefix(text());
 	m_index = 0;
 }
@@ -158,6 +161,16 @@ void TagInput::focusInEvent(QFocusEvent * event)
 		updateText(tmp_text);
 		cursorForward(false);
 	}
+}
+
+void TagInput::update_qss()
+{
+	QString qss;
+	if (m_edit_mode == EditMode::Naming) {
+		qss.append(QStringLiteral("background-color: %1;").arg(getNamingModeBackgroundColor().name()));
+	}
+
+	setStyleSheet(QStringLiteral("QLineEdit#Input { %1 }").arg(qss));
 }
 
 static int update_model(QStandardItemModel& model, const TagParser& parser)
@@ -243,6 +256,17 @@ void TagInput::setText(const QString &s)
 	clearTagEditState();
 	updateText(s);
 	m_initial_text = s;
+}
+
+void TagInput::setEditMode(EditMode mode)
+{
+	m_edit_mode = mode;
+	update_qss();
+}
+
+EditMode TagInput::editMode() const noexcept
+{
+	return m_edit_mode;
 }
 
 void TagInput::clearTagEditState()
@@ -415,15 +439,15 @@ void TagInput::setViewMode(ViewMode view_mode)
 		font.setPixelSize(s.value(QStringLiteral("window/font-size"), 14).toInt());
 		setMinimumHeight(m_minimum_height);
 		setFrame(true);
-		setStyleSheet(QStringLiteral(""));
 	}
 	if(view_mode == ViewMode::Minimal) {
 		font.setPixelSize(s.value(QStringLiteral("window/font-size-minmode"), 12).toInt());
 		setMinimumHeight(m_minimum_height_minmode);
 		setFrame(false);
-		setStyleSheet(QStringLiteral("border-top-width: 1px; border-top-style: outset;"));
 	}
+	m_view_mode = view_mode;
 	setFont(font);
+	update_qss();
 }
 
 QColor TagInput::getRemovedTagColor() const
@@ -454,6 +478,16 @@ QColor TagInput::getUnknownTagColor() const
 void TagInput::setUnknownTagColor(QColor color)
 {
 	m_unknown_tag_color = color;
+}
+
+QColor TagInput::getNamingModeBackgroundColor() const
+{
+	return m_naming_mode_color;
+}
+
+void TagInput::setNamingModeBackgroundColor(QColor color)
+{
+	m_naming_mode_color = color;
 }
 
 QAbstractItemModel * TagInput::completionModel()

@@ -28,6 +28,7 @@ class QKeyEvent;
 /// Provides a Line Edit widget designed for tagging.
 class TagInput : public QLineEdit {
 	Q_OBJECT
+
 	/// Removed tags color.
 	Q_PROPERTY(QColor removedTagColor READ getRemovedTagColor WRITE setRemovedTagColor DESIGNABLE true)
 
@@ -36,6 +37,9 @@ class TagInput : public QLineEdit {
 
 	/// Unknown tags color.
 	Q_PROPERTY(QColor unknownTagColor READ getUnknownTagColor WRITE setUnknownTagColor DESIGNABLE true)
+
+	/// Naming mode line edit background color.
+	Q_PROPERTY(QColor namingModeBackgroundColor READ getNamingModeBackgroundColor WRITE setNamingModeBackgroundColor DESIGNABLE true)
 
 public:
 
@@ -72,6 +76,16 @@ public:
 	 * \brief Set initial text.
 	 */
 	void setText(const QString&);
+
+	/*!
+	 * \brief Set current edit mode.
+	 */
+	void setEditMode(EditMode mode);
+
+	/*!
+	 * \brief Get current edit mode.
+	 */
+	EditMode editMode() const noexcept;
 
 	/*!
 	 * \brief Set tags while keeping the imageboard id, if present.
@@ -155,6 +169,16 @@ public:
 	void   setUnknownTagColor(QColor color);
 
 	/*!
+	 * \brief Returns naming mode background color.
+	 */
+	QColor getNamingModeBackgroundColor() const;
+
+	/*!
+	 * \brief Sets naming mode background color.
+	 */
+	void setNamingModeBackgroundColor(QColor color);
+
+	/*!
 	 * \brief Returns pointer to current tag autocomplete model.
 	 */
 	QAbstractItemModel* completionModel();
@@ -175,15 +199,6 @@ protected:
 	void focusInEvent(QFocusEvent* event) override;
 
 private:
-	static constexpr int m_minimum_height         = 30;
-	static constexpr int m_minimum_height_minmode = 25;
-
-	/// Tag file parser and tag fixer
-	TagParser   m_tag_parser;
-
-	/// Editing state for current text.
-	TagEditState m_edit_state;
-
 	bool        next_completer();
 
 	void        updateText(const QString &t);
@@ -194,9 +209,22 @@ private:
 	/// Add negated versions of all tags in current list and append to model.
 	void        updateModelRemovedTags(const QStringList& tag_list);
 
+	void        update_qss();
+
+	static constexpr int m_minimum_height         = 30;
+	static constexpr int m_minimum_height_minmode = 25;
+
+	/// Tag file parser and tag fixer
+	TagParser   m_tag_parser;
+
+	/// Editing state for current text.
+	TagEditState m_edit_state;
+
 	int         m_index;
 	QStringList m_text_list;
 	QString     m_initial_text;
+	ViewMode    m_view_mode = ViewMode::Normal;
+	EditMode    m_edit_mode = EditMode::Tagging;
 
 	/*!
 	 * \brief A model used to display completions with comments.
@@ -215,6 +243,7 @@ private:
 	QColor m_removed_tag_color;
 	QColor m_replaced_tag_color;
 	QColor m_unknown_tag_color;
+	QColor m_naming_mode_color;
 };
 
 #endif // TAGINPUT_H

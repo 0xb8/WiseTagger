@@ -7,6 +7,7 @@
 
 #include "global_enums.h"
 #include <type_traits>
+#include <QMetaEnum>
 
 /*! \file */
 
@@ -44,9 +45,16 @@ struct MetaTypeRegistrator
 	MetaTypeRegistrator() {
 		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::ViewMode)
 		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
+		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::EditMode)
 	}
 };
 static const MetaTypeRegistrator _;
-
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::ViewMode)
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
+IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::EditMode)
+
+
+GlobalEnums::EditMode GlobalEnums::next_edit_mode(EditMode current)
+{
+	return static_cast<EditMode>((static_cast<int>(current) + 1) % QMetaEnum::fromType<EditMode>().keyCount());
+}

@@ -110,8 +110,10 @@ private:
 	void saveSettings();
 	void updateStyle();
 	void setViewMode(ViewMode mode);
+	void setEditMode(EditMode mode);
 	void setSlideShow(bool enabled);
 
+	void showShortNotificationMenu(QString title);
 	void showNotificationsMenu();
 	void hideNotificationsMenu();
 
@@ -154,6 +156,7 @@ private:
 	QAction a_open_tags;
 	QAction a_edit_tags;
 	QAction a_edit_temp_tags;
+	QAction a_edit_mode;
 	QAction a_ib_replace;
 	QAction a_ib_restore;
 	QAction a_tag_forcefirst;
@@ -192,12 +195,14 @@ private:
 	QMenu menu_options;
 	QMenu menu_commands;
 	QMenu menu_help;
+	QMenu menu_short_notification;
 	QMenu menu_notifications;
 	QMenu menu_tray;
 	QMenu menu_context_tagger;
 
 	QStatusBar m_statusbar;
 	QLabel     m_statusbar_label;
+	QTimer     m_short_notification_display_timer;
 	QTimer     m_notification_display_timer;
 	QSystemTrayIcon m_tray_icon;
 	ViewMode   m_view_mode;

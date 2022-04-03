@@ -189,6 +189,9 @@ public:
 	/// Filter string that filename must match to be selected in queue.
 	QString queueFilter() const;
 
+	/// Returns current edit mode.
+	EditMode editMode() const noexcept;
+
 	/// Returns pointer to current tags completion model.
 	QAbstractItemModel* completionModel();
 
@@ -246,6 +249,9 @@ public slots:
 
 	/// Display status information on the bottom left and right
 	void setStatusText(QString left, QString right);
+
+	/// Set current edit mode
+	void setEditMode(EditMode mode);
 
 signals:
 	/// Emitted when media file has been successfully opened.

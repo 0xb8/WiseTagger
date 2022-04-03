@@ -32,14 +32,15 @@ QStatusBar {
     color: #999;
 }
 QLineEdit#Input {
-    border: 1px outset black;
+    border: 1px solid black;
     padding: 0 8px;
-    background: #181818;
-    selection-background-color: darkgray;
-    color: #eee;
+    color: #eeeeee;
+    background-color: #181818;
+    selection-background-color: #666666;
     qproperty-removedTagColor: #ff2020;
     qproperty-replacedTagColor: #aaaa00;
     qproperty-unknownTagColor: #888888;
+    qproperty-namingModeBackgroundColor: #33004d;
 }
 QLineEdit#Input:disabled {
     background: #111;

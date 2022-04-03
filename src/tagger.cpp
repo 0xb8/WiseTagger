@@ -466,6 +466,11 @@ QString Tagger::queueFilter() const
 	return m_queue_filter_src;
 }
 
+EditMode Tagger::editMode() const noexcept
+{
+	return m_input.editMode();
+}
+
 QAbstractItemModel * Tagger::completionModel()
 {
 	return m_input.completionModel();
@@ -634,6 +639,11 @@ void Tagger::setQueueFilter(QString filter_str)
 void Tagger::setStatusText(QString left, QString right)
 {
 	m_picture.setStatusText(left, right);
+}
+
+void Tagger::setEditMode(EditMode mode)
+{
+	m_input.setEditMode(mode);
 }
 
 void Tagger::keyPressEvent(QKeyEvent * e)

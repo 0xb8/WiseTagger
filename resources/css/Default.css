@@ -10,11 +10,11 @@ QLabel#Picture {
 }
 
 QLineEdit#Input {
-    border-top-color: rgba(0,0,0,0.5);
+    border: 1px solid #9a9a9a;
     padding: 0px 3px;
     qproperty-removedTagColor: #ff1010;
     qproperty-replacedTagColor: #ffa000;
-    qproperty-unknownTagColor: #848484;
+    qproperty-namingModeBackgroundColor: #faebff;
 }
 
 QLabel#StatusbarInfo {

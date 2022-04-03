@@ -65,10 +65,25 @@ public:
 	};
 	Q_ENUM(SortQueueBy)
 
+	/*!
+	 * \brief Specifies input editing mode.
+	 */
+	enum class EditMode {
+		Tagging, ///< In this mode tags are sorted and deduplicated when pressing Enter or saving file.
+		Naming   ///< In this mode entered text is not modified at all.
+	};
+	Q_ENUM(EditMode);
+
+	/*!
+	 * \brief Returns next edit mode for \p current mode.
+	 */
+	static EditMode next_edit_mode(EditMode current);
+
 	GlobalEnums() = delete;
 };
 ENUM_STREAM_OPERATORS(GlobalEnums::ViewMode)
 ENUM_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
+ENUM_STREAM_OPERATORS(GlobalEnums::EditMode)
 
 
 /// Alias for \ref GlobalEnums::ViewMode enumeration
@@ -76,5 +91,8 @@ using ViewMode    = GlobalEnums::ViewMode;
 
 /// Alias for \ref GlobalEnums::SortQueueBy enumeration
 using SortQueueBy = GlobalEnums::SortQueueBy;
+
+/// Alias for \ref GlobalEnums::EditMode enumeration
+using EditMode = GlobalEnums::EditMode;
 
 #endif // GLOBAL_ENUMS_H
