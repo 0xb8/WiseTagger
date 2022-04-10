@@ -5,10 +5,15 @@ Simple picture tagging tool
 [![GitHub Releases](https://img.shields.io/github/v/release/0xb8/WiseTagger.svg)](https://github.com/0xb8/WiseTagger/releases)
 
 
+<p align="center">
+	<img src="./resources/title.png" alt="WiseTagger screenshot"/>
+</p>
+
 
 ## Features ##
 * Tag autocomplete
 * Tag implication, replacement and autoremoval
+* Visual tag classification, custom tag colors and categories
 * Fetch tags from several imageboards
 * Filter the queue by one or several tags
 * Filesystem-based tag file selection
