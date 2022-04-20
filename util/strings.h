@@ -24,7 +24,7 @@
 namespace util {
 
 	/// String with human-readable time duration. E.g. "1 year 3 months 12 days 3 hours 8 minutes 1 second"
-	QString     duration(uint64_t seconds, bool with_minutes=true, bool with_seconds=true);
+	QString     duration(uint64_t seconds, bool with_seconds=true);
 
 	/// Join list of strings with \p separator
 	QString     join(const QStringList&, QChar separator = QChar(' '));

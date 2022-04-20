@@ -10,14 +10,14 @@
 #include "util/strings.h"
 
 
-QString util::duration(uint64_t seconds, bool with_minutes, bool with_seconds)
+QString util::duration(uint64_t duration_sec, bool with_seconds)
 {
-	auto yr = seconds / 31536000;
-	auto mon = (seconds / 2678400) % 12;
-	auto d = (seconds / 86400) % 31;
-	auto hr = (seconds / 3600) % 24;
-	auto min = with_minutes ? (seconds / 60) % 60 : 0;
-	auto s = with_seconds ? seconds % 60 : 0;
+	auto yr  = duration_sec / 31536000;
+	auto mon = (duration_sec / 2678400) % 12;
+	auto d   = (duration_sec / 86400) % 31;
+	auto hr  = (duration_sec / 3600) % 24;
+	auto min = (duration_sec / 60) % 60;
+	auto s   = (with_seconds || duration_sec < 60) ? duration_sec % 60 : 0;
 
 	auto sec  = s   != 0 ? qApp->translate("Duration", "%n seconds", "", s)   : QStringLiteral("");
 	auto mins = min != 0 ? qApp->translate("Duration", "%n minutes", "", min) : QStringLiteral("");

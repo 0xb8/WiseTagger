@@ -307,7 +307,7 @@ void Window::updateStatusBarText()
 		auto last_modified = m_tagger.currentFileLastModified();
 		left = tr("In directory:  %1      Last modified: %2 ago (%3)").arg(
 			QDir::toNativeSeparators(m_tagger.currentDir()),
-			util::duration(last_modified.secsTo(QDateTime::currentDateTime()), true, false),
+			util::duration(last_modified.secsTo(QDateTime::currentDateTime()), false),
 			last_modified.toString("yyyy-MM-dd hh:mm:ss"));
 
 		statusBar()->showMessage(left);
