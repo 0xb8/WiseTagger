@@ -1352,13 +1352,6 @@ void Window::createActions()
 	});
 	connect(&m_tagger, &Tagger::tagFilesNotFound, this, [this](QString normalname, QString overridename, QStringList paths)
 	{
-		QString path_list;
-		path_list.reserve(paths.size() * 128);
-		for(const auto& s : qAsConst(paths)) {
-			path_list.push_back(QStringLiteral("<li>"));
-			path_list.push_back(s);
-			path_list.push_back(QStringLiteral("</li>"));
-		}
 		addNotification(tr("Tag file not found"),
 		                tr("Could not locate suitable tag file"),
 		                tr("<h2>Could not locate suitable tag file</h2>"
@@ -1373,7 +1366,28 @@ void Window::createActions()
 		                   "<ol>%3</ol></p>"
 		                   "<p><a href=\"https://github.com/0xb8/WiseTagger#tag-file-selection\">"
 		                   "Appending and overriding tag files documentation"
-		                   "</a></p>").arg(normalname, overridename, path_list));
+		                   "</a></p>").arg(normalname, overridename, util::html_list_join(paths)));
+	});
+	connect(&m_tagger, &Tagger::tagFilesConflict, this, [this](QString, QString overridename, QStringList paths)
+	{
+
+		auto normal_pos = std::find_if_not(paths.begin(), paths.end(), [&overridename](const auto& p) {
+			return QDir::match(overridename, QFileInfo{p}.fileName());
+		});
+		Q_ASSERT(normal_pos != paths.end());
+
+		QStringList overrides{paths.begin(), normal_pos};
+		QStringList normals{normal_pos, paths.end()};
+
+		addNotification(tr("Tag files conflict"),
+		                tr("Some of the tag files are in conflict"),
+		                tr("<p>Because <em>overriding tag files</em> halt the search, the following <em>appending tag files</em> are always ignored:</p>"
+		                   "<p><ol>%1</ol></p>"
+		                   "<p>Overriding tag files that caused the conflict:</p>"
+		                   "<p><ol>%2</ol></p>"
+		                   "<p><a href=\"https://github.com/0xb8/WiseTagger#tag-file-selection\">"
+		                   "Appending and overriding tag files documentation"
+		                   "</a></p>").arg(util::html_list_join(normals), util::html_list_join(overrides)));
 	});
 	connect(&m_tagger, &Tagger::parseError, this, [this](QString regex_source, QString error, int column)
 	{

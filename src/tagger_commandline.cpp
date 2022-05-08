@@ -141,8 +141,8 @@ QString TaggerCommandLineInterface::get_fixed_path(QString path)
 		dir.clear();
 
 	std::vector<QDir> search_dir;
-	QStringList tag_files;
-	util::find_tag_files_in_dir(QDir(dir), m_normal_tagfile_pattern, m_override_tagfile_pattern, search_dir, tag_files);
+	QStringList tag_files, conflicting_files;
+	util::find_tag_files_in_dir(QDir(dir), m_normal_tagfile_pattern, m_override_tagfile_pattern, search_dir, tag_files, conflicting_files);
 
 	if (tag_files.isEmpty()) {
 		err << tr("Could not find tag files.")    << "\n"
@@ -153,6 +153,10 @@ QString TaggerCommandLineInterface::get_fixed_path(QString path)
 		}
 		std::exit(1);
 	}
+
+    if (!conflicting_files.isEmpty()) {
+        pwarn << "Conflicting tag files:" << conflicting_files;
+    }
 
 	QByteArray data;
 	for(const auto& filename : qAsConst(tag_files)) {

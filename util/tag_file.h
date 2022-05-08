@@ -22,12 +22,14 @@ namespace util {
  * \param override Pattern describing override tags file, e.g. "*.tags!.txt"
  * \param[out] search_dirs Directories where we looked for tag files.
  * \param[out] tags_files Resulting list of tags files, in root to leaf directory order
+ * \param[out] conflicting_files Tags files that are in conflict with each other.
  */
 void find_tag_files_in_dir(QDir current_dir,
                            const QString& tagsfile,
                            const QString& override,
                            std::vector<QDir>& search_dirs,
-                           QStringList& tags_files);
+                           QStringList& tags_files,
+                           QStringList& conflicting_files);
 
 }
 

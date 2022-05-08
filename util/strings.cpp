@@ -100,3 +100,15 @@ QStringList util::split_unquoted(const QString& str, QChar separator)
 	}
 	return res;
 }
+
+QString util::html_list_join(const QStringList &sl)
+{
+	QString html_list;
+	html_list.reserve(sl.size() * 128);
+	for(const auto& s : sl) {
+		html_list.push_back(QStringLiteral("<li>"));
+		html_list.push_back(s);
+		html_list.push_back(QStringLiteral("</li>"));
+	}
+	return html_list;
+}

@@ -293,6 +293,14 @@ signals:
 	void tagFilesNotFound(QString normal_file, QString override_file, QStringList paths);
 
 	/*!
+	 * \brief Emitted when conflicting tag files were found.
+	 * \param normal_file Normal tag file name.
+	 * \param override_file Override tag file name.
+	 * \param files List of conflicting tag files.
+	 */
+	void tagFilesConflict(QString normal_file, QString override_file, QStringList files);
+
+	/*!
 	 * \copydoc TagInput::parseError()
 	 */
 	void parseError(QString regex_source, QString error, int column);

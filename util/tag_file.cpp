@@ -9,7 +9,7 @@
 #include <QStandardPaths>
 
 
-void util::find_tag_files_in_dir(QDir current_dir, const QString & tagsfile, const QString & override, std::vector<QDir> & search_dirs, QStringList & tags_files) {
+void util::find_tag_files_in_dir(QDir current_dir, const QString & tagsfile, const QString & override, std::vector<QDir> & search_dirs, QStringList & tags_files, QStringList & conflicting_files) {
 
 	int max_height = 100; // NOTE: to avoid infinite loop with symlinks etc.
 	do {
@@ -23,10 +23,10 @@ void util::find_tag_files_in_dir(QDir current_dir, const QString & tagsfile, con
 	}
 
 
-	auto add_tag_files = [&tags_files](const QFileInfoList& list)
+	auto append_fileinfo_to_string_list = [](const QFileInfoList& list, QStringList& out)
 	{
 		for(const auto& f : qAsConst(list)) {
-			tags_files.push_back(f.absoluteFilePath());
+			out.push_back(f.absoluteFilePath());
 		}
 	};
 
@@ -38,12 +38,18 @@ void util::find_tag_files_in_dir(QDir current_dir, const QString & tagsfile, con
 		auto list_override = dir.entryInfoList({override}, filter, sort_by);
 		auto list_normal   = dir.entryInfoList({tagsfile}, filter, sort_by);
 
-		add_tag_files(list_override);
+		append_fileinfo_to_string_list(list_override, tags_files);
 
-		if(!list_override.isEmpty())
+		if(!list_override.isEmpty()) {
+			if (!list_normal.empty()) {
+				// notify user about ignored files in this folder
+				append_fileinfo_to_string_list(list_override, conflicting_files);
+				append_fileinfo_to_string_list(list_normal, conflicting_files);
+			}
 			break;
+		}
 
-		add_tag_files(list_normal);
+		append_fileinfo_to_string_list(list_normal, tags_files);
 
 		// support old files
 		if(list_override.isEmpty() && list_normal.isEmpty()) {
@@ -51,11 +57,11 @@ void util::find_tag_files_in_dir(QDir current_dir, const QString & tagsfile, con
 			auto legacy_override_list = dir.entryInfoList({override.mid(2)});
 			auto legacy_normal_list   = dir.entryInfoList({tagsfile.mid(2)});
 
-			add_tag_files(legacy_override_list);
+			append_fileinfo_to_string_list(legacy_override_list, tags_files);
 			if(!legacy_override_list.isEmpty())
 				break;
 
-			add_tag_files(legacy_normal_list);
+			append_fileinfo_to_string_list(legacy_normal_list, tags_files);
 			if(!legacy_normal_list.isEmpty())
 				break;
 		}

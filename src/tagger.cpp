@@ -822,12 +822,16 @@ void Tagger::findTagsFiles(bool force)
 
 	std::vector<QDir> search_dirs;
 	{
-		QStringList tag_files;
-		util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tag_files);
+		QStringList tag_files, conflicting_files;
+		util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tag_files, conflicting_files);
 
 		if (!tag_files.isEmpty() && tag_files == m_current_tag_files && !force) {
 			pdbg << "same tag files, skipping";
 			return;
+		}
+
+		if (!conflicting_files.isEmpty()) {
+			emit tagFilesConflict(tagsfile, override, conflicting_files);
 		}
 
 		m_current_tag_files = std::move(tag_files);
@@ -873,6 +877,8 @@ void Tagger::findTagsFiles(bool force)
 			pdbg << "reloaded tags due to changed file:" << f;
 			emit this->tagFileChanged();
 		});
+
+		// pass tag files to tag input
 		reloadTagsContents();
 	} else {
 		QStringList search_paths_list;
@@ -1114,8 +1120,8 @@ bool Tagger::selectWithFixableTags(int direction)
 			prev_dir = current_dir;
 			search_dirs.clear();
 
-			QStringList tags_files;
-			util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tags_files);
+			QStringList tags_files, ignored_tags;
+			util::find_tag_files_in_dir(current_dir, tagsfile, override, search_dirs, tags_files, ignored_tags);
 
 			if (tags_files != prev_tags_files) {
 				pdbg << "found tag files:" << tags_files;
