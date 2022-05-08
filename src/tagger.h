@@ -138,6 +138,9 @@ public:
 	/// Current tag input text.
 	QString text() const;
 
+	/// Undo tag input changes and set original tags.
+	void    resetText();
+
 	/// Is current file name modified by user.
 	bool    fileModified() const;
 

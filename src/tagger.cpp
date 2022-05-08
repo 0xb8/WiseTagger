@@ -247,6 +247,11 @@ QString Tagger::text() const
 	return m_input.text();
 }
 
+void Tagger::resetText()
+{
+	setText(QFileInfo(m_file_queue.current()).completeBaseName());
+}
+
 bool Tagger::openFileInQueue(size_t index)
 {
 	m_file_queue.select(index);
@@ -985,7 +990,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 
 	m_input.setToolTip(fileRenameable() ? QString() : tr("Renaming disabled: User has no write permission in this directory."));
 	m_input.setEnabled(fileRenameable());
-	setText(f.completeBaseName());
+	resetText();
 
 	// remember original tags so we can show the difference when renaming
 	m_original_tags = m_input.tags_list();

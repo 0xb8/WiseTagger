@@ -806,7 +806,7 @@ void Window::scheduleRestart()
 	auto current_text = m_tagger.text();
 
 	// undo tag modification to prevent rename dialog
-	m_tagger.setText(QFileInfo(m_tagger.currentFile()).completeBaseName());
+	m_tagger.resetText();
 	// launch process
 	restartProcess(current_text);
 }
