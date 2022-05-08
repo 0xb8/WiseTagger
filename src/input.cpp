@@ -279,14 +279,12 @@ void TagInput::updateText(const QString &t)
 	m_text_list = util::split(t);
 	QLineEdit::setText(t);
 
-	const auto tag_list = tags_list();
-	classifyText(tag_list);
-	updateModelRemovedTags(tag_list);
+	classifyText(tags_list()); // classification ignores imageboard id tags
+	updateModelRemovedTags(m_text_list); // negation includes imageboard id tags
 }
 
 void TagInput::classifyText(const QStringList& tag_list)
 {
-
 	const auto text = QLineEdit::text();
 
 	std::unordered_set<QStringView> antecedent_tags;
