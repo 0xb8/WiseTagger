@@ -34,94 +34,97 @@ If disallowed character is found, it will be ignored with the rest of the line.
 ```
 # These tags will be presented in autocomplete sugestions as needed, 
 # with their relative order preserved.
-#
-# A comment after the tag will be displayed in autocomplete suggestion for this tag.
-# Custom color for any tag can be specified in its comment:
-#     some_tag  # comment text #ffa804 (any hex color)
-# or named colors: 
-#     some_tag  # comment text #blue 
-
 maid
 nekomimi  # cat ears #dd00dd
 ponytail  # #green
 pout
 smile
 sad
+3d_cg     # tags can start with numbers
+
+# A comment after the tag will be displayed in autocomplete suggestion for that tag.
+# Custom color for the tag can be specified via hex color code anywhere in the comment:
+#     some_tag  # comment text #ffa804 more text
+#     some_tag  # or using named colors: #blue
+# Comments on separate lines (such as this one) are completely ignored.
 
 # Tag 'tagme' will be automatically removed.
-# If you decide to keep this tag, you can type it again and it will stay.
+# To keep this tag just type it again.
 # This tag will NOT be suggested in autocomplete.
 -tagme  # you can also use unicode not sign: ¬
 
 
-# tag replacement: 'megane' will be automatically replaced with 'glasses'.
-# If you decide to keep original tag, you can type it again and it will stay.
-# Tag 'glasses' will be suggested in autocomplete.
+# Tag replacement: 'megane' will be automatically replaced with 'glasses'.
+# To keep the original tag just type it again.
+# Tag 'megane' will NOT be suggested in autocomplete.
 glasses = megane    # you can also use unicode arrows: ←, ⇐, ⇚, ⟵, ⟸
 
 
-# tag implication: 'nekomimi' will be automatically added when 'catgirl' is added.
-# If you decide to remove consequent tag, erase it and it will not be added again.
-# Tag 'catgirl' will be suggested in autocomplete, but 'nekomimi' will NOT.
+# Tag implication: 'nekomimi' will be automatically added when 'catgirl' is added.
+# Consequent tag can be erased - it will not be addded again.
+# Tag 'nekomimi' will NOT be suggested in autocomplete.
 catgirl : nekomimi  # you can also use unicode arrows: →, ⇒, ⇛, ⟶, ⟹
 
-# implication allows to remove consequent tags when their antecedent tag is present:
+# Implication allows to remove consequent tags when their antecedent tag is present:
 high_resolution → -low_resolution, ¬medium_resolution
 
-# replace and add tags simultaneously. Order does not matter.
+# Replace and imply tags simultaneously. Order does not matter.
 catgirl ⇐ animal_ears → nekomimi
 
-# tag lists (comma-separated) may also be used.
+# Comma-separated lists may also be used with tag replacement and implication.
 some_tag ⇐ first_replaced_tag, second_replaced_tag → first_implied_tag, second_implied_tag
 
-# all these tags will be removed
+# It is allowed to define the same tag several times.
+# Replaced, implied tags, and comments will be merged correspondingly with 
+# previous definitions of 'some_tag'.
+some_tag ⇐ third_replaced_tag → thirt_implied_tag
+
+# All these tags will be removed.
 ¬ one, two, three
 
 # ----- ADVANCED FEATURES -----
 
-# it is possible to modify default colors for tag kinds using #pragma:
+# Modify default colors of tag kinds using #pragma:
 #pragma replaced_color #ff8800
 #pragma implied_color #0088ff
 #pragma removed_color #ff0000
 
-# you can also define custom category colors using #pragma category:
+# Define custom category colors:
 #pragma category artist #bbbb00
 #pragma category character #00aa00
 #pragma category copyright #dd00dd
 
-# and then use them in a tag comment (any occurence of category name counts):
+# Then mention the category name in tag's comment to color it:
 pablo_picasso                               # artist
 dorothy_gale → the_wonderful_wizard_of_oz   # character
 the_wonderful_wizard_of_oz                  # copyright
 ```
 
-**Note that tags will be presented in autocomplete suggestions in the same order they are in tags file!** 
-Use external tools or text editor to sort tags.txt file if needed, e.g.:
-
-```
-cat original.tags.txt | sort | uniq > sorted.tags.txt
-```
+**Note:** tags will be presented in autocomplete suggestions in the same order they are in tags file!  
+Use external tools or text editor features to sort tags in the tags file.
 
 ### Tag file selection ###
-To use tag autocompletion place *Normal Tag File* or *Override Tag File* in the directory with your pictures, or in any of its parent directories.
+To use tag autocompletion place a *Normal Tag File* or *Override Tag File* in the directory with your pictures or in any of its parent directories.
 
-* Normal Tag File - Files with suffix `.tags.txt`, for example `my.tags.txt`
-* Override Tag File - Files with suffix `.tags!.txt`, for example `my.tags!.txt`
+* *Normal Tag File* - plain text file with suffix `.tags.txt` (e.g. `general.tags.txt`)  
+   When several *normal* tag files are found, their contents are concatenated in the search order (see note 1 below).
+* *Override Tag File* - plain text file with suffix `.tags!.txt` (e.g. `halt.tags!.txt`)  
+  Similar to *normal* tag files, but when *override* tag file is found, the search does not proceed to parent directory.  
+  All *override* tag files in one directory are still concatenated, just like *normal* tag files.
 
-The difference between them is that when *Override Tag File* is found in some directory, the search stops.  
-With *Normal Tag File*, the search continues until all candidate directories have been checked.
+If both *normal* tag file and *override* tag file are found in one directory, the tag file conflict warning is displayed. To resolve the conflict, change the conflicting *normal* tag file into *override* tag file.
+#### Notes:
+1. Concatenation order of tag files within one directory is system-dependent. If strict ordering is desired, use zero-padded number prefix (e.g. `0001-general.tags.txt`). 
+2. Tag file prefix can be omitted, keeping just *normal* or *override* tag file suffix: `.tags.txt` or `.tags!.txt`. Such files are treated as hidden in UNIX-like systems.
 
-Tag file prefix can be omitted, leaving only corresponding suffix as file name, e.g. `.tags.txt`.  
-Such files are treated as hidden in UNIX-like systems.
-
-When multiple tag files are found, their contents will be combined.  
-If this behavior is not desired in some particular directory, place *Override Tag File* there.
 
 #### Tag file reloading ####
 
-WiseTagger will automatically reload tag file(s) if it has been modified.
+WiseTagger will automatically reload tag file(s) when the any of them are modified.
 
-You can open current set of tag files in default text editor using *Navigation - Edit Tag File* menu command.
+To detect newly created tag file(s) use *Navigation - Reload Tag File* menu command.
+
+Current set of tag files can be opened in a text editor using *Navigation - Edit Tag File* menu command.
 
 ### Imageboard tag compaction ###
 Some imageboard tags may be replaced with their shorter or longer versions.
@@ -138,9 +141,9 @@ After such tag had been used a few times, WiseTagger will display notification m
 
 ### Queue filtering
 
-You can filter the queue by using *Navigation - Set Queue Filter*, or by using `Ctrl + Q` shortcut.
+You can filter the queue using *Navigation - Set Queue Filter* (`Ctrl + Q`) menu command.
 
-Filter query consists of one or several tags. Each tag must be present in the file's name for it to pass the filter.
+Filter query consists of one or more tags. Each tag must be present in the file name for it to pass the filter.
 
 Plain tags (e.g. `tail`) are matched as substrings: `tail` will match `ponytail` or `tailor`.  
-To match tags exactly, surround the query tag with quotes: `"tail"`.
+To match tags exactly, surround the query tag with quotes: `"tail"`. Quoted tags can also contain spaces.

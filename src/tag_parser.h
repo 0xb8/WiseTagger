@@ -64,6 +64,7 @@ class TagParser : public QObject {
 	Q_OBJECT
 public:
 
+	/// Default construct an empty tag parser.
 	explicit TagParser(QObject* _parent = nullptr);
 
 	/*!
@@ -219,9 +220,9 @@ private:
 	static QColor parse_color(const QString& input, QString* color_name = nullptr);
 
 	/*!
-	 * \brief Parse #pragma statements and set up necessary internal state.
+	 * \brief Parse `#pragma` statements and set up necessary internal state.
 	 * \param line Input string
-	 * \param custom_categories Map for storing #pragma category <key> #<value>
+	 * \param custom_categories Map for storing `#pragma category <key> #<value>`
 	 * \return true if encountered a pragma, false otherwise
 	 */
 	bool parse_pragma(const QString& line, std::unordered_map<QString, QColor>& custom_categories);
@@ -303,13 +304,13 @@ private:
 	QVector<QPair<QRegularExpression, QString>> m_regexps;
 
 #ifdef QT_GUI_LIB
-	/// Custom consequent tags color (#pragma implied_color)
+	/// Custom consequent tags color (`#pragma implied_color`)
 	QColor m_custom_implication_color;
 
-	/// Custom replaced tags color (#pragma replaced_color)
+	/// Custom replaced tags color (`#pragma replaced_color`)
 	QColor m_custom_replacement_color;
 
-	/// Custom removed tags color (#pragma removed_color)
+	/// Custom removed tags color (`#pragma removed_color`)
 	QColor m_custom_removal_color;
 #endif
 

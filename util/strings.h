@@ -29,7 +29,7 @@ namespace util {
 	/// Join list of strings with \p separator
 	QString     join(const QStringList&, QChar separator = QChar(' '));
 
-	/// Join list of strings with HTML list tags: <li></li>
+	/// Join list of strings with HTML list tags: `<li></li>`
 	QString     html_list_join(const QStringList&);
 
 	/// Split string by \p separator. Empty parts are skipped.
