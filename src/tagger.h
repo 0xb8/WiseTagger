@@ -183,6 +183,9 @@ public:
 	/// File name of current media.
 	QString currentFileName() const;
 
+	/// Extension of current media.
+	QString currentFileSuffix() const;
+
 	/// File type of current media.
 	QString currentFileType() const;
 

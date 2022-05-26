@@ -239,7 +239,15 @@ void Tagger::prevFile(RenameOptions options, SkipOptions skip_option)
 
 void Tagger::setText(const QString & text)
 {
-	m_input.setText(text);
+	int path_length_limit = 255 - currentFileSuffix().length() - 1;
+
+#ifdef Q_OS_WIN32
+	// While Qt on Windows supports 32K characters path length,
+	// Windows explorer still has troubles with anything longer than 260 chars :(
+	path_length_limit -= currentDir().length() + 1 - 4;
+#endif
+
+	m_input.setText(text, path_length_limit);
 }
 
 QString Tagger::text() const
@@ -452,6 +460,11 @@ QString Tagger::currentDir() const
 QString Tagger::currentFileName() const
 {
 	return QFileInfo(m_file_queue.current()).fileName();
+}
+
+QString Tagger::currentFileSuffix() const
+{
+	return QFileInfo(m_file_queue.current()).suffix();
 }
 
 QString Tagger::currentFileType() const

@@ -25,7 +25,7 @@ namespace logging_category {
 
 #include "util/imageboard.h"
 
-TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent), m_index(0)
+TagInput::TagInput(QWidget *_parent) : QLineEdit(_parent)
 {
 	m_completer = std::make_unique<MultiSelectCompleter>(QStringList(), nullptr);
 	connect(&m_tag_parser, &TagParser::parseError, this, &TagInput::parseError);
@@ -74,7 +74,7 @@ void TagInput::setTags(const QString& s)
 	QString res = util::join(imageboard_ids);
 	res.append(' ');
 	res.append(s);
-	setText(res);
+	setText(res, m_path_length_limit);
 }
 
 QString TagInput::tags() const
@@ -251,11 +251,12 @@ void TagInput::clearTagData()
 	clear_line_edit_text_formats(*this);
 }
 
-void TagInput::setText(const QString &s)
+void TagInput::setText(const QString &s, int path_length_limit)
 {
+	m_path_length_limit = path_length_limit;
+	m_initial_text = s;
 	clearTagEditState();
 	updateText(s);
-	m_initial_text = s;
 }
 
 void TagInput::setEditMode(EditMode mode)
@@ -364,6 +365,24 @@ void TagInput::classifyText(const QStringList& tag_list)
 
 		formats.push_back(fr);
 		offset += tag.length();
+	}
+
+	if (text.size() > m_path_length_limit) {
+		QTextCharFormat f;
+		f.setFontUnderline(true);
+		f.setUnderlineStyle(QTextCharFormat::UnderlineStyle::SpellCheckUnderline);
+		f.setUnderlineColor(Qt::red);
+		QTextLayout::FormatRange fr;
+		fr.start = m_path_length_limit;
+
+		// trailing spaces will be stripped when saving, so ignore them
+		int count_trailing_spaces = std::distance(text.rbegin(),
+		                                          std::find_if_not(text.rbegin(),
+		                                                           text.rend(),
+		                                                           [](QChar c){ return c.isSpace(); }));
+		fr.length = text.size() - count_trailing_spaces - fr.start;
+		fr.format = f;
+		formats.push_back(fr);
 	}
 
 	set_line_edit_text_formats(*this, formats);

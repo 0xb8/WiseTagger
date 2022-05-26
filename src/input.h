@@ -74,8 +74,11 @@ public:
 
 	/*!
 	 * \brief Set initial text.
+	 *
+	 * \param text Initial tags text.
+	 * \param path_length_limit Maximum number of characters allowed for the tag string.
 	 */
-	void setText(const QString&);
+	void setText(const QString& text, int path_length_limit);
 
 	/*!
 	 * \brief Set current edit mode.
@@ -220,9 +223,10 @@ private:
 	/// Editing state for current text.
 	TagEditState m_edit_state;
 
-	int         m_index;
+	int         m_index = 0;
 	QStringList m_text_list;
 	QString     m_initial_text;
+	int         m_path_length_limit = 0;
 	ViewMode    m_view_mode = ViewMode::Normal;
 	EditMode    m_edit_mode = EditMode::Tagging;
 
