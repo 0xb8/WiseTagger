@@ -186,23 +186,40 @@ static int update_model(QStandardItemModel& model, const TagParser& parser)
 			pwarn << "could not set completion data for "<< tag << "at" << index;
 		}
 
+		QString tag_display = tag;
+		std::unordered_set<QString> consequents;
+		if (parser.getConsequents(tag, consequents)) {
+			QStringList cons_list{consequents.begin(), consequents.end()};
+			cons_list.sort();
+
+			tag_display.append(QStringLiteral("  →  "));
+			for (auto it = cons_list.cbegin(); it != cons_list.end(); ++it) {
+				auto c = *it;
+				if (c.startsWith(QChar('-'))) {
+					c[0] = QChar(0x00AC);  // ¬
+				}
+				tag_display.append(c);
+				if (it == std::prev(cons_list.cend()))
+					break;
+				tag_display.append(QStringLiteral(", "));
+			}
+		}
+
 		auto comment = parser.getComment(tag);
-		if(Q_UNLIKELY(!comment.isEmpty())) {
-			QString data = tag;
-			data.append(QStringLiteral("  ("));
-			data.append(comment);
-			data.append(QStringLiteral(")"));
-			if(Q_UNLIKELY(!model.setData(index, data, Qt::DisplayRole)))
-				pwarn << "could not set tag display role:" << data;
+		if(!comment.isEmpty()) {
+			tag_display.append(QStringLiteral("  ("));
+			tag_display.append(comment);
+			tag_display.append(QStringLiteral(")"));
 
 			if (Q_UNLIKELY((!model.setData(index, comment, Qt::UserRole + 1))))
 				pwarn << "could not set tag comment:" << comment;
-		} else {
-			model.setData(index, tag, Qt::DisplayRole);
 		}
 
+		if(Q_UNLIKELY(!model.setData(index, tag_display, Qt::DisplayRole)))
+			pwarn << "could not set tag display role:" << tag_display;
+
 		auto color = parser.getColor(tag);
-		if (Q_UNLIKELY(color.isValid())) {
+		if (color.isValid()) {
 			if(Q_UNLIKELY(!model.setData(index, color, Qt::ForegroundRole)))
 				pwarn << "could not set tag color role:" << tag << color;
 		}
