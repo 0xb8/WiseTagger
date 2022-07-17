@@ -8,6 +8,7 @@
 #include "file_queue.h"
 #include "util/traits.h"
 #include "util/misc.h"
+#include <QApplication>
 #include <QLoggingCategory>
 #include <QDirIterator>
 #include <QTextStream>
@@ -81,7 +82,7 @@ bool FileQueue::checkExtension(const QFileInfo & fi) const noexcept
 	return false;
 }
 
-void FileQueue::push(const QString &f)
+void FileQueue::push(const QString &f, bool recursive)
 {
 	QFileInfo fi(f);
 	if(!fi.exists()) {
@@ -94,11 +95,21 @@ void FileQueue::push(const QString &f)
 		m_accepted_by_filter.push_back(fileMatchesFilter(fi));
 
 	} else if(fi.isDir()) {
-		QDirIterator it(f, m_name_filters, QDir::Files);
+		QDirIterator it(f, m_name_filters,
+		                QDir::Files,
+		                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
+		                          : QDirIterator::NoIteratorFlags);
+		int count = 0;
 		while(it.hasNext() && !it.next().isNull()) {
 			auto fi = it.fileInfo();
 			m_files.push_back(fi.absoluteFilePath());
 			m_accepted_by_filter.push_back(fileMatchesFilter(fi));
+
+			if (count++ > 2500) {
+				// avoid gui hang
+				qApp->processEvents();
+				count = 0;
+			}
 		}
 	} else {
 		pwarn << "push() : extension not allowed by filter:" << fi.fileName();

@@ -82,6 +82,8 @@ public:
 	/*!
 	 * \brief Enqueue a file or all files inside a directory.
 	 * \param path Path to file or directory.
+	 * \param recursive When \p path is a directory, enqueue files in all
+	 *        subdirectories as well.
 	 *
 	 * If \p path is a file, it is added to queue. If \p path is a directory,
 	 * all files inside \p path are added to queue, according to filters set
@@ -89,7 +91,7 @@ public:
 	 *
 	 * \note This function provides basic exception safety guarantee.
 	 */
-	void push(const QString& path);
+	void push(const QString& path, bool recursive=false);
 
 
 

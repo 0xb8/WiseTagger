@@ -93,7 +93,7 @@ protected:
 
 private slots:
 	void fileOpenDialog();
-	void directoryOpenDialog();
+	void directoryOpenDialog(bool recursive);
 	void updateProxySettings();
 	void about();
 	void help();
@@ -133,6 +133,7 @@ private:
 
 	QAction a_open_file;
 	QAction a_open_dir;
+	QAction a_open_dir_recurse;
 	QAction a_delete_file;
 	QAction a_open_post;
 	QAction a_iqdb_search;

@@ -117,7 +117,7 @@ bool Tagger::open(const QString& filename)
 	if(rename() == RenameStatus::Cancelled)
 		return false;
 
-	bool res     = openDir(filename);
+	bool res     = openDir(filename, false);
 	if(!res) res = openSession(filename);
 	if(!res) res = openFile(filename);
 	return res;
@@ -132,15 +132,18 @@ bool Tagger::openFile(const QString &filename)
 	if(!fi.isReadable() || !fi.isFile()) {
 		return false;
 	}
+	qApp->setOverrideCursor(Qt::WaitCursor);
 	m_file_queue.clear();
 	m_file_queue.push(fi.absolutePath());
 	m_file_queue.sort();
 	m_file_queue.select(m_file_queue.find(fi.absoluteFilePath()));
 	m_picture.cache.clear();
+
+	qApp->restoreOverrideCursor();
 	return loadCurrentFile();
 }
 
-bool Tagger::openDir(const QString &dir)
+bool Tagger::openDir(const QString &dir, bool recursive)
 {
 	if(rename() == RenameStatus::Cancelled)
 		return false;
@@ -149,11 +152,14 @@ bool Tagger::openDir(const QString &dir)
 	if(!fi.isReadable() || !fi.isDir()) {
 		return false;
 	}
+	qApp->setOverrideCursor(Qt::WaitCursor);
 	m_file_queue.clear();
-	m_file_queue.push(dir);
+	m_file_queue.push(dir, recursive);
 	m_file_queue.sort();
 	m_file_queue.select(0u); // NOTE: must select after sorting, otherwise selects first file in directory order
 	m_picture.cache.clear();
+
+	qApp->restoreOverrideCursor();
 	return loadCurrentFile();
 }
 

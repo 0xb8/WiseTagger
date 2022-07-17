@@ -55,7 +55,7 @@ public:
 	bool openFile(const QString&);
 
 	/// Enqueue directory contents and open first file.
-	bool openDir(const QString&);
+	bool openDir(const QString&, bool recursive);
 
 	/// Open tagging session from file.
 	bool openSession(const QString& sfile);

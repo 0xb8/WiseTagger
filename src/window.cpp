@@ -83,6 +83,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, m_reverse_search(  this)
 	, a_open_file(       tr("&Open File..."), nullptr)
 	, a_open_dir(        tr("Open &Folder..."), nullptr)
+	, a_open_dir_recurse(tr("Open Folder Recursi&vely..."), nullptr)
 	, a_delete_file(     tr("&Delete Current Image"), nullptr)
 	, a_open_post(       tr("Open Imageboard &Post..."), nullptr)
 	, a_iqdb_search(     tr("&Reverse Search Image..."), nullptr)
@@ -189,14 +190,14 @@ void Window::fileOpenDialog()
 	}
 }
 
-void Window::directoryOpenDialog()
+void Window::directoryOpenDialog(bool recursive)
 {
 	auto dir = QFileDialog::getExistingDirectory(nullptr,
 		tr("Open Directory"),
 		m_last_directory,
 		QFileDialog::ShowDirsOnly);
 
-	m_tagger.openDir(dir);
+	m_tagger.openDir(dir, recursive);
 }
 
 void Window::updateProxySettings()
@@ -1024,6 +1025,7 @@ void Window::createActions()
 {
 	a_open_file.setShortcut(    QKeySequence::Open);
 	a_open_dir.setShortcut(     QKeySequence(tr("Ctrl+D", "File|Open Directory")));
+	a_open_dir_recurse.setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
 	a_next_file.setShortcut(    QKeySequence(Qt::Key_Right));
 	a_prev_file.setShortcut(    QKeySequence(Qt::Key_Left));
 	a_set_queue_filter.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
@@ -1059,6 +1061,7 @@ void Window::createActions()
 	a_view_sort_length.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_L));
 	a_view_sort_tagcnt.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_C));
 
+	a_open_dir_recurse.setStatusTip(tr("Open all files in the folder and all subfolders."));
 	a_open_post.setStatusTip(     tr("Open imageboard post of this image."));
 	a_iqdb_search.setStatusTip(   tr("Upload this image to iqdb.org and open search results page in default browser."));
 	a_open_loc.setStatusTip(      tr("Open folder where this image is located."));
@@ -1090,7 +1093,12 @@ void Window::createActions()
 	});
 
 	connect(&a_open_file,   &QAction::triggered, this, &Window::fileOpenDialog);
-	connect(&a_open_dir,    &QAction::triggered, this, &Window::directoryOpenDialog);
+	connect(&a_open_dir,    &QAction::triggered, this, [this](){
+		directoryOpenDialog(false);
+	});
+	connect(&a_open_dir_recurse, &QAction::triggered, this, [this](){
+		directoryOpenDialog(true);
+	});
 	connect(&a_exit,        &QAction::triggered, this, &Window::close);
 	connect(&a_hide,        &QAction::triggered, this, &Window::hide);
 	connect(&a_hide,        &QAction::triggered, &m_tray_icon, &QSystemTrayIcon::show);
@@ -1177,7 +1185,8 @@ void Window::createActions()
 			fileOpenDialog();
 		}
 		if (link == QStringLiteral("#open_dir")) {
-			directoryOpenDialog();
+			bool recursive_enabled = qApp->keyboardModifiers() & Qt::SHIFT;
+			directoryOpenDialog(recursive_enabled);
 		}
 		if (link == QStringLiteral("#filter")) {
 			set_queue_filter(link);
@@ -1491,6 +1500,7 @@ void Window::createMenus()
 	// File menu actions
 	add_action(menu_file, a_open_file);
 	add_action(menu_file, a_open_dir);
+	add_action(menu_file, a_open_dir_recurse);
 	add_action(menu_file, a_open_session);
 	add_separator(menu_file);
 	add_action(menu_file, a_save_file);
