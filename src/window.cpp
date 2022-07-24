@@ -182,10 +182,10 @@ void Window::fileOpenDialog()
 			.arg(util::join(supported_video_formats)));
 
 	if(fileNames.size() == 1) {
-		m_tagger.open(fileNames.first());
+		m_tagger.open(fileNames.first(), /*recursive=*/false);
 	}
 	if(fileNames.size() > 1) {
-		m_tagger.queue().assign(fileNames);
+		m_tagger.queue().assign(fileNames, /*recursive=*/false);
 		m_tagger.openFileInQueue();
 	}
 }
@@ -193,7 +193,7 @@ void Window::fileOpenDialog()
 void Window::directoryOpenDialog(bool recursive)
 {
 	auto dir = QFileDialog::getExistingDirectory(nullptr,
-		tr("Open Directory"),
+	        recursive ? tr("Open Folder Recursively") : tr("Open Folder"),
 		m_last_directory,
 		QFileDialog::ShowDirsOnly);
 
@@ -502,6 +502,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		return true;
 	}
 	if(e->type() == QEvent::Drop) {
+		bool recursive_enabled = qApp->keyboardModifiers() & Qt::SHIFT;
 		const auto drop_event = static_cast<QDropEvent*>(e);
 		const auto fileurls = drop_event->mimeData()->urls();
 		QFileInfo dropfile;
@@ -510,7 +511,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 
 		if(fileurls.size() == 1) {
 			dropfile.setFile(fileurls.first().toLocalFile());
-			m_tagger.open(dropfile.absoluteFilePath());
+			m_tagger.open(dropfile.absoluteFilePath(), recursive_enabled);
 			return true;
 		}
 
@@ -522,7 +523,7 @@ bool Window::eventFilter(QObject*, QEvent *e)
 		for(const auto& fileurl : qAsConst(fileurls)) {
 			filelist.push_back(fileurl.toLocalFile());
 		}
-		m_tagger.queue().assign(filelist);
+		m_tagger.queue().assign(filelist, recursive_enabled);
 		m_tagger.openFileInQueue();
 		return true;
 	}
@@ -603,24 +604,43 @@ void Window::parseCommandLineArguments()
 	if(args.size() <= 1)
 		return;
 
-	if(args.size() == 2) {
-		if (args[1] == QStringLiteral("--restart")) {
-			readRestartData();
-			return;
-		}
+	QStringList paths;
+	bool recursive = false;
 
-		m_tagger.open(args.back()); // may open session file or read list from stdin
+	for(int i = 1; i < args.size(); ++i) {
+		const auto& arg = args.at(i);
+		if(arg.startsWith(QChar('-'))) {
+			if (arg == QStringLiteral("--restart")) {
+				readRestartData();
+				return;
+			}
+
+			if (arg == QStringLiteral("-h") || arg == QStringLiteral("--help")) {
+				QMessageBox::information(this,
+				                         tr("%1 Command Line Usage").arg(TARGET_PRODUCT),
+				                         tr("<h4><pre>%1 [-r | --recursive] [-h | --help] [path...]</pre></h4>"
+				                            "<table>"
+				                            "<tr><td style=\"padding: 5px 10px\"><code>-r, --recursive</code></td><td style=\"padding: 5px 10px\">Open files in subdirectories recursively.</td></tr>"
+				                            "<tr><td style=\"padding: 5px 10px\"><code>-h, --help</code></td><td style=\"padding: 5px 10px\">Display this help message.</td></tr>"
+				                            "<tr><td style=\"padding: 5px 10px\"><code>path...</code></td><td style=\"padding: 5px 10px\">One or several file/directory paths.<br/>Use \"-\" to read paths from <code>stdin</code>.</td></tr>"
+				                            "</table>").arg(TARGET_PRODUCT));
+			}
+
+			if (arg == QStringLiteral("-r") || arg == QStringLiteral("--recursive")) {
+				recursive = true;
+			}
+
+			continue;
+		}
+		paths.append(arg);
+	}
+
+	if (paths.size() == 1) {
+		m_tagger.open(paths[0], recursive); // may open session file or read list from stdin
 		return;
 	}
 
-	for(int i = 1; i < args.size(); ++i) {
-		auto& arg = args.at(i);
-		if(args.startsWith(QChar('-'))) {
-			continue;
-		}
-		m_tagger.queue().push(arg);
-	}
-
+	m_tagger.queue().assign(paths, recursive);
 	m_tagger.queue().select(0); // must select 0 before sorting to always open first argument
 	m_tagger.queue().sort();
 	m_tagger.openFileInQueue(m_tagger.queue().currentIndex()); // sorting changed the index of selected file

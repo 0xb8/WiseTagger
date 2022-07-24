@@ -926,13 +926,13 @@ In Main View</source>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="102"/>
-        <location filename="../../src/window.cpp" line="1297"/>
+        <location filename="../../src/window.cpp" line="1317"/>
         <source>Save Session</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="101"/>
-        <location filename="../../src/window.cpp" line="1317"/>
+        <location filename="../../src/window.cpp" line="1337"/>
         <source>Open Session</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1137,11 +1137,6 @@ In Main View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="196"/>
-        <source>Open Directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../src/window.cpp" line="229"/>
         <source>Invalid proxy</source>
         <translation type="unfinished"></translation>
@@ -1177,258 +1172,268 @@ In Main View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="838"/>
+        <location filename="../../src/window.cpp" line="620"/>
+        <source>%1 Command Line Usage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="621"/>
+        <source>&lt;h4&gt;&lt;pre&gt;%1 [-r | --recursive] [-h | --help] [path...]&lt;/pre&gt;&lt;/h4&gt;&lt;table&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;-r, --recursive&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Open files in subdirectories recursively.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;-h, --help&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Display this help message.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;path...&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;One or several file/directory paths.&lt;br/&gt;Use &quot;-&quot; to read paths from &lt;code&gt;stdin&lt;/code&gt;.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="858"/>
         <source>Naming mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="841"/>
+        <location filename="../../src/window.cpp" line="861"/>
         <source>Tagging mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="937"/>
+        <location filename="../../src/window.cpp" line="957"/>
         <source>Version %1 is available.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="938"/>
+        <location filename="../../src/window.cpp" line="958"/>
         <source>&lt;h3&gt;Updated version available: v%1&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;%2&quot;&gt;Click here to download new version&lt;/a&gt;.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1013"/>
+        <location filename="../../src/window.cpp" line="1033"/>
         <source>Failed to start command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1014"/>
+        <location filename="../../src/window.cpp" line="1034"/>
         <source>&lt;p&gt;Failed to launch command &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Could not start &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1027"/>
+        <location filename="../../src/window.cpp" line="1047"/>
         <source>Ctrl+D</source>
         <comment>File|Open Directory</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1038"/>
+        <location filename="../../src/window.cpp" line="1058"/>
         <source>Ctrl+A</source>
         <comment>Fix tags</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1039"/>
+        <location filename="../../src/window.cpp" line="1059"/>
         <source>Ctrl+P</source>
         <comment>Open post</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1040"/>
+        <location filename="../../src/window.cpp" line="1060"/>
         <source>Ctrl+F</source>
         <comment>Reverse search</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1041"/>
+        <location filename="../../src/window.cpp" line="1061"/>
         <source>Ctrl+Shift+F</source>
         <comment>Fetch tags</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1042"/>
+        <location filename="../../src/window.cpp" line="1062"/>
         <source>Ctrl+L</source>
         <comment>Open file location</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1064"/>
+        <location filename="../../src/window.cpp" line="1084"/>
         <source>Open all files in the folder and all subfolders.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1065"/>
+        <location filename="../../src/window.cpp" line="1085"/>
         <source>Open imageboard post of this image.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1066"/>
+        <location filename="../../src/window.cpp" line="1086"/>
         <source>Upload this image to iqdb.org and open search results page in default browser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1067"/>
+        <location filename="../../src/window.cpp" line="1087"/>
         <source>Open folder where this image is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1068"/>
+        <location filename="../../src/window.cpp" line="1088"/>
         <source>Open folder where current tag file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1070"/>
+        <location filename="../../src/window.cpp" line="1090"/>
         <source>Open current tag file in default text editor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1071"/>
+        <location filename="../../src/window.cpp" line="1091"/>
         <source>Toggle replacing certain imageboard tags with their shorter version.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1072"/>
+        <location filename="../../src/window.cpp" line="1092"/>
         <source>Toggle restoring imageboard tags back to their original version.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1073"/>
+        <location filename="../../src/window.cpp" line="1093"/>
         <source>Toggle forcing the author tag to be the first tag in the filename.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1092"/>
+        <location filename="../../src/window.cpp" line="1112"/>
         <source>Search results page opened in default browser.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1092"/>
+        <location filename="../../src/window.cpp" line="1112"/>
         <source>IQDB upload finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1144"/>
+        <location filename="../../src/window.cpp" line="1164"/>
         <source>Tag fetching failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1145"/>
+        <location filename="../../src/window.cpp" line="1165"/>
         <source>Tag fetching failed:  %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1151"/>
+        <location filename="../../src/window.cpp" line="1171"/>
         <source>Tag file changed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1152"/>
+        <location filename="../../src/window.cpp" line="1172"/>
         <source>Tag file has been edited or removed.
 All changes successfully applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1299"/>
         <location filename="../../src/window.cpp" line="1319"/>
+        <location filename="../../src/window.cpp" line="1339"/>
         <source>Session Files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1305"/>
+        <location filename="../../src/window.cpp" line="1325"/>
         <source>Save Session Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1306"/>
+        <location filename="../../src/window.cpp" line="1326"/>
         <source>&lt;p&gt;Could not save session to &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Check file permissions.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1325"/>
+        <location filename="../../src/window.cpp" line="1345"/>
         <source>Enter Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1326"/>
+        <location filename="../../src/window.cpp" line="1346"/>
         <source>Enter file number to open:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1335"/>
+        <location filename="../../src/window.cpp" line="1355"/>
         <source>Notifications  </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1335"/>
+        <location filename="../../src/window.cpp" line="1355"/>
         <source>Notifications: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1353"/>
+        <location filename="../../src/window.cpp" line="1373"/>
         <source>&lt;p&gt;New tags were found, ordered by number of times used:&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1360"/>
+        <location filename="../../src/window.cpp" line="1380"/>
         <source>Check Notifications menu for list of added tags.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1366"/>
+        <location filename="../../src/window.cpp" line="1386"/>
         <source>&lt;h2&gt;Could not locate suitable tag file&lt;/h2&gt;&lt;p&gt;You can still browse and rename files, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened file and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1391"/>
+        <location filename="../../src/window.cpp" line="1411"/>
         <source>Tag files conflict</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1392"/>
+        <location filename="../../src/window.cpp" line="1412"/>
         <source>Some of the tag files are in conflict</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1393"/>
+        <location filename="../../src/window.cpp" line="1413"/>
         <source>&lt;p&gt;Because &lt;em&gt;overriding tag files&lt;/em&gt; halt the search, the following &lt;em&gt;appending tag files&lt;/em&gt; are always ignored:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%1&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;Overriding tag files that caused the conflict:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%2&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1415"/>
+        <location filename="../../src/window.cpp" line="1435"/>
         <source>Tag file syntax error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1415"/>
+        <location filename="../../src/window.cpp" line="1435"/>
         <source>Regular expression syntax error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1416"/>
+        <location filename="../../src/window.cpp" line="1436"/>
         <source>&lt;h2&gt;Regular expression syntax error&lt;/h2&gt;&lt;p&gt;At column %1: %2&lt;/p&gt;&lt;pre style=&quot;font-family: Consolas, &quot;Lucida Console&quot;, Monaco,monospace,monospace;&quot;&gt;%3
 
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1429"/>
+        <location filename="../../src/window.cpp" line="1449"/>
         <source>Network error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1428"/>
+        <location filename="../../src/window.cpp" line="1448"/>
         <source>Error connecting to %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1483"/>
+        <location filename="../../src/window.cpp" line="1503"/>
         <source>Tag Fetching Done.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1753"/>
+        <location filename="../../src/window.cpp" line="1773"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1757"/>
+        <location filename="../../src/window.cpp" line="1777"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1757"/>
+        <location filename="../../src/window.cpp" line="1777"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation type="unfinished"></translation>
@@ -1469,6 +1474,16 @@ All changes successfully applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../src/window.cpp" line="196"/>
+        <source>Open Folder Recursively</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="196"/>
+        <source>Open Folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../src/window.cpp" line="309"/>
         <source>In directory:  %1      Last modified: %2 ago (%3)</source>
         <translation type="unfinished"></translation>
@@ -1484,72 +1499,72 @@ All changes successfully applied.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="936"/>
+        <location filename="../../src/window.cpp" line="956"/>
         <source>New version available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1069"/>
+        <location filename="../../src/window.cpp" line="1089"/>
         <source>Reload changes in tag files and search for newly added tag files.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1360"/>
+        <location filename="../../src/window.cpp" line="1380"/>
         <source>New tags added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1364"/>
+        <location filename="../../src/window.cpp" line="1384"/>
         <source>Tag file not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1365"/>
+        <location filename="../../src/window.cpp" line="1385"/>
         <source>Could not locate suitable tag file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1430"/>
+        <location filename="../../src/window.cpp" line="1450"/>
         <source>Network error: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1459"/>
+        <location filename="../../src/window.cpp" line="1479"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1462"/>
+        <location filename="../../src/window.cpp" line="1482"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1465"/>
+        <location filename="../../src/window.cpp" line="1485"/>
         <source>Modification Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1468"/>
+        <location filename="../../src/window.cpp" line="1488"/>
         <source>Size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1471"/>
+        <location filename="../../src/window.cpp" line="1491"/>
         <source>Name Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1474"/>
+        <location filename="../../src/window.cpp" line="1494"/>
         <source>Tag Count</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1477"/>
+        <location filename="../../src/window.cpp" line="1497"/>
         <source>Queue Sorted by %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1741"/>
+        <location filename="../../src/window.cpp" line="1761"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>

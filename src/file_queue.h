@@ -91,16 +91,18 @@ public:
 	 *
 	 * \note This function provides basic exception safety guarantee.
 	 */
-	void push(const QString& path, bool recursive=false);
+	void push(const QString& path, bool recursive);
 
 
 
 	/*!
 	 * \brief Replace queue contents with list of \p paths.
+	 * \param recursive When a directory is found in \p paths, enqueue files
+	 *        in all subdirectories as well.
 	 *
 	 * \note This function provides strong exception safety guarantee.
 	 */
-	void assign(const QStringList& paths);
+	void assign(const QStringList& paths, bool recursive);
 
 
 	/*!

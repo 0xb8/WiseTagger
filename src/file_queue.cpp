@@ -116,7 +116,7 @@ void FileQueue::push(const QString &f, bool recursive)
 	}
 }
 
-void FileQueue::assign(const QStringList& paths)
+void FileQueue::assign(const QStringList& paths, bool recursive)
 {
 #if __GNUC__ > 5 // NOTE: workaround for old gcc used by appveyor
 	static_assert(util::traits::is_nothrow_swappable_all_v<decltype(m_files)>, "Member container should be nothrow swappable");
@@ -125,17 +125,32 @@ void FileQueue::assign(const QStringList& paths)
 	using cont_t = decltype(m_files);
 	cont_t tmp;
 	QFileInfo fi;
+
+	int count = 0;
+	auto update_ui = [&count]() {
+		if (count++ > 2500) {
+			// avoid gui hang
+			qApp->processEvents();
+			count = 0;
+		}
+	};
+
 	for(const auto & p : qAsConst(paths)) {
 		fi.setFile(p);
 		if(fi.isFile()) {
 			tmp.push_back(fi.absoluteFilePath());
 		}
 		if(fi.isDir()) {
-			QDirIterator it(p, m_name_filters, QDir::Files);
+			QDirIterator it(p, m_name_filters,
+			                QDir::Files,
+			                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
+			                          : QDirIterator::NoIteratorFlags);
 			while(it.hasNext() && !it.next().isNull()) {
 				tmp.push_back(it.fileInfo().absoluteFilePath());
+				update_ui();
 			}
 		}
+		update_ui();
 	}
 
 	std::swap(tmp, m_files);

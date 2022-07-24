@@ -112,18 +112,18 @@ void Tagger::clear()
 	emit cleared();
 }
 
-bool Tagger::open(const QString& filename)
+bool Tagger::open(const QString& filename, bool recursive)
 {
 	if(rename() == RenameStatus::Cancelled)
 		return false;
 
-	bool res     = openDir(filename, false);
+	bool res     = openDir(filename, recursive);
 	if(!res) res = openSession(filename);
-	if(!res) res = openFile(filename);
+	if(!res) res = openFile(filename, recursive);
 	return res;
 }
 
-bool Tagger::openFile(const QString &filename)
+bool Tagger::openFile(const QString &filename, bool recursive)
 {
 	if(rename() == RenameStatus::Cancelled)
 		return false;
@@ -134,7 +134,7 @@ bool Tagger::openFile(const QString &filename)
 	}
 	qApp->setOverrideCursor(Qt::WaitCursor);
 	m_file_queue.clear();
-	m_file_queue.push(fi.absolutePath());
+	m_file_queue.push(fi.absolutePath(), recursive);
 	m_file_queue.sort();
 	m_file_queue.select(m_file_queue.find(fi.absoluteFilePath()));
 	m_picture.cache.clear();

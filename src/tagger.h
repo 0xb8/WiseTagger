@@ -49,13 +49,13 @@ public:
 	~Tagger() override = default;
 
 	/// Open file, session or directory.
-	bool open(const QString& filename);
+	bool open(const QString& filename, bool recursive);
 
 	/// Open file and enqueue its directory.
-	bool openFile(const QString&);
+	bool openFile(const QString& filename, bool recursive);
 
 	/// Enqueue directory contents and open first file.
-	bool openDir(const QString&, bool recursive);
+	bool openDir(const QString& dirname, bool recursive);
 
 	/// Open tagging session from file.
 	bool openSession(const QString& sfile);
