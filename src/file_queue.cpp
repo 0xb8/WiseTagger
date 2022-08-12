@@ -446,7 +446,7 @@ size_t FileQueue::loadFromFile(const QString &path)
 		if(!line.isEmpty()) {
 			fi.setFile(line);
 			if(checkExtension(fi))
-				res.push_back(fi.canonicalFilePath());
+				res.push_back(fi.filePath());
 		}
 	}
 

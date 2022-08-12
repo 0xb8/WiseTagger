@@ -124,6 +124,7 @@ public:
 	 * \brief Select next file in queue, possibly wrapping around.
 	 *
 	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 * \note When no files match the filter, behaves as if the filter is not set.
 	 *
 	 * \return Next file.
 	 * \retval EmptyString Queue is empty.
@@ -135,6 +136,7 @@ public:
 	 * \brief Return next file in queue, possibly wrapping around.
 	 *
 	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 * \note When no files match the filter, behaves as if the filter is not set.
 	 *
 	 * \param[inout] from Starting index, on success set to the index of next file.
 	 * \return Next file.
