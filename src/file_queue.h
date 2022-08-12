@@ -45,8 +45,8 @@ public:
 	/// Checks if suffix of session files is valid.
 	static bool checkSessionFileSuffix(const QFileInfo&);
 
-	/// Name Filter for session files.
-	static const QString sessionNameFilter;
+	/// Extension filter for session files.
+	static const QString sessionExtensionFilter;
 
 	/// Set sorting criteria to be used by default.
 	void setSortBy(SortQueueBy criteria) noexcept;
@@ -55,12 +55,13 @@ public:
 	 * \brief Set file extensions filter used by FileQueue::push
 	 *        and FileQueue::checkExtension
 	 * \param filters List of extension wildcards, \em e.g. \code *.jpg \endcode
+	 * \note Does NOT support multilevel extension wildcards, \em e.g. \code *.tar.gz \endcode
 	 */
-	void setNameFilter(const QStringList& filters) noexcept(false);
+	void setExtensionFilter(const QStringList& filters) noexcept(false);
 
 
 	/*!
-	 * \brief Check if file's suffix is allowed by currently set name filter.
+	 * \brief Check if file's suffix is allowed by currently set extension filter.
 	 * \param fileinfo File info object corresponding to file.
 	 */
 	bool checkExtension(const QFileInfo& fileinfo) const noexcept;
@@ -81,13 +82,15 @@ public:
 
 	/*!
 	 * \brief Enqueue a file or all files inside a directory.
-	 * \param path Path to file or directory.
-	 * \param recursive When \p path is a directory, enqueue files in all
-	 *        subdirectories as well.
+	 * \param path      Path to file or directory.
+	 * \param recursive When \p path refers to a directory,
+	 *        enqueue files in all subdirectories recursively.
 	 *
-	 * If \p path is a file, it is added to queue. If \p path is a directory,
-	 * all files inside \p path are added to queue, according to filters set
-	 * by \ref FileQueue::setNameFilter()
+	 * When \p path refers to a file, it is added to queue.
+	 *
+	 * When \p path refers to a directory, files inside \p path
+	 * are added to queue if their extension is accepted
+	 * by current extension filter (see \ref FileQueue::setExtensionFilter())
 	 *
 	 * \note This function provides basic exception safety guarantee.
 	 */
@@ -97,8 +100,8 @@ public:
 
 	/*!
 	 * \brief Replace queue contents with list of \p paths.
-	 * \param recursive When a directory is found in \p paths, enqueue files
-	 *        in all subdirectories as well.
+	 * \param recursive When a directory is encountered in \p paths,
+	 *        enqueue files in all subdirectories recursively.
 	 *
 	 * \note This function provides strong exception safety guarantee.
 	 */
@@ -316,7 +319,7 @@ private:
 	static const QString m_empty;
 	std::deque<QString>  m_files;
 	std::vector<bool>    m_accepted_by_filter;
-	QStringList          m_name_filters;
+	QStringList          m_ext_filters;
 	QStringList          m_substr_filter_include;
 	QStringList          m_substr_filter_exclude;
 	size_t               m_current = npos;

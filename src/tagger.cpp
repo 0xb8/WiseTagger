@@ -46,8 +46,8 @@ Tagger::Tagger(QWidget *_parent) :
 {
 	installEventFilter(_parent);
 	m_picture.installEventFilter(_parent);
-	m_file_queue.setNameFilter(util::supported_image_formats_namefilter() +
-	                           util::supported_video_formats_namefilter());
+	m_file_queue.setExtensionFilter(util::supported_image_formats_namefilter() +
+	                                util::supported_video_formats_namefilter());
 
 	m_main_layout.setContentsMargins(0, 0, 0, 0);
 	m_main_layout.setSpacing(0);

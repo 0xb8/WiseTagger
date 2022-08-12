@@ -26,11 +26,11 @@ namespace logging_category {
 
 /* static data */
 const QString FileQueue::m_empty{nullptr,0};
-const QString FileQueue::sessionNameFilter = QStringLiteral("*.wt-session");
+const QString FileQueue::sessionExtensionFilter = QStringLiteral("*.wt-session");
 
-void FileQueue::setNameFilter(const QStringList &f) noexcept(false)
+void FileQueue::setExtensionFilter(const QStringList &f) noexcept(false)
 {
-	m_name_filters = f;
+	m_ext_filters = f;
 }
 
 void FileQueue::setSubstringFilter(const QStringList & filters)
@@ -76,7 +76,7 @@ void FileQueue::setSortBy(SortQueueBy criteria) noexcept
 bool FileQueue::checkExtension(const QFileInfo & fi) const noexcept
 {
 	const auto ext = fi.suffix();
-	for(const auto & f : qAsConst(m_name_filters)) {
+	for(const auto & f : qAsConst(m_ext_filters)) {
 		if(f.endsWith(ext, Qt::CaseInsensitive)) return true;
 	}
 	return false;
@@ -95,7 +95,7 @@ void FileQueue::push(const QString &f, bool recursive)
 		m_accepted_by_filter.push_back(fileMatchesFilter(fi));
 
 	} else if(fi.isDir()) {
-		QDirIterator it(f, m_name_filters,
+		QDirIterator it(f, m_ext_filters,
 		                QDir::Files,
 		                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 		                          : QDirIterator::NoIteratorFlags);
@@ -141,7 +141,7 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 			tmp.push_back(fi.absoluteFilePath());
 		}
 		if(fi.isDir()) {
-			QDirIterator it(p, m_name_filters,
+			QDirIterator it(p, m_ext_filters,
 			                QDir::Files,
 			                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 			                          : QDirIterator::NoIteratorFlags);

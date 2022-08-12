@@ -1316,7 +1316,7 @@ void Window::createActions()
 		auto filename = QFileDialog::getSaveFileName(this,
 			tr("Save Session"),
 			m_last_directory,
-			tr("Session Files (%1)").arg(FileQueue::sessionNameFilter));
+			tr("Session Files (%1)").arg(FileQueue::sessionExtensionFilter));
 		if(filename.isEmpty())
 			return;
 
@@ -1336,7 +1336,7 @@ void Window::createActions()
 		auto filename = QFileDialog::getOpenFileName(this,
 			tr("Open Session"),
 			lastdir,
-			tr("Session Files (%1)").arg(FileQueue::sessionNameFilter));
+			tr("Session Files (%1)").arg(FileQueue::sessionExtensionFilter));
 		m_tagger.openSession(filename);
 	});
 	connect(&a_go_to_number, &QAction::triggered, this, [this]()
