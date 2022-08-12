@@ -209,7 +209,10 @@ void Tagger::nextFile(RenameOptions options, SkipOptions skip_option)
 		return;
 
 	if (skip_option & SkipOption::SkipToFixable) {
+		qApp->setOverrideCursor(Qt::WaitCursor);
 		bool found = selectWithFixableTags(+1);
+		qApp->restoreOverrideCursor();
+
 		if (!found) {
 			QMessageBox::information(this,
 			                         tr("Could not find next fixable file"),
@@ -229,7 +232,10 @@ void Tagger::prevFile(RenameOptions options, SkipOptions skip_option)
 		return;
 
 	if (skip_option & SkipOption::SkipToFixable) {
+		qApp->setOverrideCursor(Qt::WaitCursor);
 		bool found = selectWithFixableTags(-1);
+		qApp->restoreOverrideCursor();
+
 		if (!found) {
 			QMessageBox::information(this,
 			                         tr("Could not find previous fixable file"),
@@ -1127,6 +1133,8 @@ bool Tagger::isFileRenameable(const QFileInfo & fi)
 
 bool Tagger::selectWithFixableTags(int direction)
 {
+	Q_ASSERT(!m_file_queue.empty()); // infinite loop otherwise :)
+
 	TagParser parser;
 	QDir prev_dir;
 	QStringList prev_tags_files;
@@ -1190,13 +1198,23 @@ bool Tagger::selectWithFixableTags(int direction)
 		return orig_tags != new_tags;
 	};
 
-	size_t index = m_file_queue.currentIndex();
-
-	for (size_t i = 0; i < m_file_queue.size(); ++i) {
+	size_t first_match_index = m_file_queue.npos;
+	size_t file_index = m_file_queue.currentIndex();
+	while (true) {
 		// check next or previous file in queue
-		const auto& file_path = direction > 0 ? m_file_queue.next(index) : m_file_queue.prev(index);
+		const auto& file_path = direction > 0 ? m_file_queue.next(file_index) : m_file_queue.prev(file_index);
+		Q_ASSERT(!file_path.isEmpty());
+
+		if (Q_UNLIKELY(first_match_index == m_file_queue.npos)) {
+			// remember index of the first file matching filter
+			first_match_index = file_index;
+		} else if (Q_UNLIKELY(file_index == first_match_index)) {
+			// wrapped around the entire set of files matching filter, nothing more to check...
+			break;
+		}
+
 		if (check_fixable(file_path)) {
-			openFileInQueue(index);
+			openFileInQueue(file_index);
 			return true;
 		}
 	}
