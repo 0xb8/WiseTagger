@@ -501,7 +501,7 @@ size_t FileQueue::loadFromMemory(const QByteArray& memory)
 		if(!line.isEmpty()) {
 			fi.setFile(line);
 			if(checkExtension(fi))
-				res.push_back(fi.canonicalFilePath());
+				res.push_back(fi.filePath());
 		}
 	}
 

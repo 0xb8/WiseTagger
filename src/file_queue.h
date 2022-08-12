@@ -149,6 +149,7 @@ public:
 	 * \brief Select previous file in queue, possibly wrapping around.
 	 *
 	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 * \note When no files match the filter, behaves as if the filter is not set.
 	 *
 	 * \return Previous file.
 	 * \retval EmptyString Queue is empty.
@@ -160,6 +161,7 @@ public:
 	 * \brief Return previous file in queue, possibly wrapping around.
 	 *
 	 * \note This function respects currently set substring filter (see \ref FileQueue::setSubstringFilter())
+	 * \note When no files match the filter, behaves as if the filter is not set.
 	 *
 	 * \param[inout] from Starting index, on success set to the index of previous file.
 	 * \return Previous file.
@@ -198,13 +200,13 @@ public:
 
 
 	/*!
-	 * \brief Does the current file match the current filter.
+	 * \brief Does the current file match the substring filter.
 	 */
 	bool currentFileMatchesQueueFilter() const noexcept;
 
 
 	/*!
-	 * \brief Does the \p file match the current filter.
+	 * \brief Does the \p file match the substring filter.
 	 */
 	bool fileMatchesFilter(const QFileInfo& file) const;
 
