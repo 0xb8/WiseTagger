@@ -1148,7 +1148,7 @@ bool Tagger::selectWithFixableTags(int direction)
 		const QFileInfo file(file_path);
 
 		const auto current_dir = file.absoluteDir();
-		if (current_dir != prev_dir) {
+		if (current_dir != prev_dir || prev_dir.isRelative()) {
 			prev_dir = current_dir;
 			search_dirs.clear();
 
