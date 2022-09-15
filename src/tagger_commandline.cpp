@@ -44,7 +44,8 @@ int TaggerCommandLineInterface::parseArguments(QStringList args)
 
 	parser.addOptions({{"check", tr("Fix tags and print resulting file name.")},
 	                   {"rename", tr("Fix tags, rename file and print resulting file name.")},
-	                   {"remove-unknown-tags", tr("Remove unknown tags when fixing.")}});
+	                   {"remove-unknown-tags", tr("Remove unknown tags when fixing.")},
+	                   {"print-tags", tr("Print all known tags (main and consequent)")}});
 
 	parser.addPositionalArgument("path", tr("Image file, directory or session file to open.\nUse \"-\" to read input file path from stdin."));
 
@@ -52,6 +53,25 @@ int TaggerCommandLineInterface::parseArguments(QStringList args)
 
 	QTextStream out{stdout};
 	QTextStream err{stderr};
+
+	if (parser.isSet("print-tags")) {
+		init_parser(QDir{});
+
+		for (const auto& tag : m_parser.getAllTags()) {
+			out << tag << '\n';
+
+			std::unordered_set<QString> consequents;
+			if (m_parser.getConsequents(tag, consequents)) {
+				for (const auto& consequent : consequents) {
+					if (!TagParser::starts_with_negation_token(consequent)) {
+						out << consequent << '\n';
+					}
+				}
+			}
+		}
+
+		return 0;
+	}
 
 	bool should_rename = parser.isSet(QStringLiteral("rename"));
 
@@ -128,7 +148,6 @@ int TaggerCommandLineInterface::parseArguments(QStringList args)
 
 }
 
-
 QString TaggerCommandLineInterface::get_fixed_path(QString path)
 {
 	QFileInfo fi{path};
@@ -140,39 +159,7 @@ QString TaggerCommandLineInterface::get_fixed_path(QString path)
 	if (dir == QStringLiteral("."))
 		dir.clear();
 
-	std::vector<QDir> search_dir;
-	QStringList tag_files, conflicting_files;
-	util::find_tag_files_in_dir(QDir(dir), m_normal_tagfile_pattern, m_override_tagfile_pattern, search_dir, tag_files, conflicting_files);
-
-	if (tag_files.isEmpty()) {
-		err << tr("Could not find tag files.")    << "\n"
-		    << tr("Looked in these directories:") << "\n";
-
-		for (const auto &dir : search_dir) {
-		       err << "\t" << dir.path() << "\n";
-		}
-		std::exit(1);
-	}
-
-    if (!conflicting_files.isEmpty()) {
-        pwarn << "Conflicting tag files:" << conflicting_files;
-    }
-
-	QByteArray data;
-	for(const auto& filename : qAsConst(tag_files)) {
-		QFile file(filename);
-		if(!file.open(QIODevice::ReadOnly|QIODevice::Text)) {
-			err << tr("Error opening tag file [%1].").arg(filename) << "\n";
-			qApp->exit(1);
-		}
-		data.push_back(file.readAll());
-		data.push_back('\n');
-	}
-
-	if (!m_parser.loadTagData(data)) {
-		err << tr("Could not load tag data.") << '\n';
-		std::exit(1);
-	}
+	init_parser(dir);
 
 	TagEditState state;
 	auto result = m_parser.fixTags(state, name, m_fix_opts);
@@ -192,5 +179,43 @@ QString TaggerCommandLineInterface::get_fixed_path(QString path)
 	}
 
 	return new_name;
+}
+
+void TaggerCommandLineInterface::init_parser(QDir dir)
+{
+	QTextStream err{stderr};
+	std::vector<QDir> search_dir;
+	QStringList tag_files, conflicting_files;
+	util::find_tag_files_in_dir(QDir(dir), m_normal_tagfile_pattern, m_override_tagfile_pattern, search_dir, tag_files, conflicting_files);
+
+	if (tag_files.isEmpty()) {
+		err << tr("Could not find tag files.")    << "\n"
+		    << tr("Looked in these directories:") << "\n";
+
+		for (const auto &dir : search_dir) {
+			err << "\t" << dir.path() << "\n";
+		}
+		std::exit(1);
+	}
+
+	if (!conflicting_files.isEmpty()) {
+		pwarn << "Conflicting tag files:" << conflicting_files;
+	}
+
+	QByteArray data;
+	for(const auto& filename : qAsConst(tag_files)) {
+		QFile file(filename);
+		if(!file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+			err << tr("Error opening tag file [%1].").arg(filename) << "\n";
+			qApp->exit(1);
+		}
+		data.push_back(file.readAll());
+		data.push_back('\n');
+	}
+
+	if (!m_parser.loadTagData(data)) {
+		err << tr("Could not load tag data.") << '\n';
+		std::exit(1);
+	}
 }
 

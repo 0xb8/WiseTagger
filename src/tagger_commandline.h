@@ -10,6 +10,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QDir>
 #include "tag_parser.h"
 
 class TaggerCommandLineInterface : public QObject
@@ -29,6 +30,7 @@ public:
 
 private:
 	QString get_fixed_path(QString path);
+	void init_parser(QDir dir);
 
 	TagParser m_parser;
 	TagParser::FixOptions m_fix_opts;

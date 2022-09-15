@@ -194,6 +194,17 @@ public:
 	QColor getCustomKindColor(TagKind kind) const;
 
 
+	/*!
+	 *  \brief Returns whether \p ch is a tag negation token.
+	 */
+	static bool is_negation_token(QChar ch) noexcept;
+
+	/*!
+	 * \brief Returns whether string \p str starts with tag negation token.
+	 */
+	static bool starts_with_negation_token(const QString& str) noexcept;
+
+
 signals:
 
 	/*!
@@ -260,15 +271,6 @@ private:
 	 */
 	void        remove_explicit(TagEditState& state, QStringList& text_list) const;
 
-	/*!
-	 *  \brief Returns whether \p ch is a tag negation token.
-	 */
-	static bool is_negation_token(QChar ch) noexcept;
-
-	/*!
-	 * \brief Returns whether string \p str starts with tag negation token.
-	 */
-	static bool starts_with_negation_token(const QString& str) noexcept;
 
 	//----------------------------------------------------------------------
 

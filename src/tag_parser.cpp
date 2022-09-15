@@ -552,8 +552,12 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 #endif
 
 		if(!main_tag.isEmpty()) {
-			main_tags_list.push_back(main_tag);
-			add_tag_kind(main_tag, TagKind::Main);
+
+			// don't add regexes as main tags
+			if (main_tag != regex_source) {
+				main_tags_list.push_back(main_tag);
+				add_tag_kind(main_tag, TagKind::Main);
+			}
 
 			if(!comment.isEmpty()) {
 				comment = comment.trimmed();
