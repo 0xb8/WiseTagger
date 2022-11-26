@@ -84,6 +84,31 @@ bool FileQueue::checkExtension(const QFileInfo & fi) const noexcept
 
 void FileQueue::push(const QString &f, bool recursive)
 {
+	auto push_file = [this](const auto& fi)
+	{
+		m_files.push_back(fi.absoluteFilePath());
+		m_accepted_by_filter.push_back(fileMatchesFilter(fi));
+
+		auto dir = fi.canonicalPath();
+		auto dir_it = m_dir_files.find(dir);
+		if (dir_it != m_dir_files.end()) {
+			auto& files_in_dir = dir_it.value();
+			files_in_dir.insert(fi.fileName());
+		} else {
+			m_dir_files.insert(dir, QSet<QString>{fi.fileName()});
+
+			if (!m_dir_watcher) {
+				m_dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir});
+				connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
+			} else {
+				if (!m_dir_watcher->addPath(dir)) {
+					pwarn << "push(): could not add" << dir << "to filesystem watcher";
+				}
+			}
+		}
+
+	};
+
 	QFileInfo fi(f);
 	if(!fi.exists()) {
 		pwarn << "attempted to push() unexistent file";
@@ -91,8 +116,7 @@ void FileQueue::push(const QString &f, bool recursive)
 	}
 
 	if(fi.isFile() && checkExtension(fi)) {
-		m_files.push_back(fi.absoluteFilePath());
-		m_accepted_by_filter.push_back(fileMatchesFilter(fi));
+		push_file(fi);
 
 	} else if(fi.isDir()) {
 		QDirIterator it(f, m_ext_filters,
@@ -102,8 +126,7 @@ void FileQueue::push(const QString &f, bool recursive)
 		int count = 0;
 		while(it.hasNext() && !it.next().isNull()) {
 			auto fi = it.fileInfo();
-			m_files.push_back(fi.absoluteFilePath());
-			m_accepted_by_filter.push_back(fileMatchesFilter(fi));
+			push_file(fi);
 
 			if (count++ > 2500) {
 				// avoid gui hang
@@ -123,8 +146,33 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 #endif
 
 	using cont_t = decltype(m_files);
-	cont_t tmp;
+	using dir_cont_t = decltype(m_dir_files);
+	cont_t tmp_files;
+	dir_cont_t tmp_dirs_files;
+	auto dir_watcher = std::unique_ptr<QFileSystemWatcher>();
 	QFileInfo fi;
+
+	auto push_file = [&tmp_files, &tmp_dirs_files, &dir_watcher](const auto& fi){
+		tmp_files.push_back(fi.absoluteFilePath());
+
+		auto dir = fi.canonicalPath();
+		auto dir_it = tmp_dirs_files.find(dir);
+		if (dir_it != tmp_dirs_files.end()) {
+			auto& files_in_dir = dir_it.value();
+			files_in_dir.insert(fi.fileName());
+		} else {
+			tmp_dirs_files.insert(dir, QSet<QString>{fi.fileName()});
+
+			if (!dir_watcher) {
+				dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir});
+
+			} else {
+				if (!dir_watcher->addPath(dir)) {
+					pwarn << "assign(): could not add" << dir << "to filesystem watcher";
+				}
+			}
+		}
+	};
 
 	int count = 0;
 	auto update_ui = [&count]() {
@@ -138,7 +186,7 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 	for(const auto & p : qAsConst(paths)) {
 		fi.setFile(p);
 		if(fi.isFile()) {
-			tmp.push_back(fi.absoluteFilePath());
+			push_file(fi);
 		}
 		if(fi.isDir()) {
 			QDirIterator it(p, m_ext_filters,
@@ -146,14 +194,22 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 			                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 			                          : QDirIterator::NoIteratorFlags);
 			while(it.hasNext() && !it.next().isNull()) {
-				tmp.push_back(it.fileInfo().absoluteFilePath());
+				push_file(it.fileInfo());
 				update_ui();
 			}
 		}
 		update_ui();
 	}
 
-	std::swap(tmp, m_files);
+	std::swap(tmp_files, m_files);
+	std::swap(tmp_dirs_files, m_dir_files);
+	if (m_dir_watcher) {
+		disconnect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed);
+	}
+	if (dir_watcher) {
+		connect(dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
+	}
+	std::swap(dir_watcher, m_dir_watcher);
 	m_current = FileQueue::npos;
 	update_filter();
 }
@@ -305,9 +361,31 @@ FileQueue::RenameResult FileQueue::renameCurrentFile(const QString& new_path)
 	}
 
 	const auto source_name = m_files.at(m_current);
+	const auto source_file_info = QFileInfo{source_name};
+	const auto source_file_name = source_file_info.fileName();
+	const auto source_dir = source_file_info.canonicalPath();
+
 	QFile source_file(source_name);
 	if(!source_file.exists())
 		return RenameResult::SourceFileMissing;
+
+	auto on_rename = [this, &source_file_name, &source_dir](const QString& new_path){
+		auto dir_it = m_dir_files.find(source_dir);
+		if (dir_it != m_dir_files.end()) {
+			auto& files_in_dir = dir_it.value();
+
+			bool removed = files_in_dir.remove(source_file_name);
+			Q_ASSERT(removed && "renameCurrentFile(): missing entry for file in the dir mapping");
+
+			auto inserted = files_in_dir.insert(QFileInfo{new_path}.fileName());
+			Q_ASSERT(inserted != files_in_dir.end() && "renameCurrentFile(): duplicate entry for file in the dir mapping");
+
+		} else {
+			Q_ASSERT(false && "renameCurrentFile(): directory entry does not exist");
+		}
+
+		m_files.at(m_current) = new_path;
+	};
 
 	if(QFile::exists(new_path)) {
 #ifdef Q_OS_WIN
@@ -317,7 +395,7 @@ FileQueue::RenameResult FileQueue::renameCurrentFile(const QString& new_path)
 			if (0 == util::is_same_file(source_file.fileName(), new_path)) {
 				// it's definitely the same file (was there any point even checking?)
 				if(source_file.rename(new_path)) {
-					m_files.at(m_current) = new_path;
+					on_rename(new_path);
 					return RenameResult::Success;
 				}
 			}
@@ -327,7 +405,7 @@ FileQueue::RenameResult FileQueue::renameCurrentFile(const QString& new_path)
 	}
 
 	if(source_file.rename(new_path)) {
-		m_files.at(m_current) = new_path;
+		on_rename(new_path);
 		return RenameResult::Success;
 	}
 
@@ -357,6 +435,28 @@ void FileQueue::eraseCurrent()
 	if(m_current >= m_files.size()) {
 		pwarn << "eraseCurrent(): queue empty or index is out of bounds";
 		return;
+	}
+
+	auto current_fi = QFileInfo(m_files[m_current]);
+	// since the file is deleted, canonicalPath() will not work
+	auto current_dir = QFileInfo{current_fi.absolutePath()}.canonicalFilePath();
+
+	auto dir_it = m_dir_files.find(current_dir);
+	if (dir_it != m_dir_files.end()) {
+		auto& files_in_dir = dir_it.value();
+		bool removed = files_in_dir.remove(current_fi.fileName());
+		Q_ASSERT(removed && "eraseCurrent(): missing entry for file in the dir mapping");
+
+		if (files_in_dir.empty()) {
+			// no more files in this dir, remove the entry and stop watching
+			m_dir_files.erase(dir_it);
+			if (m_dir_watcher && !m_dir_watcher->removePath(current_dir)){
+				 pwarn << "eraseCurrent(): could not remove" << current_dir << "from filesystem watcher";
+			}
+		}
+
+	} else {
+		Q_ASSERT(false && "eraseCurrent(): directory entry does not exist");
 	}
 
 	m_files.erase(std::next(std::begin(m_files), m_current));
@@ -515,6 +615,11 @@ size_t FileQueue::loadFromMemory(const QByteArray& memory)
 	return m_files.size();
 }
 
+QStringList FileQueue::allDirectories() const
+{
+	return m_dir_files.keys();
+}
+
 void FileQueue::update_filter()
 {
 	m_accepted_by_filter.clear();
@@ -531,6 +636,47 @@ void FileQueue::update_filter()
 		bool accepted = fileMatchesFilter(fi);
 		m_accepted_by_filter.push_back(accepted);
 		m_accepted_by_filter_count += accepted;
+	}
+}
+
+void FileQueue::on_directory_changed(const QString &dir_path)
+{
+	auto dir_it = m_dir_files.find(dir_path);
+	if (dir_it == m_dir_files.end()) {
+		// filesystem event might arrive when all files from that directory were already deleted
+		// just ignore it
+		return;
+	}
+
+	auto& files_in_queue = dir_it.value();
+	Q_ASSERT(!files_in_queue.empty());
+
+	auto qdir = QDir(dir_path);
+	auto files_in_dir = QSet<QString>::fromList(qdir.entryList(m_ext_filters, QDir::Files));
+
+	if (files_in_dir.size() != files_in_queue.size()) {
+
+		auto added_files = files_in_dir - files_in_queue;
+		if (added_files.empty()) {
+			auto missing_files = files_in_queue - files_in_dir;
+			pdbg << "files removed in" << dir_path << ":" << missing_files;
+
+			for (const auto& f : qAsConst(missing_files)) {
+				files_in_queue.remove(f);
+			}
+
+			return;
+		}
+
+		pdbg << "files added in" << dir_path << ":" << added_files;
+		for (const auto& f : qAsConst(added_files)) {
+			auto fi = QFileInfo{qdir, f};
+
+			files_in_queue.insert(f);
+			m_files.push_back(fi.absoluteFilePath());
+		}
+		update_filter();
+		emit newFilesAdded();
 	}
 }
 
@@ -802,6 +948,8 @@ void FileQueue::clear() noexcept
 {
 	static_assert(noexcept(m_files.clear()), "");
 	m_files.clear();
+	m_dir_files.clear();
+	m_dir_watcher.reset();
 	m_accepted_by_filter.clear();
 	m_current = 0u;
 	m_accepted_by_filter_count = -1;

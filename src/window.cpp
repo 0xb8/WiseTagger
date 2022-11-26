@@ -1238,6 +1238,7 @@ void Window::createActions()
 	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateWindowTitle);
 	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
 	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateStatusBarText);
+	connect(&m_tagger.queue(), &FileQueue::newFilesAdded, this, &Window::updateStatusBarText);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::hashing_progress, this, &Window::showFileHashingProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::aborted, this, &Window::hideUploadProgress);

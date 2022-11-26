@@ -15,7 +15,11 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QObject>
+#include <QHash>
+#include <QSet>
+#include <QFileSystemWatcher>
 #include <deque>
+#include <memory>
 #include "global_enums.h"
 
 /*!
@@ -27,7 +31,8 @@
  * Stored file paths are absolute and all member functions taking file paths as
  * parameters expect them to be absolute too.
  */
-class FileQueue {
+class FileQueue : public QObject {
+	Q_OBJECT
 public:
 
 	/// Result of rename operation
@@ -313,11 +318,29 @@ public:
 	 */
 	size_t loadFromMemory(const QByteArray& memory);
 
+
+	/*!
+	 * \brief Returns a list of all unique directories in the queue.
+	 *
+	 * The order of directories is unspecified.
+	 */
+	QStringList allDirectories() const;
+
+signals:
+
+	/*!
+	 * \brief Emitted when new files are externally added into one of the directories in queue.
+	 */
+	void newFilesAdded();
+
 private:
 	void update_filter();
+	void on_directory_changed(const QString& dir);
 
 	static const QString m_empty;
 	std::deque<QString>  m_files;
+	QHash<QString, QSet<QString>>  m_dir_files;
+	std::unique_ptr<QFileSystemWatcher> m_dir_watcher;
 	std::vector<bool>    m_accepted_by_filter;
 	QStringList          m_ext_filters;
 	QStringList          m_substr_filter_include;
