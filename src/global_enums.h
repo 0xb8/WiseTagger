@@ -79,11 +79,24 @@ public:
 	 */
 	static EditMode next_edit_mode(EditMode current);
 
+
+	/*!
+	 * \brief Specifies command output mode.
+	 */
+	enum class CommandOutputMode {
+		Ignore,  ///< Command output is ignored, and the process is detached.
+		Replace, ///< Command output replaces current tags
+		Append,  ///< Command output appended to current tags
+		Prepend  ///< Command output prepended to current tags
+	};
+	Q_ENUM(CommandOutputMode);
+
 	GlobalEnums() = delete;
 };
 ENUM_STREAM_OPERATORS(GlobalEnums::ViewMode)
 ENUM_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
 ENUM_STREAM_OPERATORS(GlobalEnums::EditMode)
+ENUM_STREAM_OPERATORS(GlobalEnums::CommandOutputMode)
 
 
 /// Alias for \ref GlobalEnums::ViewMode enumeration
@@ -94,5 +107,8 @@ using SortQueueBy = GlobalEnums::SortQueueBy;
 
 /// Alias for \ref GlobalEnums::EditMode enumeration
 using EditMode = GlobalEnums::EditMode;
+
+/// Alias for \ref GlobalEnums::CommandOutputMode enumeration
+using CommandOutputMode = GlobalEnums::CommandOutputMode;
 
 #endif // GLOBAL_ENUMS_H

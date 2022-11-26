@@ -465,6 +465,17 @@ void Window::showFileHashingProgress(QString file, int value)
 	statusBar()->showMessage(tr("Calculating file hash...  %1% complete").arg(value));
 }
 
+void Window::showCommandExecutionProgress(QString command_name)
+{
+#ifdef Q_OS_WIN32
+	auto progress = m_win_taskbar_button.progress();
+	progress->setVisible(true);
+	progress->setMaximum(0);
+	progress->setValue(0);
+#endif
+	statusBar()->showMessage(tr("Running %1...").arg(command_name));
+}
+
 void Window::hideUploadProgress()
 {
 #ifdef Q_OS_WIN32
@@ -974,6 +985,7 @@ void Window::createCommands()
 		auto name = settings.value(SETT_COMMAND_NAME).toString();
 		auto cmd  = settings.value(SETT_COMMAND_CMD).toStringList();
 		auto hkey = settings.value(SETT_COMMAND_HOTKEY).toString();
+		auto mode = settings.value(SETT_COMMAND_MODE).value<CommandOutputMode>();
 
 		if(name == CMD_SEPARATOR) {
 			menu_commands.addSeparator();
@@ -998,7 +1010,7 @@ void Window::createCommands()
 			action->setShortcut(hkey);
 		}
 
-		connect(action, &QAction::triggered, this, [this,name,binary,cmd]()
+		connect(action, &QAction::triggered, this, [this,name,binary,cmd,mode]()
 		{
 			auto cmd_tmp = cmd; // NOTE: separate copy is needed instead of mutable lambda
 			auto to_native = [](const auto& path)
@@ -1026,13 +1038,85 @@ void Window::createCommands()
 					to_native(remove_ext(m_tagger.currentFileName())));
 
 			}
-			auto success = QProcess::startDetached(binary, cmd_tmp, m_tagger.currentDir());
-			pdbg <<       "QProcess::startDetached(" << binary << "," << cmd_tmp << ") =>" << success;
-			if(!success) {
-				QMessageBox::critical(this,
-					tr("Failed to start command"),
-					tr("<p>Failed to launch command <b>%1</b>:</p><p>Could not start <code>%2</code>.</p>")
-						.arg(name, binary));
+			if (mode == CommandOutputMode::Ignore) {
+				bool success = QProcess::startDetached(binary, cmd_tmp, m_tagger.currentDir());
+				pdbg << "QProcess::startDetached(" << binary << "," << cmd_tmp << ") =>" << success;
+				if(!success) {
+					QMessageBox::critical(this,
+					        tr("Failed to start command"),
+					        tr("<p>Failed to launch command <b>%1</b>:</p><p>Could not start <code>%2</code>.</p>")
+					                .arg(name, binary));
+				}
+			} else {
+
+				auto proc = new QProcess{this};
+				proc->setProgram(binary);
+				proc->setArguments(cmd_tmp);
+				proc->setWorkingDirectory(m_tagger.currentDir());
+
+				showCommandExecutionProgress(name);
+
+				connect(&m_tagger,
+				        &Tagger::fileOpened,
+				        proc,
+				        [this, proc](const QString&)
+				{
+					if (proc->state() != QProcess::NotRunning) {
+						disconnect(proc, nullptr, this, nullptr);
+						proc->terminate();
+					}
+				});
+
+				connect(proc,
+				        QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+				        this,
+				        [this, name, binary, mode](int exit_code, QProcess::ExitStatus exit_status)
+				{
+					Q_UNUSED(exit_code);
+
+					if (exit_status != QProcess::NormalExit) {
+						QMessageBox::critical(this,
+						        tr("Failed to start command"),
+						        tr("<p>Failed to launch command <b>%1</b>:</p><p>Could not start <code>%2</code>.</p>")
+						                .arg(name, binary));
+
+
+						hideUploadProgress();
+						return;
+					}
+
+					auto proc = qobject_cast<QProcess*>(sender());
+					Q_ASSERT(proc);
+
+					auto tags_data = proc->readAllStandardOutput();
+
+					QTextStream in{tags_data};
+					in.setCodec("UTF-8");
+
+					auto tags = in.readAll().replace('\n', ' ').trimmed();
+					if (!tags.isEmpty()) {
+						auto current_tags = m_tagger.text();
+
+						switch(mode) {
+						case CommandOutputMode::Replace:
+							m_tagger.addTags(tags);
+							break;
+						case CommandOutputMode::Append:
+							m_tagger.setText(current_tags + " " + tags);
+							break;
+						case CommandOutputMode::Prepend:
+							m_tagger.setText(tags + " " + current_tags);
+							break;
+						default:
+							break;
+						}
+					}
+					hideUploadProgress();
+					proc->deleteLater();
+				}, Qt::QueuedConnection);
+
+				proc->start(QProcess::ReadOnly);
+
 			}
 		});
 		menu_commands.setEnabled(true);

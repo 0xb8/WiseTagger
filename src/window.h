@@ -49,6 +49,9 @@ public slots:
 	/// Display file hashing progress.
 	void showFileHashingProgress(QString file, int value);
 
+	/// Display command execution progress.
+	void showCommandExecutionProgress(QString command_name);
+
 	/// Hide current upload progress
 	void hideUploadProgress();
 

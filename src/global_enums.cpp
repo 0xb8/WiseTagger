@@ -46,12 +46,14 @@ struct MetaTypeRegistrator
 		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::ViewMode)
 		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
 		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::EditMode)
+		REGISTER_METATYPE_STREAM_OPERATORS(GlobalEnums::CommandOutputMode)
 	}
 };
 static const MetaTypeRegistrator _;
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::ViewMode)
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::SortQueueBy)
 IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::EditMode)
+IMPLEMENT_ENUM_STREAM_OPERATORS(GlobalEnums::CommandOutputMode)
 
 
 GlobalEnums::EditMode GlobalEnums::next_edit_mode(EditMode current)

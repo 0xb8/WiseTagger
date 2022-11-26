@@ -138,6 +138,9 @@ public:
 	/// Current tag input text.
 	QString text() const;
 
+	/// Ask user to add tags (maybe replacing current tags?)
+	void    addTags(QString tags, int* tag_count=nullptr);
+
 	/// Undo tag input changes and set original tags.
 	void    resetText();
 

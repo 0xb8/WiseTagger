@@ -9,6 +9,7 @@
 #include "ui_settings.h"
 #include "util/misc.h"
 #include "util/project_info.h"
+#include "global_enums.h"
 #include "util/command_placeholders.h"
 #include <QApplication>
 #include <QDataWidgetMapper>
@@ -307,6 +308,7 @@ void SettingsDialog::reset()
 	m_dmpr->setModel(m_cmdl);
 	m_dmpr->addMapping(ui->cmdExecutableEdit, 2);
 	m_dmpr->addMapping(ui->cmdArgsEdit, 3);
+	m_dmpr->addMapping(ui->cmdOutputMode, 4, "currentIndex");
 	m_dmpr->toFirst();
 
 	auto fmd = new HideColumnsFilter(m_cmdl);
@@ -332,6 +334,8 @@ void SettingsDialog::reset()
 		}
 		disable_widgets(disabled);
 	});
+
+	ui->cmdView->selectRow(0);
 }
 
 void SettingsDialog::resetModel()
@@ -371,6 +375,11 @@ void SettingsDialog::resetModel()
 			path.removeFirst();
 			m_cmdl->setItem(i, 3, new QStandardItem(join_args(path)));
 		}
+
+		auto mode = st.value(SETT_COMMAND_MODE).value<CommandOutputMode>();
+		auto item = new QStandardItem();
+		item->setData(static_cast<int>(mode), Qt::DisplayRole);
+		m_cmdl->setItem(i, 4, item);
 	}
 	st.endArray();
 }
@@ -442,10 +451,12 @@ void SettingsDialog::apply()
 		auto exec_path = m_cmdl->data(m_cmdl->index(i,2)).toString();
 		auto args = parse_arguments(m_cmdl->data(m_cmdl->index(i,3)).toString());
 		args.prepend(exec_path);
+		auto mode = m_cmdl->data(m_cmdl->index(i, 4)).toInt();
 
 		settings.setValue(SETT_COMMAND_NAME, name);
 		settings.setValue(SETT_COMMAND_HOTKEY, hotkey);
 		settings.setValue(SETT_COMMAND_CMD, args);
+		settings.setValue(SETT_COMMAND_MODE, QVariant::fromValue(static_cast<CommandOutputMode>(mode)));
 	}
 	settings.endArray();
 	emit updated();

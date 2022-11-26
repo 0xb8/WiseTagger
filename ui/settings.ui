@@ -587,6 +587,122 @@ In Main View</string>
          </attribute>
         </widget>
        </item>
+       <item row="1" column="0" colspan="2">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="cmdExecutableEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="cmdExecutableBrowse">
+           <property name="text">
+            <string>&amp;Browse...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="cmdArgsEdit">
+           <property name="whatsThis">
+            <string>Arguments are used to pass information to launched program, such as files to open.</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="cmdArgsLb">
+           <property name="toolTip">
+            <string>Arguments are used to pass information to launched program, such as files to open.</string>
+           </property>
+           <property name="whatsThis">
+            <string>Arguments are used to pass information to launched program, such as files to open.</string>
+           </property>
+           <property name="text">
+            <string>&amp;Arguments</string>
+           </property>
+           <property name="buddy">
+            <cstring>cmdArgsEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="cmdExeLb">
+           <property name="text">
+            <string>E&amp;xecutable</string>
+           </property>
+           <property name="buddy">
+            <cstring>cmdExecutableEdit</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QToolButton" name="cmdArgsPlaceholderShow">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Available substitutions: &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{path} - Path of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{dir} - Directory of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{fullname} - Name of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{basename} - Name of current file without extension&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="whatsThis">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Available substitutions: &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{path} - Path of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{dir} - Directory of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{fullname} - Name of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{basename} - Name of current file without extension&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Placeholders</string>
+           </property>
+           <property name="popupMode">
+            <enum>QToolButton::InstantPopup</enum>
+           </property>
+           <property name="toolButtonStyle">
+            <enum>Qt::ToolButtonTextOnly</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cmdOutputMode">
+           <item>
+            <property name="text">
+             <string>Ignore</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Replace tags</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Append tags</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Prepend tags</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>&amp;Output</string>
+           </property>
+           <property name="buddy">
+            <cstring>cmdOutputMode</cstring>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="0" column="1">
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
@@ -687,88 +803,6 @@ In Main View</string>
             </size>
            </property>
           </spacer>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="0" colspan="2">
-        <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="cmdExecutableEdit">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QPushButton" name="cmdExecutableBrowse">
-           <property name="text">
-            <string>&amp;Browse...</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="cmdExeLb">
-           <property name="text">
-            <string>E&amp;xecutable</string>
-           </property>
-           <property name="buddy">
-            <cstring>cmdExecutableEdit</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="cmdArgsLb">
-           <property name="toolTip">
-            <string>Arguments are used to pass information to launched program, such as files to open.</string>
-           </property>
-           <property name="whatsThis">
-            <string>Arguments are used to pass information to launched program, such as files to open.</string>
-           </property>
-           <property name="text">
-            <string>&amp;Arguments</string>
-           </property>
-           <property name="buddy">
-            <cstring>cmdArgsEdit</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="cmdArgsEdit">
-           <property name="whatsThis">
-            <string>Arguments are used to pass information to launched program, such as files to open.</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QToolButton" name="cmdArgsPlaceholderShow">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>22</height>
-            </size>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Available substitutions: &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{path} - Path of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{dir} - Directory of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{fullname} - Name of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{basename} - Name of current file without extension&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="whatsThis">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Available substitutions: &lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{path} - Path of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{dir} - Directory of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{fullname} - Name of current file&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;{basename} - Name of current file without extension&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Placeholders</string>
-           </property>
-           <property name="popupMode">
-            <enum>QToolButton::InstantPopup</enum>
-           </property>
-           <property name="toolButtonStyle">
-            <enum>Qt::ToolButtonTextOnly</enum>
-           </property>
-          </widget>
          </item>
         </layout>
        </item>

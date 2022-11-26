@@ -12,6 +12,7 @@
 #define SETT_COMMAND_NAME       QStringLiteral("display_name")
 #define SETT_COMMAND_CMD        QStringLiteral("command")
 #define SETT_COMMAND_HOTKEY     QStringLiteral("hotkey")
+#define SETT_COMMAND_MODE       QStringLiteral("mode")
 
 #define CMD_SEPARATOR           QStringLiteral("__separator__")
 

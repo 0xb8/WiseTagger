@@ -267,6 +267,69 @@ QString Tagger::text() const
 	return m_input.text();
 }
 
+void Tagger::addTags(QString tags, int *tag_count)
+{
+	TagEditState state;
+	auto options = TagParser::FixOptions::from_settings();
+	options.sort = true;
+
+	// Autofix imageboard tags before comparing and assigning
+	util::replace_special(tags);
+	auto fixed_tags_list = m_input.tag_parser().fixTags(state, tags, options);
+	tags = util::join(fixed_tags_list);
+	if (tag_count) {
+		*tag_count = fixed_tags_list.size();
+	}
+
+	util::replace_special(tags);
+	auto current_tags = m_input.tags();
+
+	if (current_tags != tags) {
+
+		if (!util::is_hex_string(current_tags)) {
+
+			auto current_list = m_input.tags_list();
+			// sort current tags in case they were being edited and unsorted.
+			// imageboard tags are already sorted.
+			current_list.sort();
+
+			QString added_tags_str, removed_tags_str;
+			getTagDifference(current_list, fixed_tags_list, added_tags_str, removed_tags_str, true);
+
+			// Ask user what to do with tags
+			QMessageBox mbox(QMessageBox::Question,
+			                 tr("Fetched tags mismatch"),
+			                 tr("<p>Imageboard tags do not match current tags:"
+			                    "<p style=\"margin-left: 1em; line-height: 130%;\">"
+			                    "<code>%1</code></p></p>"
+			                    "%2%3"
+			                    "<p>Please choose what to do:</p>").arg(tags)
+			                                                       .arg(added_tags_str)
+			                                                       .arg(removed_tags_str),
+			                 QMessageBox::Save|QMessageBox::SaveAll);
+
+			mbox.addButton(QMessageBox::Cancel);
+			mbox.setButtonText(QMessageBox::Save, tr("Use only imageboard tags"));
+			mbox.setButtonText(QMessageBox::SaveAll, tr("Merge tags"));
+
+			int res = mbox.exec();
+
+			if (res == QMessageBox::Save) {
+				m_input.setTags(tags);
+			}
+			if (res == QMessageBox::SaveAll) {
+				current_tags.append(' ');
+				current_tags.append(tags);
+				m_input.setTags(current_tags);
+			}
+		} else {
+			// if there was only hash filename to begin with,
+			// just use the imageboard tags without asking
+			setText(tags);
+		}
+	}
+}
+
 void Tagger::resetText()
 {
 	setText(QFileInfo(m_file_queue.current()).completeBaseName());
@@ -334,63 +397,7 @@ void Tagger::tagsFetched(QString file, QString tags)
 
 	// Current file might have already changed since reply came
 	if (currentFile() == file) {
-		TagEditState state;
-		auto options = TagParser::FixOptions::from_settings();
-		options.sort = true;
-
-		// Autofix imageboard tags before comparing and assigning
-		util::replace_special(tags);
-		auto fixed_tags_list = m_input.tag_parser().fixTags(state, tags, options);
-		tags = util::join(fixed_tags_list);
-		processed_tags_count = fixed_tags_list.size();
-
-		util::replace_special(tags);
-		auto current_tags = m_input.tags();
-
-		if (current_tags != tags) {
-
-			if (!util::is_hex_string(current_tags)) {
-
-				auto current_list = m_input.tags_list();
-				// sort current tags in case they were being edited and unsorted.
-				// imageboard tags are already sorted.
-				current_list.sort();
-
-				QString added_tags_str, removed_tags_str;
-				getTagDifference(current_list, fixed_tags_list, added_tags_str, removed_tags_str, true);
-
-				// Ask user what to do with tags
-				QMessageBox mbox(QMessageBox::Question,
-				                 tr("Fetched tags mismatch"),
-				                 tr("<p>Imageboard tags do not match current tags:"
-				                    "<p style=\"margin-left: 1em; line-height: 130%;\">"
-				                    "<code>%1</code></p></p>"
-				                    "%2%3"
-				                    "<p>Please choose what to do:</p>").arg(tags)
-				                                                       .arg(added_tags_str)
-				                                                       .arg(removed_tags_str),
-				                 QMessageBox::Save|QMessageBox::SaveAll);
-
-				mbox.addButton(QMessageBox::Cancel);
-				mbox.setButtonText(QMessageBox::Save, tr("Use only imageboard tags"));
-				mbox.setButtonText(QMessageBox::SaveAll, tr("Merge tags"));
-
-				int res = mbox.exec();
-
-				if (res == QMessageBox::Save) {
-					m_input.setTags(tags);
-				}
-				if (res == QMessageBox::SaveAll) {
-					current_tags.append(' ');
-					current_tags.append(tags);
-					m_input.setTags(current_tags);
-				}
-			} else {
-				// if there was only hash filename to begin with,
-				// just use the imageboard tags without asking
-				setText(tags);
-			}
-		}
+		addTags(tags, &processed_tags_count);
 	}
 
 	TaggerStatistics::instance().tagsFetched(overall_tags_count, processed_tags_count);
