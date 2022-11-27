@@ -164,6 +164,7 @@ private:
 	QAction a_ib_replace;
 	QAction a_ib_restore;
 	QAction a_tag_forcefirst;
+	QAction a_fit_to_screen;
 	QAction a_show_settings;
 	QAction a_view_normal;
 	QAction a_view_minimal;
@@ -182,6 +183,8 @@ private:
 	QAction a_view_sort_tagcnt;
 	QAction a_play_pause;
 	QAction a_play_mute;
+	QAction a_rotate_cw;
+	QAction a_rotate_ccw;
 	QAction a_about;
 	QAction a_about_qt;
 	QAction a_help;

@@ -62,6 +62,7 @@ namespace logging_category {
 #define SETT_STYLE              QStringLiteral("window/style")
 #define SETT_VIEW_MODE          QStringLiteral("window/view-mode")
 #define SETT_EDIT_MODE          QStringLiteral("window/edit-mode")
+#define SETT_FIT_TO_SCREEN      QStringLiteral("window/fit-to-screen")
 
 #define SETT_PLAY_MUTE          QStringLiteral("window/video_mute")
 
@@ -111,6 +112,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_ib_replace(      tr("Re&place Imageboard Tags"), nullptr)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_tag_forcefirst(  tr("&Force Author Tags First"), nullptr)
+	, a_fit_to_screen(   tr("Fit to Screen"), nullptr)
 	, a_show_settings(   tr("P&references..."), nullptr)
 	, a_view_normal(     tr("Show &WiseTagger"), nullptr)
 	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
@@ -129,6 +131,8 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_view_sort_tagcnt(tr("By Tag &Count"), nullptr)
 	, a_play_pause(      tr("Play/Pause"))
 	, a_play_mute(       tr("Mute"))
+	, a_rotate_cw(       tr("Rotate Clockwise"))
+	, a_rotate_ccw(      tr("Rotate Counter-Clockwise"))
 	, a_about(           tr("&About..."), nullptr)
 	, a_about_qt(        tr("About &Qt..."), nullptr)
 	, a_help(            tr("&Help..."), nullptr)
@@ -306,7 +310,8 @@ void Window::updateStatusBarText()
 
 	if(m_show_current_directory) {
 		auto last_modified = m_tagger.currentFileLastModified();
-		left = tr("In directory:  %1      Last modified: %2 ago (%3)").arg(
+		left = tr("Zoom: %1%    Directory:  %2      Modified: %3 ago (%4)").arg(
+		        QString::number(m_tagger.mediaZoomFactor() * 100.0f, 'f', 2),
 			QDir::toNativeSeparators(m_tagger.currentDir()),
 			util::duration(last_modified.secsTo(QDateTime::currentDateTime()), false),
 			last_modified.toString("yyyy-MM-dd hh:mm:ss"));
@@ -695,11 +700,15 @@ void Window::initSettings()
 	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
+	a_fit_to_screen.setChecked(sett.value(SETT_FIT_TO_SCREEN, false).toBool());
 
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
 	auto edit_mode = sett.value(SETT_EDIT_MODE).value<EditMode>();
 	setEditMode(edit_mode);
+
+	bool fit_to_screen = sett.value(SETT_FIT_TO_SCREEN).toBool();
+	m_tagger.setUpscalingEnabled(fit_to_screen);
 
 	updateProxySettings();
 }
@@ -890,6 +899,9 @@ void Window::setSlideShow(bool slide_show)
 	a_view_input.setChecked(!slide_show);
 	a_view_statusbar.setChecked(!slide_show);
 	a_view_fullscreen.setChecked(slide_show);
+
+	QSettings s;
+	m_tagger.setUpscalingEnabled(slide_show || s.value(SETT_FIT_TO_SCREEN).toBool());
 }
 
 #ifdef Q_OS_WIN
@@ -1157,6 +1169,9 @@ void Window::createActions()
 	a_play_mute.setShortcut(    QKeySequence(Qt::Key_M));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
 	a_edit_mode.setShortcut(    QKeySequence(Qt::Key_F2));
+	a_rotate_cw.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_Comma));
+	a_rotate_ccw.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_Period));
+	a_fit_to_screen.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
 
 	a_view_sort_name.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_N));
 	a_view_sort_type.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_T));
@@ -1179,6 +1194,7 @@ void Window::createActions()
 	a_ib_replace.setCheckable(true);
 	a_ib_restore.setCheckable(true);
 	a_tag_forcefirst.setCheckable(true);
+	a_fit_to_screen.setCheckable(true);
 	a_view_statusbar.setCheckable(true);
 	a_view_fullscreen.setCheckable(true);
 	a_view_slideshow.setCheckable(true);
@@ -1230,14 +1246,15 @@ void Window::createActions()
 		QSettings s;
 		s.setValue(SETT_EDIT_MODE, QVariant::fromValue(next_mode));
 	});
-	connect(&a_stats,       &QAction::triggered, &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
-	connect(&m_tagger,      &Tagger::tagsEdited, this, &Window::updateWindowTitle);
-	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateMenus);
-	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateMenus);
-	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateWindowTitle);
-	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateWindowTitle);
-	connect(&m_tagger,      &Tagger::fileOpened, this, &Window::updateStatusBarText);
-	connect(&m_tagger,      &Tagger::cleared,    this, &Window::updateStatusBarText);
+	connect(&a_stats,       &QAction::triggered,   &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
+	connect(&m_tagger,      &Tagger::tagsEdited,   this, &Window::updateWindowTitle);
+	connect(&m_tagger,      &Tagger::fileOpened,   this, &Window::updateMenus);
+	connect(&m_tagger,      &Tagger::cleared,      this, &Window::updateMenus);
+	connect(&m_tagger,      &Tagger::fileOpened,   this, &Window::updateWindowTitle);
+	connect(&m_tagger,      &Tagger::cleared,      this, &Window::updateWindowTitle);
+	connect(&m_tagger,      &Tagger::fileOpened,   this, &Window::updateStatusBarText);
+	connect(&m_tagger,      &Tagger::cleared,      this, &Window::updateStatusBarText);
+	connect(&m_tagger,      &Tagger::mediaResized, this, &Window::updateStatusBarText);
 	connect(&m_tagger.queue(), &FileQueue::newFilesAdded, this, &Window::updateStatusBarText);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::hashing_progress, this, &Window::showFileHashingProgress);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::started, this, &Window::showTagFetchProgress);
@@ -1345,6 +1362,11 @@ void Window::createActions()
 	{
 		QSettings s; s.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
 	});
+	connect(&a_fit_to_screen,  &QAction::triggered, [this](bool checked)
+	{
+		QSettings s; s.setValue(SETT_FIT_TO_SCREEN, checked);
+		m_tagger.setUpscalingEnabled(checked);
+	});
 
 	connect(&a_view_statusbar, &QAction::toggled, this, [this](bool checked)
 	{
@@ -1363,6 +1385,8 @@ void Window::createActions()
 				showNormal();
 			}
 		}
+		QSettings s;
+		m_tagger.setUpscalingEnabled(checked || s.value(SETT_FIT_TO_SCREEN).toBool());
 	});
 	connect(&a_exit_fullscreen, &QAction::triggered, this, [this]() {
 		a_view_fullscreen.setChecked(false);
@@ -1395,6 +1419,12 @@ void Window::createActions()
 	connect(&a_play_mute, &QAction::triggered, this, [this](bool checked) {
 		QSettings s; s.setValue(SETT_PLAY_MUTE, checked);
 		m_tagger.setMediaMuted(checked);
+	});
+	connect(&a_rotate_cw, &QAction::triggered, this, [this](bool) {
+		m_tagger.rotateImage(true);
+	});
+	connect(&a_rotate_ccw, &QAction::triggered, this, [this](bool) {
+		m_tagger.rotateImage(false);
 	});
 	connect(&a_save_session, &QAction::triggered, this, [this]()
 	{
@@ -1702,9 +1732,13 @@ void Window::createMenus()
 
 	// Options menu actions
 	add_action(menu_options, a_edit_mode);
+	add_separator(menu_options);
+	add_action(menu_options, a_rotate_cw);
+	add_action(menu_options, a_rotate_ccw);
+	add_action(menu_options, a_fit_to_screen);
+	add_separator(menu_options);
 	add_action(menu_options, a_ib_replace);
 	add_action(menu_options, a_ib_restore);
-	add_separator(menu_options);
 	add_action(menu_options, a_tag_forcefirst);
 	add_separator(menu_options);
 	add_action(menu_options, a_show_settings);
@@ -1826,6 +1860,10 @@ void Window::updateMenus()
 
 	a_play_pause.setEnabled(!val && is_playable);
 	a_play_mute.setEnabled(!val && m_tagger.mediaIsVideo());
+
+	a_fit_to_screen.setDisabled(m_tagger.mediaIsVideo());
+	a_rotate_cw.setDisabled(m_tagger.mediaIsVideo() || m_tagger.mediaIsAnimatedImage() || val);
+	a_rotate_ccw.setEnabled(a_rotate_cw.isEnabled());
 
 	val = m_tagger.hasTagFile();
 	a_reload_tags.setEnabled(val);

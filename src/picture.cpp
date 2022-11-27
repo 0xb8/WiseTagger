@@ -34,11 +34,13 @@ Picture::Picture(QWidget *parent) :
 	QLabel{parent},
 	m_widget_size{0,0},
 	m_media_size{0,0},
-	m_movie(nullptr),
+	m_movie{nullptr},
 	m_type{Type::WelcomeText},
+	m_rotation{0},
 	m_has_alpha{false},
-	m_status_left(this),
-	m_status_right(this)
+	m_upscale{false},
+	m_status_left{this},
+	m_status_right{this}
 {
 	setFocusPolicy(Qt::ClickFocus);
 	setMinimumSize(1,1);
@@ -127,7 +129,7 @@ bool Picture::loadMedia(const QString &filename)
 	clearState();
 	m_current_file = filename;
 
-	if(tryLoadImageFromCache(filename))
+	if(m_rotation == 0 && tryLoadImageFromCache(filename))
 		return true;
 
 	QElapsedTimer timer;
@@ -177,9 +179,16 @@ bool Picture::loadMedia(const QString &filename)
 		}
 		m_pixmap.setDevicePixelRatio(devicePixelRatioF());
 
-		m_media_size = m_pixmap.size();
 		m_has_alpha  = m_pixmap.hasAlpha();
 		m_type       = Type::Image;
+
+		if (m_rotation) {
+			QTransform t;
+			t.rotate(-90.0f * m_rotation);
+			m_pixmap = m_pixmap.transformed(t, Qt::FastTransformation);
+		}
+
+		m_media_size = m_pixmap.size();
 
 		TaggerStatistics::instance().pixmapLoadedDirectly(timer.nsecsElapsed() * 1e-6);
 	}
@@ -199,9 +208,48 @@ QSize Picture::mediaSize() const
 	return m_media_size;
 }
 
+QSizeF Picture::mediaDisplaySize() const
+{
+	QSize size;
+
+	switch (m_type) {
+	case Type::AnimatedImage:
+		size = m_widget_size;
+		size *= devicePixelRatioF();
+		break;
+	case Type::Image:
+		size = m_widget_size;
+		break;
+	default:
+		break;
+	}
+
+	return size;
+}
+
 bool Picture::hasAlpha() const
 {
 	return m_has_alpha;
+}
+
+bool Picture::upscalingEnabled() const
+{
+	return m_upscale;
+}
+
+void Picture::setRotation(int steps)
+{
+	m_rotation = steps;
+	if (m_type == Type::Image) {
+		loadMedia(m_current_file);
+	} else if (m_type == Type::AnimatedImage && (steps % 4) != 0) {
+		pwarn << "Rotation not implemented for GIFs";
+	}
+}
+
+int Picture::rotation() const
+{
+	return m_rotation;
 }
 
 void Picture::resizeMedia()
@@ -209,12 +257,16 @@ void Picture::resizeMedia()
 	// Pixmaps use separate scaling factor set when loading image, so we compensate here to be pixel-perfect.
 	// GIFs don't have such scaling (and thus are not actually pixel-perfect), hence this check.
 	const float device_pixel_ratio = (m_type == Type::Image) ? devicePixelRatioF() : 1.0f;
+	const int viewport_width = size().width() * device_pixel_ratio;
+	const int viewport_height = size().height() * device_pixel_ratio;
 
-	m_widget_size.setWidth( std::min(int(size().width() * device_pixel_ratio),  m_media_size.width()));
-	m_widget_size.setHeight(std::min(int(size().height() * device_pixel_ratio), m_media_size.height()));
-	float ratio = std::min(m_widget_size.width()  / static_cast<float>(m_media_size.width()),
-	                       m_widget_size.height() / static_cast<float>(m_media_size.height()));
-	m_widget_size = QSize(m_media_size.width() * ratio, m_media_size.height() * ratio);
+	if (m_upscale) {
+		m_widget_size = m_media_size.scaled(viewport_width, viewport_height, Qt::KeepAspectRatio);
+	} else {
+		m_widget_size = m_media_size.scaled(std::min(viewport_width, m_media_size.width()),
+		                                    std::min(viewport_height, m_media_size.height()),
+		                                    Qt::KeepAspectRatio);
+	}
 
 	switch(m_type) {
 		case Type::Image:
@@ -238,6 +290,7 @@ void Picture::resizeMedia()
 			break;
 		default: break;
 	}
+	emit mediaResized();
 }
 
 /** Applies checkerboard background if media has alpha channel. */
@@ -272,6 +325,12 @@ void Picture::setStatusText(const QString& left, const QString& right)
 {
 	m_status_left.setText(left);
 	m_status_right.setText(right);
+}
+
+void Picture::setUpscalingEnabled(bool enabled)
+{
+	m_upscale = enabled;
+	resizeMedia();
 }
 
 /* Restart timer on resize */

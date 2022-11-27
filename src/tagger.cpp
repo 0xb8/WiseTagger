@@ -73,6 +73,7 @@ Tagger::Tagger(QWidget *_parent) :
 	connect(&m_input, &TagInput::textEdited, this, &Tagger::tagsEdited);
 	connect(&m_input, &TagInput::parseError, this, &Tagger::parseError);
 	connect(&m_picture, &Picture::linkActivated, this, &Tagger::linkActivated);
+	connect(&m_picture, &Picture::mediaResized, this, &Tagger::mediaResized);
 	connect(this, &Tagger::fileRenamed, &TaggerStatistics::instance(), &TaggerStatistics::fileRenamed);
 	connect(this, &Tagger::fileOpened, this, [this](const auto& file)
 	{
@@ -568,6 +569,20 @@ QSize Tagger::mediaDimensions() const
 	return m_picture.mediaSize();
 }
 
+float Tagger::mediaZoomFactor() const
+{
+	if (isEmpty())
+		return 0.0f;
+
+	if (mediaIsVideo())
+		return 1.0f;
+
+	const QSizeF file_dimensions = mediaDimensions();
+	const QSizeF display_dimensions = m_picture.mediaDisplaySize();
+
+	return display_dimensions.width() / file_dimensions.width();
+}
+
 float Tagger::mediaFramerate() const
 {
 	if (mediaIsVideo()) {
@@ -588,6 +603,11 @@ float Tagger::mediaFramerate() const
 size_t Tagger::mediaFileSize() const
 {
 	return QFileInfo(m_file_queue.current()).size();
+}
+
+bool Tagger::upscalingEnabled() const
+{
+	return m_picture.upscalingEnabled();
 }
 
 QString Tagger::postURL() const
@@ -681,6 +701,21 @@ void Tagger::setStatusText(QString left, QString right)
 void Tagger::setEditMode(EditMode mode)
 {
 	m_input.setEditMode(mode);
+}
+
+void Tagger::setUpscalingEnabled(bool enabled)
+{
+	m_picture.setUpscalingEnabled(enabled);
+}
+
+void Tagger::rotateImage(bool clockwise)
+{
+	if (mediaIsVideo() || mediaIsAnimatedImage()) {
+		pwarn << "Cannot rotate video / gif";
+		return;
+	}
+
+	m_picture.setRotation(m_picture.rotation() + (clockwise ? 1 : -1));
 }
 
 void Tagger::keyPressEvent(QKeyEvent * e)
@@ -1005,6 +1040,7 @@ bool Tagger::loadFile(size_t index, bool silent)
 
 	} else {
 		hideVideo();
+		m_picture.setRotation(0);
 		if(!m_picture.loadMedia(f.absoluteFilePath())) {
 			QMessageBox::critical(this,
 				tr("Error opening media"),

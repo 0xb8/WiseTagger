@@ -46,14 +46,31 @@ public:
 	/// Does the current media has alpha channel.
 	bool hasAlpha() const;
 
+	/// Upscale small images to fit the widget size
+	bool upscalingEnabled() const;
+
+	/// Set image rotation in 90 degree increments clockwise.
+	int rotation() const;
+
+	/// Set image rotation in 90 degree increments clockwise.
+	void setRotation(int steps);
+
 	/// Dimensions of loaded media.
 	QSize mediaSize() const;
+
+	/// Display dimensions of loaded media.
+	QSizeF mediaDisplaySize() const;
 
 	/// Size hint of the widget wrt. media size
 	QSize sizeHint() const override;
 
 	/// \ref ImageCache object
 	ImageCache cache;
+
+signals:
+
+	/// Emitted when media display size has changed.
+	void mediaResized();
 
 public slots:
 
@@ -62,6 +79,9 @@ public slots:
 
 	/// Display status information on the bottom left and right
 	void setStatusText(const QString& left, const QString& right);
+
+	/// Upscale small images to fit the widget size
+	void setUpscalingEnabled(bool enabled);
 
 protected:
 	void dragEnterEvent(QDragEnterEvent*) override;
@@ -93,7 +113,9 @@ private:
 	QPixmap   m_pixmap;
 	MoviePtr  m_movie;
 	Type      m_type;
+	int       m_rotation;
 	bool      m_has_alpha;
+	bool      m_upscale;
 
 	QLabel    m_status_left;
 	QLabel    m_status_right;

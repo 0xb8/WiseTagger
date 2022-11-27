@@ -168,11 +168,17 @@ public:
 	/// Dimensions of current media.
 	QSize   mediaDimensions() const;
 
+	/// Zooming factor of current media.
+	float   mediaZoomFactor() const;
+
 	/// Framerate of current media. 0 if not a video.
 	float   mediaFramerate() const;
 
 	/// File size of current media.
 	size_t  mediaFileSize()     const;
+
+	/// Upscale small images to fit the widget size
+	bool upscalingEnabled() const;
 
 	/// Imageboard post URL of current media.
 	QString postURL()         const;
@@ -256,15 +262,24 @@ public slots:
 	/// Set filter string that filename must match to be selected in queue.
 	void setQueueFilter(QString filter_str);
 
-	/// Display status information on the bottom left and right
+	/// Display status information on the bottom left and right.
 	void setStatusText(QString left, QString right);
 
-	/// Set current edit mode
+	/// Set current edit mode.
 	void setEditMode(EditMode mode);
+
+	/// Upscale small images to fit the widget size
+	void setUpscalingEnabled(bool enabled);
+
+	/// Rotate image 90 degress clockwise (true) or counter-clockwise (false).
+	void rotateImage(bool clockwise);
 
 signals:
 	/// Emitted when media file has been successfully opened.
 	void fileOpened(const QString& file);
+
+	/// Emitted when media display size has changed.
+	void mediaResized();
 
 	/// Emitted when session file has been sucessfully opened.
 	void sessionOpened(const QString& sfile);
