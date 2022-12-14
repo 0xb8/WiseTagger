@@ -45,6 +45,9 @@ QString                 language_name(QLocale::Language code);
 /// Load icon from executable file (windows-only)
 QIcon                   get_icon_from_executable(const QString& path);
 
+/// Load fallback icon from resources
+QIcon fallbackIcon(const QString& name);
+
 /// All supported image formats filter list
 QStringList             supported_image_formats_namefilter();
 

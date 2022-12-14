@@ -883,8 +883,23 @@ void Window::setEditMode(EditMode mode)
 		}
 		return current_mode_str;
 	};
+
+	auto get_mode_icon = [](EditMode mode){
+		QIcon res;
+		switch(mode) {
+		case EditMode::Naming:
+			break;
+		case EditMode::Tagging:
+			res = QIcon::fromTheme("tag", util::fallbackIcon("tag"));
+			break;
+		}
+		return res;
+	};
+
 	showShortNotificationMenu(get_mode_str(mode));
-	a_edit_mode.setText(get_mode_str(GlobalEnums::next_edit_mode(mode)));
+	auto next_mode = GlobalEnums::next_edit_mode(mode);
+	a_edit_mode.setText(get_mode_str(next_mode));
+	a_edit_mode.setIcon(get_mode_icon(next_mode));
 	updateMenus();
 }
 
@@ -1203,6 +1218,18 @@ void Window::createActions()
 	a_view_input.setCheckable(true);
 	a_play_pause.setCheckable(true);
 	a_play_mute.setCheckable(true);
+
+	a_view_fullscreen.setIcon(QIcon::fromTheme("view-fullscreen", util::fallbackIcon("view-fullscreen")));
+	a_view_slideshow.setIcon(QIcon::fromTheme("view-presentation"));
+	a_set_queue_filter.setIcon(QIcon::fromTheme("view-filter", util::fallbackIcon("view-filter")));
+	a_fit_to_screen.setIcon(QIcon::fromTheme("zoom-fit-best", util::fallbackIcon("zoom-fit-best")));
+	a_rotate_cw.setIcon(QIcon::fromTheme("object-rotate-right", util::fallbackIcon("object-rotate-right")));
+	a_rotate_ccw.setIcon(QIcon::fromTheme("object-rotate-left", util::fallbackIcon("object-rotate-left")));
+	a_next_file.setIcon(QIcon::fromTheme("go-next", util::fallbackIcon("go-next")));
+	a_prev_file.setIcon(QIcon::fromTheme("go-previous", util::fallbackIcon("go-previous")));
+	a_iqdb_search.setIcon(QIcon::fromTheme("edit-find", util::fallbackIcon("edit-find")));
+	a_delete_file.setIcon(QIcon::fromTheme("edit-delete", util::fallbackIcon("edit-delete")));
+	a_fetch_tags.setIcon(util::fallbackIcon("download-cloud"));
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
@@ -1767,26 +1794,6 @@ void Window::createMenus()
 	add_action(menu_context_tagger, a_show_settings);
 	add_action(menu_context_tagger, a_hide);
 	add_action(menu_context_tagger, a_exit);
-
-
-	// For enabling addSeparator() in QMenuBar.
-	class ProxyStyle : public QProxyStyle
-	{
-	public:
-		virtual int styleHint(StyleHint hint,
-		                      const QStyleOption *option = nullptr,
-		                      const QWidget *widget = nullptr,
-		                      QStyleHintReturn *returnData = nullptr) const override
-		{
-			if (hint == SH_DrawMenuBarSeparator)
-				return hint; // NOTE: seems like returning any non-zero value works.
-
-			return QProxyStyle::styleHint(hint, option, widget, returnData);
-		}
-	};
-	auto proxy_style = new ProxyStyle();
-	proxy_style->setParent(this);
-	menuBar()->setStyle(proxy_style);
 
 	// Menu bar menus
 	menuBar()->addMenu(&menu_file);

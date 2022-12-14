@@ -16,6 +16,7 @@
 #include <QSettings>
 #include <QTranslator>
 #include <QStyleFactory>
+#include <QProxyStyle>
 
 #define SETT_STYLE              QStringLiteral("window/style")
 
@@ -85,7 +86,70 @@ int main(int argc, char *argv[])
 	auto theme_name = sett.value(SETT_STYLE, QStringLiteral("Default")).toString();
 	if (theme_name == QStringLiteral("Dark")) {
 		auto fusion = QStyleFactory::create("fusion");
-		QApplication::setStyle(fusion);
+
+		class ProxyFusion : public QProxyStyle {
+		public:
+			using QProxyStyle::QProxyStyle;
+			virtual int styleHint(StyleHint hint,
+			                      const QStyleOption *option = nullptr,
+			                      const QWidget *widget = nullptr,
+			                      QStyleHintReturn *returnData = nullptr) const override
+			{
+				if (hint == SH_EtchDisabledText)
+					return 0;
+
+				if (hint == SH_DrawMenuBarSeparator)
+					return hint; // NOTE: seems like returning any non-zero value works.
+
+				return QProxyStyle::styleHint(hint, option, widget, returnData);
+			}
+
+			virtual void drawPrimitive(PrimitiveElement primitive,
+			                           const QStyleOption *option,
+			                           QPainter *painter,
+			                           const QWidget *widget = nullptr) const override
+			{
+				QProxyStyle::drawPrimitive(primitive, option, painter, widget);
+
+				// рисуем рамку вокруг чекбокса, чтобы было видно на очень темном фоне
+				if (primitive == PE_IndicatorCheckBox) {
+					bool has_focus = option->state & State_HasFocus;
+					bool has_keyboard_focus = option->state & State_KeyboardFocusChange;
+					if (!(has_focus || has_keyboard_focus)) {
+						painter->save();
+						painter->setRenderHint(QPainter::Antialiasing, true);
+						painter->translate(0.5, 0.5);
+						auto rect = option->rect;
+						rect = rect.adjusted(0, 0, -1, -1);
+						painter->setPen(QPen(option->palette.color(QPalette::Inactive, QPalette::Highlight)));
+						painter->drawRect(rect);
+						painter->restore();
+					}
+				}
+
+				// рисуем границу вокруг радиобаттона, чтобы было видно на очень темном фоне
+				if (primitive == PE_IndicatorRadioButton) {
+					bool has_focus = option->state & QStyle::State_HasFocus;
+					bool has_keyboard_focus = option->state & State_KeyboardFocusChange;
+					if (!(has_focus || has_keyboard_focus)) {
+						painter->save();
+						painter->setRenderHint(QPainter::Antialiasing, true);
+						auto circle = QPainterPath();
+
+						auto circleCenter = option->rect.center() + QPoint(1, 1);
+						auto outlineRadius = (option->rect.width() + 1) / 2.0 - 1;
+						circle.addEllipse(circleCenter, outlineRadius, outlineRadius);
+						auto pen = QPen(option->palette.color(QPalette::Inactive, QPalette::Highlight));
+						pen.setWidthF(1.5);
+						painter->setPen(pen);
+						painter->drawPath(circle);
+						painter->restore();
+					}
+				}
+			}
+		};
+
+		QApplication::setStyle(new ProxyFusion(fusion));
 
 		QPalette palette;
 		palette.setColor(QPalette::Window, QColor(35, 35, 35));
@@ -114,6 +178,26 @@ int main(int argc, char *argv[])
 		palette.setColor(QPalette::Inactive, QPalette::HighlightedText, QColor(240, 240, 240));
 		palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
 		QApplication::setPalette(palette);
+	} else {
+		// For enabling addSeparator() in QMenuBar.
+		class ProxyStyle : public QProxyStyle
+		{
+		public:
+			using QProxyStyle::QProxyStyle;
+
+			virtual int styleHint(StyleHint hint,
+			                      const QStyleOption *option = nullptr,
+			                      const QWidget *widget = nullptr,
+			                      QStyleHintReturn *returnData = nullptr) const override
+			{
+				if (hint == SH_DrawMenuBarSeparator)
+					return hint; // NOTE: seems like returning any non-zero value works.
+
+				return QProxyStyle::styleHint(hint, option, widget, returnData);
+			}
+		};
+		auto proxy_style = new ProxyStyle(a.style());
+		QApplication::setStyle(proxy_style);
 	}
 
 	auto style_path = QStringLiteral(":/css/%1.css").arg(theme_name);

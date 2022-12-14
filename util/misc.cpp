@@ -308,3 +308,9 @@ QString util::resolve_symlink_to_file(const QString & path, int max_depth, QStri
 	}
 	return QString{};
 }
+
+QIcon util::fallbackIcon(const QString &name) {
+	QSettings s;
+	auto theme_name = s.value(QStringLiteral("window/style"), QStringLiteral("Default")).toString();
+	return QIcon(QStringLiteral(":/icons/%1/%2.svg").arg(theme_name, name));
+}
