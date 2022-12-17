@@ -84,29 +84,30 @@ bool FileQueue::checkExtension(const QFileInfo & fi) const noexcept
 
 void FileQueue::push(const QString &f, bool recursive)
 {
-	auto push_file = [this](const auto& fi)
+	auto push_file = [this](const QFileInfo& fi)
 	{
-		m_files.push_back(fi.absoluteFilePath());
+		// assume that makeAbsolute() was called on fileinfo object
+		QString dir_path = fi.path();
+
+		m_files.push_back(fi.filePath());
 		m_accepted_by_filter.push_back(fileMatchesFilter(fi));
 
-		auto dir = fi.canonicalPath();
-		auto dir_it = m_dir_files.find(dir);
+		auto dir_it = m_dir_files.find(dir_path);
 		if (dir_it != m_dir_files.end()) {
 			auto& files_in_dir = dir_it.value();
 			files_in_dir.insert(fi.fileName());
 		} else {
-			m_dir_files.insert(dir, QSet<QString>{fi.fileName()});
+			m_dir_files.insert(dir_path, QSet<QString>{fi.fileName()});
 
 			if (!m_dir_watcher) {
-				m_dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir});
+				m_dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir_path});
 				connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
 			} else {
-				if (!m_dir_watcher->addPath(dir)) {
-					pwarn << "push(): could not add" << dir << "to filesystem watcher";
+				if (!m_dir_watcher->addPath(dir_path)) {
+					pwarn << "push(): could not add" << dir_path << "to filesystem watcher";
 				}
 			}
 		}
-
 	};
 
 	QFileInfo fi(f);
@@ -114,18 +115,21 @@ void FileQueue::push(const QString &f, bool recursive)
 		pwarn << "attempted to push() unexistent file";
 		return;
 	}
+	fi.makeAbsolute();
 
 	if(fi.isFile() && checkExtension(fi)) {
 		push_file(fi);
 
 	} else if(fi.isDir()) {
-		QDirIterator it(f, m_ext_filters,
+		QDirIterator it(fi.filePath(), m_ext_filters,
 		                QDir::Files,
 		                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 		                          : QDirIterator::NoIteratorFlags);
 		int count = 0;
-		while(it.hasNext() && !it.next().isNull()) {
-			auto fi = it.fileInfo();
+		while(it.hasNext()) {
+			fi.setFile(it.next());
+			Q_ASSERT(fi.isAbsolute());
+
 			push_file(fi);
 
 			if (count++ > 2500) {
@@ -153,22 +157,23 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 	QFileInfo fi;
 
 	auto push_file = [&tmp_files, &tmp_dirs_files, &dir_watcher](const auto& fi){
-		tmp_files.push_back(fi.absoluteFilePath());
+		// assume makeAbsolute() was called on fileinfo object
+		auto dir_path = fi.path();
 
-		auto dir = fi.canonicalPath();
-		auto dir_it = tmp_dirs_files.find(dir);
+		tmp_files.push_back(fi.filePath());
+		auto dir_it = tmp_dirs_files.find(dir_path);
 		if (dir_it != tmp_dirs_files.end()) {
 			auto& files_in_dir = dir_it.value();
 			files_in_dir.insert(fi.fileName());
 		} else {
-			tmp_dirs_files.insert(dir, QSet<QString>{fi.fileName()});
+			tmp_dirs_files.insert(dir_path, QSet<QString>{fi.fileName()});
 
 			if (!dir_watcher) {
-				dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir});
+				dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir_path});
 
 			} else {
-				if (!dir_watcher->addPath(dir)) {
-					pwarn << "assign(): could not add" << dir << "to filesystem watcher";
+				if (!dir_watcher->addPath(dir_path)) {
+					pwarn << "assign(): could not add" << dir_path << "to filesystem watcher";
 				}
 			}
 		}
@@ -182,21 +187,26 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 			count = 0;
 		}
 	};
-
 	for(const auto & p : qAsConst(paths)) {
 		fi.setFile(p);
-		if(fi.isFile()) {
+		fi.makeAbsolute();
+
+		if(fi.isFile() && checkExtension(fi)) {
 			push_file(fi);
-		}
-		if(fi.isDir()) {
+		} else if(fi.isDir()) {
 			QDirIterator it(p, m_ext_filters,
 			                QDir::Files,
 			                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 			                          : QDirIterator::NoIteratorFlags);
-			while(it.hasNext() && !it.next().isNull()) {
-				push_file(it.fileInfo());
+			while(it.hasNext()) {
+				fi.setFile(it.next());
+				Q_ASSERT(fi.isAbsolute());
+
+				push_file(fi);
 				update_ui();
 			}
+		} else {
+			pwarn << "assign() : extension not allowed by filter:" << fi.fileName();
 		}
 		update_ui();
 	}
@@ -206,10 +216,10 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 	if (m_dir_watcher) {
 		disconnect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed);
 	}
-	if (dir_watcher) {
-		connect(dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
-	}
 	std::swap(dir_watcher, m_dir_watcher);
+	if (m_dir_watcher) {
+		connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
+	}
 	m_current = FileQueue::npos;
 	update_filter();
 }
@@ -821,6 +831,9 @@ bool FileQueue::currentFileMatchesQueueFilter() const noexcept
 
 bool FileQueue::fileMatchesFilter(const QFileInfo& file) const
 {
+	if (!substringFilterActive())
+		return true;
+
 	QString name = file.completeBaseName();
 
 	auto contains_separate = [](const QString& name, const auto& tag)
