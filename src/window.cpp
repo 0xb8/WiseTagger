@@ -1784,6 +1784,7 @@ void Window::createMenus()
 	add_action(menu_context_tagger, a_next_file);
 	add_action(menu_context_tagger, a_prev_file);
 	add_separator(menu_context_tagger);
+	menu_context_tagger.addMenu(&menu_view);
 	menu_context_tagger.addMenu(&menu_sort);
 	add_action(menu_context_tagger, a_set_queue_filter);
 	add_separator(menu_context_tagger);

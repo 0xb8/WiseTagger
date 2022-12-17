@@ -155,8 +155,9 @@ int main(int argc, char *argv[])
 		palette.setColor(QPalette::Window, QColor(35, 35, 35));
 		palette.setColor(QPalette::WindowText, QColor(238, 238, 238));
 		palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(102, 102, 102));
-		palette.setColor(QPalette::Base, QColor(24, 24, 24));
-		palette.setColor(QPalette::AlternateBase, QColor(40, 40, 40));
+		palette.setColor(QPalette::Base, QColor(32, 32, 32));
+		palette.setColor(QPalette::AlternateBase, QColor(42, 42, 42));
+		palette.setColor(QPalette::Disabled, QPalette::AlternateBase, QColor(32, 32, 32));
 		palette.setColor(QPalette::ToolTipBase, Qt::white);
 		palette.setColor(QPalette::ToolTipText, QColor(53, 53, 53));
 		palette.setColor(QPalette::Text, QColor(220, 220, 220));
