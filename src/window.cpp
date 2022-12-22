@@ -86,6 +86,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_open_dir(        tr("Open &Folder..."), nullptr)
 	, a_open_dir_recurse(tr("Open Folder Recursi&vely..."), nullptr)
 	, a_delete_file(     tr("&Delete Current Image"), nullptr)
+	, a_copy_file(       tr("Copy image to clipboard"), nullptr)
 	, a_open_post(       tr("Open Imageboard &Post..."), nullptr)
 	, a_iqdb_search(     tr("&Reverse Search Image..."), nullptr)
 	, a_exit(            tr("&Exit"), nullptr)
@@ -1166,6 +1167,7 @@ void Window::createActions()
 	a_next_fixable.setShortcut( QKeySequence(Qt::ALT + Qt::Key_Right));
 	a_prev_fixable.setShortcut( QKeySequence(Qt::ALT + Qt::Key_Left));
 	a_delete_file.setShortcut(  QKeySequence::Delete);
+	a_copy_file.setShortcut(    QKeySequence(tr("Ctrl+C", "Copy to clipboard")));
 	a_fix_tags.setShortcut(     QKeySequence(tr("Ctrl+A", "Fix tags")));
 	a_open_post.setShortcut(    QKeySequence(tr("Ctrl+P", "Open post")));
 	a_iqdb_search.setShortcut(  QKeySequence(tr("Ctrl+F", "Reverse search")));
@@ -1261,6 +1263,13 @@ void Window::createActions()
 	connect(&a_about_qt,    &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(&a_help,        &QAction::triggered, this, &Window::help);
 	connect(&a_delete_file, &QAction::triggered, &m_tagger, &Tagger::deleteCurrentFile);
+	connect(&a_copy_file,   &QAction::triggered, this, [this](){
+		auto current = m_tagger.currentFile();
+
+		auto mime = new QMimeData{};
+		mime->setUrls({QUrl::fromLocalFile(current)});
+		QApplication::clipboard()->setMimeData(mime);
+	});
 	connect(&a_fix_tags,    &QAction::triggered, &m_tagger, &Tagger::fixTags);
 
 	connect(&a_reload_tags, &QAction::triggered, &m_tagger, &Tagger::reloadTags);
@@ -1669,6 +1678,7 @@ void Window::createMenus()
 	add_action(menu_file, a_save_session);
 	add_separator(menu_file);
 	add_action(menu_file, a_fix_tags);
+	add_action(menu_file, a_copy_file);
 	add_action(menu_file, a_delete_file);
 	add_separator(menu_file);
 	add_action(menu_file, a_open_post);
@@ -1839,6 +1849,7 @@ void Window::updateMenus()
 	a_next_fixable.setDisabled(val);
 	a_prev_fixable.setDisabled(val);
 	a_delete_file.setDisabled(val);
+	a_copy_file.setDisabled(val);
 	a_fetch_tags.setDisabled(val || !m_tagger.fileRenameable());
 	a_open_post.setDisabled(m_post_url.isEmpty());
 	a_iqdb_search.setDisabled(val);

@@ -138,6 +138,7 @@ private:
 	QAction a_open_dir;
 	QAction a_open_dir_recurse;
 	QAction a_delete_file;
+	QAction a_copy_file;
 	QAction a_open_post;
 	QAction a_iqdb_search;
 	QAction a_exit;
