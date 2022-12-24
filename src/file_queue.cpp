@@ -27,6 +27,19 @@ namespace logging_category {
 /* static data */
 const QString FileQueue::m_empty{nullptr,0};
 const QString FileQueue::sessionExtensionFilter = QStringLiteral("*.wt-session");
+const int FileQueue::watcher_update_granularity_ms = 100;
+
+
+FileQueue::FileQueue()
+{
+	m_watcher_timer.setSingleShot(true);
+	connect(&m_watcher_timer, &QTimer::timeout, this, [this](){
+		for (const auto& d : qAsConst(m_watcher_changed_dirs)) {
+			process_changed_directory(d);
+		}
+		m_watcher_changed_dirs.clear();
+	});
+}
 
 void FileQueue::setExtensionFilter(const QStringList &f) noexcept(false)
 {
@@ -101,7 +114,7 @@ void FileQueue::push(const QString &f, bool recursive)
 
 			if (!m_dir_watcher) {
 				m_dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir_path});
-				connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
+				connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_watcher_directory_changed);
 			} else {
 				if (!m_dir_watcher->addPath(dir_path)) {
 					pwarn << "push(): could not add" << dir_path << "to filesystem watcher";
@@ -214,11 +227,11 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 	std::swap(tmp_files, m_files);
 	std::swap(tmp_dirs_files, m_dir_files);
 	if (m_dir_watcher) {
-		disconnect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed);
+		disconnect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_watcher_directory_changed);
 	}
 	std::swap(dir_watcher, m_dir_watcher);
 	if (m_dir_watcher) {
-		connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_directory_changed, Qt::QueuedConnection);
+		connect(m_dir_watcher.get(), &QFileSystemWatcher::directoryChanged, this, &FileQueue::on_watcher_directory_changed);
 	}
 	m_current = FileQueue::npos;
 	update_filter();
@@ -649,29 +662,37 @@ void FileQueue::update_filter()
 	}
 }
 
-void FileQueue::on_directory_changed(const QString &dir_path)
+void FileQueue::on_watcher_directory_changed(const QString &dir)
 {
-	auto dir_it = m_dir_files.find(dir_path);
+	m_watcher_changed_dirs.insert(dir);
+	if (!m_watcher_timer.isActive())
+		m_watcher_timer.start(watcher_update_granularity_ms);
+}
+
+void FileQueue::process_changed_directory(const QString &dir_path)
+{
+	pdbg << "directory changed" << dir_path;
+
+	const auto dir_it = m_dir_files.find(dir_path);
 	if (dir_it == m_dir_files.end()) {
-		// filesystem event might arrive when all files from that directory were already deleted
-		// just ignore it
+		// filesystem event might arrive when all files from that directory were already erased from queue
 		return;
 	}
 
 	auto& files_in_queue = dir_it.value();
 	Q_ASSERT(!files_in_queue.empty());
 
-	auto qdir = QDir(dir_path);
-	auto files_in_dir = QSet<QString>::fromList(qdir.entryList(m_ext_filters, QDir::Files));
+	const auto qdir = QDir(dir_path);
+	const auto files_in_dir = QSet<QString>::fromList(qdir.entryList(m_ext_filters, QDir::Files));
 
 	if (files_in_dir.size() != files_in_queue.size()) {
 
-		auto added_files = files_in_dir - files_in_queue;
+		const auto added_files = files_in_dir - files_in_queue;
 		if (added_files.empty()) {
-			auto missing_files = files_in_queue - files_in_dir;
+			const auto missing_files = files_in_queue - files_in_dir;
 			pdbg << "files removed in" << dir_path << ":" << missing_files;
 
-			for (const auto& f : qAsConst(missing_files)) {
+			for (const auto& f : missing_files) {
 				files_in_queue.remove(f);
 			}
 
@@ -679,7 +700,7 @@ void FileQueue::on_directory_changed(const QString &dir_path)
 		}
 
 		pdbg << "files added in" << dir_path << ":" << added_files;
-		for (const auto& f : qAsConst(added_files)) {
+		for (const auto& f : added_files) {
 			auto fi = QFileInfo{qdir, f};
 
 			files_in_queue.insert(f);

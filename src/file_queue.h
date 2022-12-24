@@ -15,6 +15,7 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QObject>
+#include <QTimer>
 #include <QHash>
 #include <QSet>
 #include <QFileSystemWatcher>
@@ -34,6 +35,9 @@
 class FileQueue : public QObject {
 	Q_OBJECT
 public:
+
+	/// Construct FileQueue object.
+	FileQueue();
 
 	/// Result of rename operation
 	enum class RenameResult
@@ -335,12 +339,16 @@ signals:
 
 private:
 	void update_filter();
-	void on_directory_changed(const QString& dir);
+	void on_watcher_directory_changed(const QString& dir);
+	void process_changed_directory(const QString& dir);
 
 	static const QString m_empty;
+	static const int watcher_update_granularity_ms;
 	std::deque<QString>  m_files;
 	QHash<QString, QSet<QString>>  m_dir_files;
 	std::unique_ptr<QFileSystemWatcher> m_dir_watcher;
+	QSet<QString>        m_watcher_changed_dirs;
+	QTimer               m_watcher_timer;
 	std::vector<bool>    m_accepted_by_filter;
 	QStringList          m_ext_filters;
 	QStringList          m_substr_filter_include;
