@@ -93,6 +93,13 @@ public:
 	 */
 	void    addFile(const QString& filename, QSize window_size, double device_pixel_ratio);
 
+
+	/*!
+	 * \brief Invalidate cached data for file \p filename.
+	 * \param filename File to invalidate.
+	 */
+	void    invalidate(const QString& filename);
+
 	/*!
 	 * \brief Try to retrieve image from cache.
 	 * \param filename Image file path.

@@ -126,6 +126,17 @@ void ImageCache::addFile(const QString& filename, QSize window_size, double devi
 	}
 }
 
+void ImageCache::invalidate(const QString &filename)
+{
+	if(Q_UNLIKELY(m_shutting_down.load(std::memory_order_acquire)))
+		return;
+
+	{
+		QWriteLocker _{&m_file_id_cache_lock};
+		m_file_id_cache.erase(filename);
+	}
+}
+
 ImageCache::QueryResult ImageCache::getImage(const QString& filename, QSize window_size, uint64_t unique_id) const
 {
 	QueryResult res;

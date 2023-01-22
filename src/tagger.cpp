@@ -25,7 +25,6 @@
 #include "util/strings.h"
 #include "util/open_graphical_shell.h"
 #include "util/tag_file.h"
-#include "window.h"
 #include "statistics.h"
 
 namespace logging_category {
@@ -344,6 +343,8 @@ bool Tagger::openFileInQueue(size_t index)
 
 void Tagger::deleteCurrentFile()
 {
+	const auto current_file = currentFile();
+
 	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
 		tr("<h3 style=\"font-weight: normal;\">Are you sure you want to delete <u>%1</u> permanently?</h3>"
 		   "<dd><dl>File type: %2</dl>"
@@ -374,6 +375,7 @@ void Tagger::deleteCurrentFile()
 				   "or when file has been renamed or removed by another application.</p>"
 				   "<p>Next file will be opened instead.</p>"));
 		}
+		m_picture.cache.invalidate(current_file);
 		loadCurrentFile();
 	}
 }
@@ -1118,6 +1120,7 @@ bool Tagger::loadCurrentFile()
 	bool silent = false;
 	while(!loadFile(m_file_queue.currentIndex(), silent) && !m_file_queue.empty()) {
 		pdbg << "erasing invalid file from queue:" << m_file_queue.current();
+		m_picture.cache.invalidate(m_file_queue.current());
 		m_file_queue.eraseCurrent();
 		silent = true;
 	}
