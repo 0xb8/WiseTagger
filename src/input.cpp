@@ -467,15 +467,15 @@ QStringList TagInput::getAddedTags(bool exclude_tags_from_file) const
 
 void TagInput::setViewMode(ViewMode view_mode)
 {
-	QSettings s;
-	QFont font(s.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
+	QSettings settings;
+	QFont font(settings.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
 	if(view_mode == ViewMode::Normal) {
-		font.setPixelSize(s.value(QStringLiteral("window/font-size"), 14).toInt());
+		font.setPixelSize(settings.value(QStringLiteral("window/font-size"), 14).toInt());
 		setMinimumHeight(m_minimum_height);
 		setFrame(true);
 	}
 	if(view_mode == ViewMode::Minimal) {
-		font.setPixelSize(s.value(QStringLiteral("window/font-size-minmode"), 12).toInt());
+		font.setPixelSize(settings.value(QStringLiteral("window/font-size-minmode"), 12).toInt());
 		setMinimumHeight(m_minimum_height_minmode);
 		setFrame(false);
 	}

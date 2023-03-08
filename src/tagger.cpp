@@ -636,13 +636,13 @@ bool Tagger::canExit(Tagger::RenameStatus status)
 
 void Tagger::updateSettings()
 {
-	QSettings s;
-	auto mem_limit_kb = s.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024ull;
+	QSettings settings;
+	auto mem_limit_kb = settings.value(QStringLiteral("performance/pixmap_cache_size"), 0ull).toULongLong() * 1024ull;
 	if (mem_limit_kb) {
 		m_picture.cache.setMemoryLimitKiB(mem_limit_kb);
 	}
 
-	auto thread_count = s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2;
+	auto thread_count = settings.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt() * 2;
 	if (thread_count) {
 		m_picture.cache.setMaxConcurrentTasks(thread_count);
 	}
@@ -752,8 +752,8 @@ void Tagger::setInputVisible(bool visible)
 {
 	m_input.setVisible(visible);
 
-	QSettings s;
-	auto view_mode = s.value(QStringLiteral("window/view-mode")).value<ViewMode>();
+	QSettings settings;
+	auto view_mode = settings.value(QStringLiteral("window/view-mode")).value<ViewMode>();
 	if(view_mode == ViewMode::Minimal)
 		return; // NOTE: no need to update following properties because they've been taken care of already
 
@@ -1132,8 +1132,8 @@ bool Tagger::loadCurrentFile()
 	if(m_file_queue.size() < 2)
 		return true;
 
-	QSettings s;
-	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), true).toBool())
+	QSettings settings;
+	if(!settings.value(QStringLiteral("performance/pixmap_precache_enabled"), true).toBool())
 		return true;
 
 	auto try_cache_file = [this](const auto& filepath) {
@@ -1144,7 +1144,7 @@ bool Tagger::loadCurrentFile()
 		}
 	};
 
-	int preloadcount = abs(s.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
+	int preloadcount = abs(settings.value(QStringLiteral("performance/pixmap_precache_count"), 1).toInt());
 	preloadcount = std::max(std::min(preloadcount, 16), 1);
 
 	size_t index = m_file_queue.currentIndex();

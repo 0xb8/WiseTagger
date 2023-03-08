@@ -24,9 +24,9 @@ FilterDialog::FilterDialog(QWidget * _parent) : QDialog(_parent)
 
 	setSizeGripEnabled(true);
 
-	QSettings s;
-	QFont font(s.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
-	int pixel_size = s.value(QStringLiteral("window/font-size-minmode"), 12).toInt();
+	QSettings settings;
+	QFont font(settings.value(QStringLiteral("window/font"), QStringLiteral("Consolas")).toString());
+	int pixel_size = settings.value(QStringLiteral("window/font-size-minmode"), 12).toInt();
 	font.setPixelSize(pixel_size);
 
 	m_edit.setMinimumHeight(pixel_size * 2);

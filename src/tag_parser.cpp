@@ -27,10 +27,10 @@ TagParser::TagParser(QObject * _parent) : QObject(_parent) { }
 TagParser::FixOptions TagParser::FixOptions::from_settings()
 {
 	FixOptions opts;
-	QSettings s;
-	opts.replace_imageboard_tags = s.value(QStringLiteral("imageboard/replace-tags"), false).toBool();
-	opts.restore_imageboard_tags = s.value(QStringLiteral("imageboard/restore-tags"), true).toBool();
-	opts.force_author_handle_first = s.value(QStringLiteral("imageboard/force-author-first"), false).toBool();
+	QSettings settings;
+	opts.replace_imageboard_tags = settings.value(QStringLiteral("imageboard/replace-tags"), false).toBool();
+	opts.restore_imageboard_tags = settings.value(QStringLiteral("imageboard/restore-tags"), true).toBool();
+	opts.force_author_handle_first = settings.value(QStringLiteral("imageboard/force-author-first"), false).toBool();
 	return opts;
 }
 
