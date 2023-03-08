@@ -341,8 +341,8 @@ void Picture::resizeEvent(QResizeEvent*)
 
 bool Picture::tryLoadImageFromCache(const QString& filename)
 {
-	QSettings s;
-	if(!s.value(QStringLiteral("performance/pixmap_precache_enabled"), true).toBool())
+	QSettings settings;
+	if(!settings.value(QStringLiteral("performance/pixmap_precache_enabled"), true).toBool())
 		return false;
 
 	QElapsedTimer timer;

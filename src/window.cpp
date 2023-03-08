@@ -599,8 +599,8 @@ void Window::mousePressEvent(QMouseEvent * ev)
 
 void Window::wheelEvent(QWheelEvent *ev)
 {
-	QSettings s;
-	bool modifier_not_required = s.value(SETT_NAVIGATE_BY_WHEEL, false).toBool();
+	QSettings settings;
+	bool modifier_not_required = settings.value(SETT_NAVIGATE_BY_WHEEL, false).toBool();
 	if (modifier_not_required 
 		|| ev->modifiers() & Qt::ControlModifier 
 		|| ev->modifiers() & Qt::ShiftModifier) {
@@ -670,16 +670,16 @@ void Window::parseCommandLineArguments()
 //------------------------------------------------------------------------------
 void Window::initSettings()
 {
-	QSettings sett;
+	QSettings settings;
 
-	m_last_directory = sett.value(SETT_LAST_DIR).toString();
-	m_view_mode      = sett.value(SETT_VIEW_MODE).value<ViewMode>();
-	bool show_status = sett.value(SETT_SHOW_STATUS, false).toBool();
-	bool show_menu   = sett.value(SETT_SHOW_MENU,   true).toBool();
-	bool show_input  = sett.value(SETT_SHOW_INPUT,  true).toBool();
+	m_last_directory = settings.value(SETT_LAST_DIR).toString();
+	m_view_mode      = settings.value(SETT_VIEW_MODE).value<ViewMode>();
+	bool show_status = settings.value(SETT_SHOW_STATUS, false).toBool();
+	bool show_menu   = settings.value(SETT_SHOW_MENU,   true).toBool();
+	bool show_input  = settings.value(SETT_SHOW_INPUT,  true).toBool();
 
-	bool restored_geo   = restoreGeometry(sett.value(SETT_WINDOW_GEOMETRY).toByteArray());
-	bool restored_state = restoreState(sett.value(SETT_WINDOW_STATE).toByteArray());
+	bool restored_geo   = restoreGeometry(settings.value(SETT_WINDOW_GEOMETRY).toByteArray());
+	bool restored_state = restoreState(settings.value(SETT_WINDOW_STATE).toByteArray());
 
 	if(!restored_state || !restored_geo) {
 		resize(1024,640);
@@ -699,21 +699,19 @@ void Window::initSettings()
 	a_view_menu.setChecked(show_menu);
 	a_view_input.setChecked(show_input);
 
-	a_play_mute.setChecked(sett.value(SETT_PLAY_MUTE, false).toBool());
+	a_play_mute.setChecked(settings.value(SETT_PLAY_MUTE, false).toBool());
 	m_tagger.setMediaMuted(a_play_mute.isChecked());
 
-	a_ib_replace.setChecked(sett.value(SETT_REPLACE_TAGS, false).toBool());
-	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
-	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
-	a_fit_to_screen.setChecked(sett.value(SETT_FIT_TO_SCREEN, false).toBool());
-	a_navigate_by_wheel.setChecked(sett.value(SETT_NAVIGATE_BY_WHEEL, false).toBool());
+	a_ib_replace.setChecked(settings.value(SETT_REPLACE_TAGS, false).toBool());
+	a_ib_restore.setChecked(settings.value(SETT_RESTORE_TAGS, true).toBool());
+	a_tag_forcefirst.setChecked(settings.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
 
-	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
+	m_show_current_directory = settings.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
-	auto edit_mode = sett.value(SETT_EDIT_MODE).value<EditMode>();
+	auto edit_mode = settings.value(SETT_EDIT_MODE).value<EditMode>();
 	setEditMode(edit_mode);
 
-	bool fit_to_screen = sett.value(SETT_FIT_TO_SCREEN).toBool();
+	bool fit_to_screen = settings.value(SETT_FIT_TO_SCREEN).toBool();
 	m_tagger.setUpscalingEnabled(fit_to_screen);
 
 	updateProxySettings();
@@ -921,8 +919,8 @@ void Window::setSlideShow(bool slide_show)
 	a_view_statusbar.setChecked(!slide_show);
 	a_view_fullscreen.setChecked(slide_show);
 
-	QSettings s;
-	m_tagger.setUpscalingEnabled(slide_show || s.value(SETT_FIT_TO_SCREEN).toBool());
+	QSettings settings;
+	m_tagger.setUpscalingEnabled(slide_show || settings.value(SETT_FIT_TO_SCREEN).toBool());
 }
 
 #ifdef Q_OS_WIN
@@ -933,9 +931,9 @@ namespace logging_category {
 #define vcdbg  qCDebug(logging_category::vercheck)
 void Window::checkNewVersion()
 {
-	QSettings sett;
-	auto last_checked = sett.value(SETT_LAST_VER_CHECK,QDate(2016,1,1)).toDate();
-	auto checking_disabled = !sett.value(SETT_VER_CHECK_ENABLED, true).toBool();
+	QSettings settings;
+	auto last_checked = settings.value(SETT_LAST_VER_CHECK,QDate(2016,1,1)).toDate();
+	auto checking_disabled = !settings.value(SETT_VER_CHECK_ENABLED, true).toBool();
 
 	if(checking_disabled || last_checked == QDate::currentDate()) {
 		vcdbg << (checking_disabled ? "vercheck disabled" : "vercheck enabled") << last_checked.toString();
@@ -1286,8 +1284,8 @@ void Window::createActions()
 	connect(&a_edit_mode,   &QAction::triggered, this, [this](){
 		auto next_mode = GlobalEnums::next_edit_mode(m_tagger.editMode());
 		setEditMode(next_mode);
-		QSettings s;
-		s.setValue(SETT_EDIT_MODE, QVariant::fromValue(next_mode));
+		QSettings settings;
+		settings.setValue(SETT_EDIT_MODE, QVariant::fromValue(next_mode));
 	});
 	connect(&a_stats,       &QAction::triggered,   &TaggerStatistics::instance(), &TaggerStatistics::showStatsDialog);
 	connect(&m_tagger,      &Tagger::tagsEdited,   this, &Window::updateWindowTitle);
@@ -1395,29 +1393,29 @@ void Window::createActions()
 	});
 	connect(&a_ib_replace,  &QAction::triggered, [](bool checked)
 	{
-		QSettings s; s.setValue(SETT_REPLACE_TAGS, checked);
+		QSettings settings; settings.setValue(SETT_REPLACE_TAGS, checked);
 	});
 	connect(&a_ib_restore,  &QAction::triggered, [](bool checked)
 	{
-		QSettings s; s.setValue(SETT_RESTORE_TAGS, checked);
+		QSettings settings; settings.setValue(SETT_RESTORE_TAGS, checked);
 	});
 	connect(&a_tag_forcefirst,  &QAction::triggered, [](bool checked)
 	{
-		QSettings s; s.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
+		QSettings settings; settings.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
 	});
 	connect(&a_navigate_by_wheel,  &QAction::triggered, [this](bool checked)
 	{
-		QSettings s; s.setValue(SETT_NAVIGATE_BY_WHEEL, checked);
+		QSettings settings; settings.setValue(SETT_NAVIGATE_BY_WHEEL, checked);
 	});	
 	connect(&a_fit_to_screen,  &QAction::triggered, [this](bool checked)
 	{
-		QSettings s; s.setValue(SETT_FIT_TO_SCREEN, checked);
+		QSettings settings; settings.setValue(SETT_FIT_TO_SCREEN, checked);
 		m_tagger.setUpscalingEnabled(checked);
 	});
 
 	connect(&a_view_statusbar, &QAction::toggled, this, [this](bool checked)
 	{
-		QSettings s; s.setValue(SETT_SHOW_STATUS, checked);
+		QSettings settings; settings.setValue(SETT_SHOW_STATUS, checked);
 		m_statusbar.setVisible(checked && m_view_mode != ViewMode::Minimal);
 	});
 	connect(&a_view_fullscreen, &QAction::toggled, this, [this](bool checked)
@@ -1432,8 +1430,8 @@ void Window::createActions()
 				showNormal();
 			}
 		}
-		QSettings s;
-		m_tagger.setUpscalingEnabled(checked || s.value(SETT_FIT_TO_SCREEN).toBool());
+		QSettings settings;
+		m_tagger.setUpscalingEnabled(checked || settings.value(SETT_FIT_TO_SCREEN).toBool());
 	});
 	connect(&a_exit_fullscreen, &QAction::triggered, this, [this]() {
 		a_view_fullscreen.setChecked(false);
@@ -1449,22 +1447,22 @@ void Window::createActions()
 	connect(&a_view_minimal, &QAction::triggered, this, [this](bool checked)
 	{
 		m_view_mode = checked ? ViewMode::Minimal : ViewMode::Normal;
-		QSettings s; s.setValue(SETT_VIEW_MODE, QVariant::fromValue(m_view_mode));
+		QSettings settings; settings.setValue(SETT_VIEW_MODE, QVariant::fromValue(m_view_mode));
 		updateSettings();
 	});
 	connect(&a_view_menu, &QAction::toggled, this, [this](bool checked)
 	{
-		QSettings s; s.setValue(SETT_SHOW_MENU, checked);
+		QSettings settings; settings.setValue(SETT_SHOW_MENU, checked);
 		this->menuBar()->setVisible(checked);
 	});
 	connect(&a_view_input, &QAction::toggled, this, [this](bool checked)
 	{
-		QSettings s; s.setValue(SETT_SHOW_INPUT, checked);
+		QSettings settings; settings.setValue(SETT_SHOW_INPUT, checked);
 		this->m_tagger.setInputVisible(checked);
 	});
 	connect(&a_play_pause, &QAction::triggered, &m_tagger, &Tagger::setMediaPlaying);
 	connect(&a_play_mute, &QAction::triggered, this, [this](bool checked) {
-		QSettings s; s.setValue(SETT_PLAY_MUTE, checked);
+		QSettings settings; settings.setValue(SETT_PLAY_MUTE, checked);
 		m_tagger.setMediaMuted(checked);
 	});
 	connect(&a_rotate_cw, &QAction::triggered, this, [this](bool) {
@@ -1488,13 +1486,13 @@ void Window::createActions()
 				tr("<p>Could not save session to <b>%1</b>.</p><p>Check file permissions.</p>").arg(filename));
 			return;
 		}
-		QSettings s;
-		s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(filename).absolutePath());
+		QSettings settings;
+		settings.setValue(SETT_LAST_SESSION_DIR, QFileInfo(filename).absolutePath());
 	});
 	connect(&a_open_session, &QAction::triggered, this, [this]()
 	{
-		QSettings s;
-		auto lastdir = s.value(SETT_LAST_SESSION_DIR, m_last_directory).toString();
+		QSettings settings;
+		auto lastdir = settings.value(SETT_LAST_SESSION_DIR, m_last_directory).toString();
 		auto filename = QFileDialog::getOpenFileName(this,
 			tr("Open Session"),
 			lastdir,
@@ -1523,12 +1521,12 @@ void Window::createActions()
 	});
 	connect(&m_tagger, &Tagger::sessionOpened, [](const QString& path)
 	{
-		QSettings s; s.setValue(SETT_LAST_SESSION_DIR, QFileInfo(path).absolutePath());
+		QSettings settings; settings.setValue(SETT_LAST_SESSION_DIR, QFileInfo(path).absolutePath());
 	});
 	connect(&m_tagger, &Tagger::fileOpened, this, [this](const QString& path)
 	{
 		m_last_directory = QFileInfo(path).absolutePath();
-		QSettings s; s.setValue(SETT_LAST_DIR, m_last_directory);
+		QSettings settings; settings.setValue(SETT_LAST_DIR, m_last_directory);
 	});
 	connect(&m_tagger, &Tagger::newTagsAdded, this, [this](const QStringList& l)
 	{

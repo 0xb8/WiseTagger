@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
 		pwarn << "failed to load" << wt_qm;
 	}
 
-	QSettings sett;
-	auto theme_name = sett.value(SETT_STYLE, QStringLiteral("Default")).toString();
+	QSettings settings;
+	auto theme_name = settings.value(SETT_STYLE, QStringLiteral("Default")).toString();
 	if (theme_name == QStringLiteral("Dark")) {
 		auto fusion = QStyleFactory::create("fusion");
 
