@@ -166,6 +166,7 @@ private:
 	QAction a_ib_restore;
 	QAction a_tag_forcefirst;
 	QAction a_fit_to_screen;
+	QAction a_navigate_by_wheel;
 	QAction a_show_settings;
 	QAction a_view_normal;
 	QAction a_view_minimal;
