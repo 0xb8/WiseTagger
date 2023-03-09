@@ -63,6 +63,7 @@ namespace logging_category {
 #define SETT_VIEW_MODE          QStringLiteral("window/view-mode")
 #define SETT_EDIT_MODE          QStringLiteral("window/edit-mode")
 #define SETT_FIT_TO_SCREEN      QStringLiteral("window/fit-to-screen")
+#define SETT_NAVIGATE_BY_WHEEL  QStringLiteral("window/scroll-navigation")
 
 #define SETT_PLAY_MUTE          QStringLiteral("window/video_mute")
 
@@ -134,6 +135,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_play_mute(       tr("Mute"))
 	, a_rotate_cw(       tr("Rotate Clockwise"))
 	, a_rotate_ccw(      tr("Rotate Counter-Clockwise"))
+	, a_navigate_by_wheel(tr("Switch files with Mouse Wheel"))
 	, a_about(           tr("&About..."), nullptr)
 	, a_about_qt(        tr("About &Qt..."), nullptr)
 	, a_help(            tr("&Help..."), nullptr)
@@ -598,8 +600,10 @@ void Window::mousePressEvent(QMouseEvent * ev)
 void Window::wheelEvent(QWheelEvent *ev)
 {
 	QSettings s;
-	bool modifier_not_required = s.value(QStringLiteral("window/scroll-navigation"), false).toBool();
-	if (ev->modifiers() & Qt::ControlModifier || ev->modifiers() & Qt::ShiftModifier || modifier_not_required) {
+	bool modifier_not_required = s.value(SETT_NAVIGATE_BY_WHEEL, false).toBool();
+	if (modifier_not_required 
+		|| ev->modifiers() & Qt::ControlModifier 
+		|| ev->modifiers() & Qt::ShiftModifier) {
 		ev->accept();
 		auto delta = ev->angleDelta().y();
 		if (delta > 0) {
@@ -702,6 +706,7 @@ void Window::initSettings()
 	a_ib_restore.setChecked(sett.value(SETT_RESTORE_TAGS, true).toBool());
 	a_tag_forcefirst.setChecked(sett.value(SETT_FORCE_AUTHOR_FIRST, false).toBool());
 	a_fit_to_screen.setChecked(sett.value(SETT_FIT_TO_SCREEN, false).toBool());
+	a_navigate_by_wheel.setChecked(sett.value(SETT_NAVIGATE_BY_WHEEL, false).toBool());
 
 	m_show_current_directory = sett.value(SETT_SHOW_CURRENT_DIR, true).toBool();
 
@@ -1187,6 +1192,7 @@ void Window::createActions()
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
 	a_edit_mode.setShortcut(    QKeySequence(Qt::Key_F2));
 	a_rotate_cw.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_Comma));
+	a_navigate_by_wheel.setShortcut(QKeySequence(Qt::Key_ScrollLock));
 	a_rotate_ccw.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_Period));
 	a_fit_to_screen.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
 
@@ -1212,6 +1218,7 @@ void Window::createActions()
 	a_ib_restore.setCheckable(true);
 	a_tag_forcefirst.setCheckable(true);
 	a_fit_to_screen.setCheckable(true);
+	a_navigate_by_wheel.setCheckable(true);
 	a_view_statusbar.setCheckable(true);
 	a_view_fullscreen.setCheckable(true);
 	a_view_slideshow.setCheckable(true);
@@ -1398,6 +1405,10 @@ void Window::createActions()
 	{
 		QSettings s; s.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
 	});
+	connect(&a_navigate_by_wheel,  &QAction::triggered, [this](bool checked)
+	{
+		QSettings s; s.setValue(SETT_NAVIGATE_BY_WHEEL, checked);
+	});	
 	connect(&a_fit_to_screen,  &QAction::triggered, [this](bool checked)
 	{
 		QSettings s; s.setValue(SETT_FIT_TO_SCREEN, checked);
@@ -1774,6 +1785,8 @@ void Window::createMenus()
 	add_action(menu_options, a_rotate_ccw);
 	add_action(menu_options, a_fit_to_screen);
 	add_separator(menu_options);
+	add_action(menu_options, a_navigate_by_wheel);
+	add_separator(menu_options);
 	add_action(menu_options, a_ib_replace);
 	add_action(menu_options, a_ib_restore);
 	add_action(menu_options, a_tag_forcefirst);
@@ -1793,6 +1806,7 @@ void Window::createMenus()
 	add_separator(menu_context_tagger);
 	add_action(menu_context_tagger, a_next_file);
 	add_action(menu_context_tagger, a_prev_file);
+	add_action(menu_context_tagger, a_navigate_by_wheel);
 	add_separator(menu_context_tagger);
 	menu_context_tagger.addMenu(&menu_view);
 	menu_context_tagger.addMenu(&menu_sort);
