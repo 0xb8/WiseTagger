@@ -332,7 +332,20 @@ void Tagger::addTags(QString tags, int *tag_count)
 
 void Tagger::resetText()
 {
-	setText(QFileInfo(m_file_queue.current()).completeBaseName());
+	m_last_caption_file_contents.clear();
+	auto current_fi = QFileInfo(m_file_queue.current());
+
+	switch (m_tag_storage) {
+	case TagStorage::Filename:
+		setText(current_fi.completeBaseName());
+		break;
+	case TagStorage::CaptionFile:
+	        {
+		        auto caption_data = readCaptionFile(current_fi);
+			setText(caption_data.isEmpty() ? current_fi.completeBaseName() : caption_data);
+			break;
+	        }
+	}
 }
 
 bool Tagger::openFileInQueue(size_t index)
@@ -521,7 +534,15 @@ bool Tagger::fileModified() const
 	if(isEmpty()) // NOTE: to avoid FileQueue::current() returning invalid reference.
 		return false;
 
-	return m_input.text() != QFileInfo(m_file_queue.current()).completeBaseName();
+	auto current_fi = QFileInfo(m_file_queue.current());
+
+	switch (m_tag_storage) {
+	case TagStorage::Filename:
+		return m_input.text() != current_fi.completeBaseName();
+	case TagStorage::CaptionFile:
+		return m_input.tags() != readCaptionFile(current_fi);
+	}
+	Q_UNREACHABLE();
 }
 
 bool Tagger::fileRenameable() const
@@ -890,6 +911,7 @@ void Tagger::findTagsFiles(bool force)
 		return;
 
 	m_previous_dir = current_dir;
+	m_tag_storage = QFile::exists(current_dir + "/.caption_mode.txt") ? TagStorage::CaptionFile : TagStorage::Filename;
 
 	const QString tagsfile = normal_tag_file_pattern();
 	const QString override = override_tag_file_pattern();
@@ -1274,6 +1296,10 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 	if(!fileModified())
 		return RenameStatus::NotModified;
 
+	if (m_tag_storage == TagStorage::CaptionFile) {
+		return updateCaption(options);
+	}
+
 	const QFileInfo file(m_file_queue.current());
 	QString new_file_path;
 
@@ -1423,9 +1449,122 @@ Tagger::RenameStatus Tagger::rename(RenameOptions options)
 
 	if(messagebox_reply == QMessageBox::Discard) {
 		// NOTE: restore to initial state to prevent multiple rename dialogs
-		setText(file.completeBaseName());
+		resetText();
 		return RenameStatus::NotModified;
 	}
 
 	return RenameStatus::Failed;
+}
+
+Tagger::RenameStatus Tagger::updateCaption(RenameOptions options)
+{
+	Q_ASSERT(m_tag_storage == TagStorage::CaptionFile);
+
+	if (m_input.text().isEmpty())
+		return RenameStatus::Failed;
+
+	const QFileInfo file(m_file_queue.current());
+
+	int messagebox_reply = 0;
+	bool force_rename = options.testFlag(RenameOption::ForceRename);
+	if (!force_rename) {
+
+		// these should already be sorted by fixTags() call above.
+		// original tags list is sorted when initially created.
+		auto current_tags = m_input.tags_list();
+
+		QString added_tags, removed_tags;
+		getTagDifference(m_original_tags, current_tags, added_tags, removed_tags, false);
+
+		// only show removed tags diff when it wasn't just the hash filename
+		if (m_original_tags.size() == 1 && util::is_hex_string(m_original_tags[0])) {
+			removed_tags.clear();
+		}
+
+		/* Show save dialog */
+		QMessageBox renameMessageBox(QMessageBox::Question,
+		        tr("Update captions?"),
+		        tr("<p>Update captions for <b>%1</b>?</p>").arg(file.completeBaseName()) + added_tags + removed_tags,
+		        QMessageBox::Save|QMessageBox::Discard);
+
+		renameMessageBox.addButton(QMessageBox::Cancel);
+		renameMessageBox.setButtonText(QMessageBox::Save, tr("Update"));
+		renameMessageBox.setButtonText(QMessageBox::Discard, tr("Discard"));
+		messagebox_reply = renameMessageBox.exec();
+	}
+
+	QSettings settings;
+	if(force_rename || messagebox_reply == QMessageBox::Save) {
+		bool result = writeCaptionFile(file, m_input.tags_list());
+		if (result) {
+			return RenameStatus::Renamed;
+		} else {
+			QMessageBox::critical(this,
+			        tr("Cannot update captions file"),
+			        tr("<p>Cannot update captions for <b>%1</b></p>"
+			           "<p>Error opening captions file for writing.</p>"
+			           "<p>Please check the permissions and try again.</p>")
+			                .arg(file.fileName()));
+
+			return RenameStatus::Failed;
+		}
+	}
+
+	if(messagebox_reply == QMessageBox::Cancel) {
+		return RenameStatus::Cancelled;
+	}
+
+	if(messagebox_reply == QMessageBox::Discard) {
+		// NOTE: restore to initial state to prevent multiple rename dialogs
+		resetText();
+		return RenameStatus::NotModified;
+	}
+
+	return RenameStatus::Failed;
+}
+
+QString Tagger::readCaptionFile(QFileInfo source_file) const
+{
+	if (!m_last_caption_file_contents.isEmpty())
+		return m_last_caption_file_contents;
+
+	auto caption_file_path = source_file.path() + "/" + source_file.completeBaseName() + ".txt";
+	pdbg << "reading caption file" << caption_file_path;
+
+	QFile caption_file{caption_file_path};
+	if (!caption_file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+		return QString{};
+	}
+
+	QTextStream stream(&caption_file);
+	stream.setCodec("UTF-8");
+
+	auto captions = stream.readAll().remove(QChar(',')).trimmed();
+	m_last_caption_file_contents = captions;
+	return captions;
+}
+
+bool Tagger::writeCaptionFile(QFileInfo source_file, const QStringList& tags) const
+{
+	auto caption_file_path = source_file.path() +  "/" + source_file.completeBaseName() + ".txt";
+	pdbg << "writing caption file" << caption_file_path;
+
+	QFile caption_file{caption_file_path};
+	if (!caption_file.open(QIODevice::WriteOnly|QIODevice::Text)) {
+		return false;
+	}
+
+	m_last_caption_file_contents.clear();
+
+	QTextStream stream(&caption_file);
+	stream.setCodec("UTF-8");
+
+	int counter = tags.size();
+	for (const auto& tag : tags) {
+		stream << tag;
+		if (--counter) {
+			stream << QStringLiteral(", ");
+		}
+	}
+	return true;
 }

@@ -359,6 +359,9 @@ private:
 	void tagsFetched(QString file, QString tags);
 	void getTagDifference(QStringList current_tags, QStringList new_tags, QString& added, QString& removed, bool show_merge_hint);
 	QByteArray read_tag_data(const QStringList& tags_files);
+	RenameStatus updateCaption(RenameOptions options);
+	QString readCaptionFile(QFileInfo source_file) const;
+	bool writeCaptionFile(QFileInfo source_file, const QStringList &tags) const;
 
 	static constexpr int m_tag_input_layout_margin = 10;
 
@@ -383,9 +386,21 @@ private:
 
 	QString     m_queue_filter_src;
 
+	// cache last caption file contents
+	mutable QString     m_last_caption_file_contents;
+
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
 	unsigned    m_overall_new_tag_counts = 0u;
+
+	/*!
+	 * \brief Specifies where tags are stored
+	 */
+	enum class TagStorage {
+		Filename,   ///< Tags are stored in the filename
+		CaptionFile ///< Tags are stored in a separate caption file
+	};
+	TagStorage  m_tag_storage = TagStorage::Filename;
 
 	bool        m_media_muted = false;
 	bool        m_file_renameable = false;
