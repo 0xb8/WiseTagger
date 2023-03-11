@@ -115,6 +115,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_ib_restore(      tr("Re&store Imageboard Tags"), nullptr)
 	, a_tag_forcefirst(  tr("&Force Author Tags First"), nullptr)
 	, a_fit_to_screen(   tr("Fit to Screen"), nullptr)
+	, a_navigate_by_wheel(tr("Switch files with Mouse Wheel"))
 	, a_show_settings(   tr("P&references..."), nullptr)
 	, a_view_normal(     tr("Show &WiseTagger"), nullptr)
 	, a_view_minimal(    tr("Mi&nimal View"), nullptr)
@@ -135,7 +136,6 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, a_play_mute(       tr("Mute"))
 	, a_rotate_cw(       tr("Rotate Clockwise"))
 	, a_rotate_ccw(      tr("Rotate Counter-Clockwise"))
-	, a_navigate_by_wheel(tr("Switch files with Mouse Wheel"))
 	, a_about(           tr("&About..."), nullptr)
 	, a_about_qt(        tr("About &Qt..."), nullptr)
 	, a_help(            tr("&Help..."), nullptr)
@@ -677,6 +677,7 @@ void Window::initSettings()
 	bool show_status = settings.value(SETT_SHOW_STATUS, false).toBool();
 	bool show_menu   = settings.value(SETT_SHOW_MENU,   true).toBool();
 	bool show_input  = settings.value(SETT_SHOW_INPUT,  true).toBool();
+	bool nav_wheel   = settings.value(SETT_NAVIGATE_BY_WHEEL, false).toBool();
 
 	bool restored_geo   = restoreGeometry(settings.value(SETT_WINDOW_GEOMETRY).toByteArray());
 	bool restored_state = restoreState(settings.value(SETT_WINDOW_STATE).toByteArray());
@@ -698,6 +699,7 @@ void Window::initSettings()
 	a_view_statusbar.setChecked(show_status);
 	a_view_menu.setChecked(show_menu);
 	a_view_input.setChecked(show_input);
+	a_navigate_by_wheel.setChecked(nav_wheel);
 
 	a_play_mute.setChecked(settings.value(SETT_PLAY_MUTE, false).toBool());
 	m_tagger.setMediaMuted(a_play_mute.isChecked());
