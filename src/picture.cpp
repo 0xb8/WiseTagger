@@ -184,7 +184,7 @@ bool Picture::loadMedia(const QString &filename)
 
 		if (m_rotation) {
 			QTransform t;
-			t.rotate(-90.0f * m_rotation);
+			t.rotate(90.0f * m_rotation);
 			m_pixmap = m_pixmap.transformed(t, Qt::FastTransformation);
 		}
 
