@@ -1189,10 +1189,10 @@ void Window::createActions()
 	a_play_mute.setShortcut(    QKeySequence(Qt::Key_M));
 	a_go_to_number.setShortcut( QKeySequence(Qt::CTRL + Qt::Key_NumberSign));
 	a_edit_mode.setShortcut(    QKeySequence(Qt::Key_F2));
-	a_rotate_cw.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_Comma));
-	a_navigate_by_wheel.setShortcut(QKeySequence(Qt::Key_ScrollLock));
-	a_rotate_ccw.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_Period));
+	a_rotate_cw.setShortcut(    QKeySequence(Qt::CTRL + Qt::Key_Period));
+	a_rotate_ccw.setShortcut(   QKeySequence(Qt::CTRL + Qt::Key_Comma));
 	a_fit_to_screen.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_0));
+	a_navigate_by_wheel.setShortcut(QKeySequence(Qt::Key_ScrollLock));
 
 	a_view_sort_name.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_N));
 	a_view_sort_type.setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_S, Qt::Key_T));

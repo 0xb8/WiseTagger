@@ -49,7 +49,7 @@ public:
 	/// Upscale small images to fit the widget size
 	bool upscalingEnabled() const;
 
-	/// Set image rotation in 90 degree increments clockwise.
+	/// Returns the image rotation state in 90 degree increments clockwise.
 	int rotation() const;
 
 	/// Set image rotation in 90 degree increments clockwise.
