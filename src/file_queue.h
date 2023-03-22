@@ -109,6 +109,7 @@ public:
 
 	/*!
 	 * \brief Replace queue contents with list of \p paths.
+	 * \param paths List of file or directory paths.
 	 * \param recursive When a directory is encountered in \p paths,
 	 *        enqueue files in all subdirectories recursively.
 	 *
