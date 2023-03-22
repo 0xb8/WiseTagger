@@ -419,26 +419,33 @@ void Tagger::tagsFetched(QString file, QString tags)
 	TaggerStatistics::instance().tagsFetched(overall_tags_count, processed_tags_count);
 }
 
-void Tagger::getTagDifference(QStringList current_list,
-                              QStringList fixed_tags_list,
+void Tagger::getTagDifference(QStringList old_tags,
+                              QStringList new_tags,
                               QString & added_tags_str,
                               QString & removed_tags_str,
                               bool show_merge_hint)
 {
+	// input lists may not be sorted
+	std::sort(old_tags.begin(), old_tags.end());
+	std::sort(new_tags.begin(), new_tags.end());
 
-	QStringList tags_removed; // find tags that are in current tags but not in imageboard tags
-	std::set_difference(current_list.begin(), current_list.end(),
-	                    fixed_tags_list.begin(), fixed_tags_list.end(),
-	                    std::back_inserter(tags_removed));
-
-	QStringList tags_added; // find tags that are in imageboard tags but not in current tags
-	std::set_difference(fixed_tags_list.begin(), fixed_tags_list.end(),
-	                    current_list.begin(), current_list.end(),
+	QStringList tags_added;
+	std::set_difference(new_tags.begin(), new_tags.end(),
+	                    old_tags.begin(), old_tags.end(),
 	                    std::back_inserter(tags_added));
+
+	QStringList tags_removed;
+	std::set_difference(old_tags.begin(), old_tags.end(),
+	                    new_tags.begin(), new_tags.end(),
+	                    std::back_inserter(tags_removed));
 
 	// set of all known tags
 	const auto all_tags_set = QSet<QString>::fromList(m_input.tag_parser().getAllTags());
 	const auto& parser = m_input.tag_parser();
+
+	// sort removed/added tags respecting tag weights
+	parser.sortTags(tags_removed.begin(), tags_removed.end());
+	parser.sortTags(tags_added.begin(), tags_added.end());
 
 	// make known tag bold
 	auto mark_existing_tags = [&all_tags_set, &parser](const auto& tag)
@@ -457,7 +464,7 @@ void Tagger::getTagDifference(QStringList current_list,
 	};
 
 	// make all known tags bold
-	std::transform(fixed_tags_list.begin(), fixed_tags_list.end(), fixed_tags_list.begin(), mark_existing_tags);
+	std::transform(new_tags.begin(), new_tags.end(), new_tags.begin(), mark_existing_tags);
 	std::transform(tags_added.begin(), tags_added.end(), tags_added.begin(), mark_existing_tags);
 	std::transform(tags_removed.begin(), tags_removed.end(), tags_removed.begin(), mark_existing_tags);
 

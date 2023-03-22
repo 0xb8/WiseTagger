@@ -10,6 +10,7 @@
 #include <QLoggingCategory>
 #include <QTextStream>
 #include <QSettings>
+#include <QCollator>
 #include "util/strings.h"
 
 namespace logging_category {
@@ -113,7 +114,7 @@ QStringList TagParser::fixTags(TagEditState& state,
 	}
 
 	if(options.sort) {
-		std::sort(id, text_list.end());
+		sortTags(id, text_list.end());
 	}
 
 	// if the author tag is present and should be forced to be first, move it first
@@ -125,6 +126,22 @@ QStringList TagParser::fixTags(TagEditState& state,
 	}
 
 	return text_list;
+}
+
+void TagParser::sortTags(QStringList::Iterator begin, QStringList::Iterator end) const
+{
+	QCollator collator;
+	collator.setNumericMode(true);
+	std::sort(begin, end, [this, &collator](const auto& a, const auto& b){
+		int wa = getWeight(a);
+		int wb = getWeight(b);
+
+		if (wa == wb) {
+			return collator.compare(a, b) < 0;
+		}
+
+		return wa > wb;
+	});
 }
 
 TagParser::TagClassification TagParser::classify(QStringView tag, const QStringList& all_tags) const
@@ -188,6 +205,15 @@ QColor TagParser::getCustomKindColor(TagKind kind) const
 }
 #endif
 
+int TagParser::getWeight(const QString &tag) const {
+	int ret = 0;
+	auto it = m_tags_weight.find(tag);
+	if (it != m_tags_weight.end()) {
+		ret = it->second;
+	}
+	return ret;
+}
+
 QString TagParser::getReplacement(const QString & tag) const
 {
 	QString ret;
@@ -222,6 +248,7 @@ bool TagParser::loadTagData(const QByteArray& data)
 	m_comment_tooltips.clear();
 	m_regexps.clear();
 	m_tags_classification.clear();
+	m_tags_weight.clear();
 
 #ifdef QT_GUI_LIB
 	m_tag_colors.clear();
@@ -387,6 +414,7 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 
 		int first_parse_symbol_pos = 0;
 		bool appending_main = true, removing_main = false, found_replace = false, found_mapped = false, found_comment = false;
+		int tag_weight = 0;
 
 
 		// if first symbol on line is a single quote, it's a regular expression
@@ -534,22 +562,38 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 			consequent_tags_list.push_back(consequent_tag);
 		}
 
+		auto split_comment = util::split(comment);
+
 #ifdef QT_GUI_LIB
 		QString color_name;
 		QColor tag_color = parse_color(comment, &color_name);
 		if (!tag_color.isValid()) {
 			// try to find the category in the comment
-			const auto split_comment = util::split(comment);
 			for (const auto& part : split_comment) {
 				// check if this string is a category name
 				auto pos = custom_categories.find(part);
 				if (pos != custom_categories.end()) {
 					Q_ASSERT(pos->second.isValid());
 					tag_color = pos->second;
+					break;
 				}
 			}
 		}
 #endif
+		for (auto& part : split_comment) {
+			// try to find tag weight
+			if (part.startsWith(QStringLiteral("weight"))) {
+				QTextStream stream{&part, QIODevice::ReadOnly};
+				stream.seek(6);
+				QChar op{};
+				int tmp_w = 0;
+				stream >> op >> tmp_w;
+				if (op == QChar{':'} || op == QChar{'='}) {
+					tag_weight = tmp_w;
+					break;
+				}
+			}
+		}
 
 		if(!main_tag.isEmpty()) {
 
@@ -569,6 +613,10 @@ QStringList TagParser::parse_tags_file(QTextStream *input)
 					comment = comment.trimmed();
 				}
 #endif
+
+				if (tag_weight != 0) {
+					m_tags_weight.emplace(main_tag, tag_weight);
+				}
 
 				auto it = m_comment_tooltips.find(main_tag);
 				if(it != m_comment_tooltips.end()) {

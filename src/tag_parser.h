@@ -108,6 +108,13 @@ public:
 	                    QString text,
 	                    FixOptions options) const;
 
+	/*!
+	 * \brief Sort tags respecting specified tag weights.
+	 * \param tags Tag list to sort
+	 * \return Sorted list of tags.
+	 */
+	void sortTags(QStringList::Iterator begin, QStringList::Iterator end) const;
+
 
 	/*!
 	 * \brief Bitflags describing the tag.
@@ -151,6 +158,12 @@ public:
 	 */
 	QColor getColor(const QString& tag) const;
 #endif
+
+	/*!
+	 * \brief Get tag sorting weight.
+	 * \retval 0 if no weight is specified
+	 */
+	int getWeight(const QString& tag) const;
 
 	/*!
 	 * \brief Get replacement for a tag.
@@ -282,7 +295,7 @@ private:
 
 #ifdef QT_GUI_LIB
 	/// Map of tag custom colors.
-	std::unordered_map<QString,QColor> m_tag_colors;
+	std::unordered_map<QString, QColor> m_tag_colors;
 #endif
 
 	/// Multimap used to keep track of related tags.
@@ -296,6 +309,9 @@ private:
 
 	/// Classification of tags.
 	std::unordered_map<QStringView, TagClassification> m_tags_classification;
+
+	/// Weights of tags.
+	std::unordered_map<QStringView, int> m_tags_weight;
 
 	/*!
 	 * \brief List of regular expressions to be checked on first tag fix.
