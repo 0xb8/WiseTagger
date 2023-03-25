@@ -365,20 +365,22 @@ bool Tagger::openFileInQueue(size_t index)
 void Tagger::deleteCurrentFile()
 {
 	const auto current_file = currentFile();
+	auto last_modified = QFileInfo(currentFile()).lastModified();
 
 	QMessageBox delete_msgbox(QMessageBox::Question, tr("Delete file?"),
 		tr("<h3 style=\"font-weight: normal;\">Are you sure you want to delete <u>%1</u> permanently?</h3>"
 		   "<dd><dl>File type: %2</dl>"
 		   "<dl>File size: %3</dl>"
 		   "<dl>Dimensions: %4 x %5</dl>"
-		   "<dl>Modified: %6</dl></dd>"
+		   "<dl>Modified: %6 (%7 ago)</dl></dd>"
 		   "<p><em>This action cannot be undone!</em></p>").arg(
 			currentFileName(),
 			currentFileType(),
 			util::size::printable(mediaFileSize()),
 			QString::number(mediaDimensions().width()),
 			QString::number(mediaDimensions().height()),
-			QFileInfo(currentFile()).lastModified().toString(tr("yyyy-MM-dd hh:mm:ss", "modified date"))),
+			last_modified.toString(tr("yyyy-MM-dd hh:mm:ss", "modified date")),
+			util::duration(last_modified.secsTo(QDateTime::currentDateTime()), false)),
 		QMessageBox::Save|QMessageBox::Cancel);
 	delete_msgbox.setButtonText(QMessageBox::Save, tr("Delete"));
 
