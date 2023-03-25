@@ -392,6 +392,7 @@ private:
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
 	unsigned    m_overall_new_tag_counts = 0u;
+	int         m_nav_direction = 0;
 
 	/*!
 	 * \brief Specifies where tags are stored

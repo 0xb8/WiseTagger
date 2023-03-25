@@ -109,6 +109,7 @@ void Tagger::clear()
 	m_input.clearTagData();
 	m_input.clearTagEditState();
 	m_input.setEnabled(true);
+	m_nav_direction = 0;
 	emit cleared();
 }
 
@@ -138,6 +139,7 @@ bool Tagger::openFile(const QString &filename, bool recursive)
 	m_file_queue.sort();
 	m_file_queue.select(m_file_queue.find(fi.absoluteFilePath()));
 	m_picture.cache.clear();
+	m_nav_direction = 0;
 
 	qApp->restoreOverrideCursor();
 	return loadCurrentFile();
@@ -158,6 +160,7 @@ bool Tagger::openDir(const QString &dir, bool recursive)
 	m_file_queue.sort();
 	m_file_queue.select(0u); // NOTE: must select after sorting, otherwise selects first file in directory order
 	m_picture.cache.clear();
+	m_nav_direction = 0;
 
 	qApp->restoreOverrideCursor();
 	return loadCurrentFile();
@@ -178,6 +181,7 @@ bool Tagger::openSession(const QString& sfile)
 		return false;
 	}
 	m_picture.cache.clear();
+	m_nav_direction = 0;
 
 	bool res = loadCurrentFile();
 	if(res) {
@@ -198,6 +202,7 @@ bool Tagger::openSession(const QByteArray & sdata)
 		return false;
 	}
 	m_picture.cache.clear();
+	m_nav_direction = 0;
 
 	bool res = loadCurrentFile();
 	return res;
@@ -221,6 +226,7 @@ void Tagger::nextFile(RenameOptions options, SkipOptions skip_option)
 		}
 	} else {
 		m_file_queue.forward();
+		m_nav_direction = +1;
 	}
 
 	loadCurrentFile();
@@ -244,6 +250,7 @@ void Tagger::prevFile(RenameOptions options, SkipOptions skip_option)
 		}
 	} else {
 		m_file_queue.backward();
+		m_nav_direction = -1;
 	}
 
 	loadCurrentFile();
@@ -351,6 +358,7 @@ void Tagger::resetText()
 bool Tagger::openFileInQueue(size_t index)
 {
 	m_file_queue.select(index);
+	m_nav_direction = 0;
 	return loadCurrentFile();
 }
 
@@ -389,6 +397,9 @@ void Tagger::deleteCurrentFile()
 				   "<p>Next file will be opened instead.</p>"));
 		}
 		m_picture.cache.invalidate(current_file);
+		if (m_nav_direction < 0) {
+			m_file_queue.backward();
+		}
 		loadCurrentFile();
 	}
 }
@@ -1290,6 +1301,7 @@ bool Tagger::selectWithFixableTags(int direction)
 
 		if (check_fixable(file_path)) {
 			openFileInQueue(file_index);
+			m_nav_direction = direction;
 			return true;
 		}
 	}
