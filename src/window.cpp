@@ -678,6 +678,7 @@ void Window::initSettings()
 	bool show_menu   = settings.value(SETT_SHOW_MENU,   true).toBool();
 	bool show_input  = settings.value(SETT_SHOW_INPUT,  true).toBool();
 	bool nav_wheel   = settings.value(SETT_NAVIGATE_BY_WHEEL, false).toBool();
+	bool fit_screen  = settings.value(SETT_FIT_TO_SCREEN, false).toBool();
 
 	bool restored_geo   = restoreGeometry(settings.value(SETT_WINDOW_GEOMETRY).toByteArray());
 	bool restored_state = restoreState(settings.value(SETT_WINDOW_STATE).toByteArray());
@@ -694,6 +695,7 @@ void Window::initSettings()
 	m_statusbar.setVisible(show_status && m_view_mode != ViewMode::Minimal);
 
 	a_view_fullscreen.setChecked(isFullScreen());
+	a_fit_to_screen.setChecked(fit_screen);
 	a_view_slideshow.setChecked(isFullScreen() && !show_menu && !show_input && !show_status);
 	a_view_minimal.setChecked(m_view_mode == ViewMode::Minimal);
 	a_view_statusbar.setChecked(show_status);
@@ -713,8 +715,7 @@ void Window::initSettings()
 	auto edit_mode = settings.value(SETT_EDIT_MODE).value<EditMode>();
 	setEditMode(edit_mode);
 
-	bool fit_to_screen = settings.value(SETT_FIT_TO_SCREEN).toBool();
-	m_tagger.setUpscalingEnabled(fit_to_screen);
+	m_tagger.setUpscalingEnabled(fit_screen);
 
 	updateProxySettings();
 }
