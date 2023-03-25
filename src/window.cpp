@@ -1010,7 +1010,6 @@ void Window::processNewVersion(QNetworkReply *r)
 
 void Window::createCommands()
 {
-	menu_commands.setDisabled(true);
 	QSettings settings;
 	auto size = settings.beginReadArray(SETT_COMMANDS_KEY);
 	for(auto i{0}; i < size; ++i) {
@@ -1030,13 +1029,17 @@ void Window::createCommands()
 		}
 
 		auto binary = cmd.first();
-		if(!QFile::exists(binary)) {
-			pwarn << "Invalid command: executable does not exist";
-			continue;
-		}
 		cmd.removeFirst();
 
 		auto action = menu_commands.addAction(name);
+		if(!QFile::exists(binary)) {
+			pwarn << "Invalid command: executable does not exist:" << binary;
+			action->setText(QStringLiteral("! %1").arg(action->text()));
+			action->setToolTip(tr("Executable \"%1\" does not exist!").arg(binary));
+			action->setEnabled(false);
+			continue;
+		}
+
 		this->addAction(action); // NOTE: to make hotkeys work when menubar is hidden, does not take ownership
 		action->setIcon(util::get_icon_from_executable(binary));
 		if(!hkey.isEmpty()) {
@@ -1152,7 +1155,6 @@ void Window::createCommands()
 
 			}
 		});
-		menu_commands.setEnabled(true);
 	}
 	settings.endArray();
 }
@@ -1405,7 +1407,7 @@ void Window::createActions()
 	{
 		QSettings settings; settings.setValue(SETT_FORCE_AUTHOR_FIRST, checked);
 	});
-	connect(&a_navigate_by_wheel,  &QAction::triggered, [this](bool checked)
+	connect(&a_navigate_by_wheel,  &QAction::triggered, [](bool checked)
 	{
 		QSettings settings; settings.setValue(SETT_NAVIGATE_BY_WHEEL, checked);
 	});	
@@ -1825,6 +1827,7 @@ void Window::createMenus()
 	menuBar()->addMenu(&menu_navigation);
 	menuBar()->addMenu(&menu_view);
 	a_menu_commands_action = menuBar()->addMenu(&menu_commands);
+	menu_commands.setToolTipsVisible(true);
 	menuBar()->addMenu(&menu_options);
 	menuBar()->addMenu(&menu_help);
 	menuBar()->addSeparator();
@@ -1871,9 +1874,7 @@ void Window::updateMenus()
 	a_save_session.setDisabled(val);
 	a_go_to_number.setDisabled(val);
 	a_edit_temp_tags.setDisabled(val);
-	for(auto action : menu_commands.actions()) {
-		action->setDisabled(val);
-	}
+	menu_commands.setDisabled(val);
 
 	bool is_playable = m_tagger.mediaIsVideo() || m_tagger.mediaIsAnimatedImage();
 	if (is_playable) {
