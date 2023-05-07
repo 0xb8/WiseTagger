@@ -110,7 +110,6 @@ public:
 
 	/*!
 	 * \brief Sort tags respecting specified tag weights.
-	 * \param tags Tag list to sort
 	 * \return Sorted list of tags.
 	 */
 	void sortTags(QStringList::Iterator begin, QStringList::Iterator end) const;
@@ -238,8 +237,8 @@ private:
 
 	/*!
 	 * \brief Parse hex color string
-	 * \param input           Input string.
-	 * \param color_name[out] Parsed input color string (optional).
+	 * \param[in] input       Input string.
+	 * \param[out] color_name Parsed input color string (optional).
 	 */
 	static QColor parse_color(const QString& input, QString* color_name = nullptr);
 
