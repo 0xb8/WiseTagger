@@ -169,7 +169,7 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 	auto dir_watcher = std::unique_ptr<QFileSystemWatcher>();
 	QFileInfo fi;
 
-	auto push_file = [&tmp_files, &tmp_dirs_files, &dir_watcher](const auto& fi){
+	auto push_file = [&tmp_files, &tmp_dirs_files, &dir_watcher](const auto& fi, bool watch){
 		// assume makeAbsolute() was called on fileinfo object
 		auto dir_path = fi.path();
 
@@ -180,6 +180,10 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 			files_in_dir.insert(fi.fileName());
 		} else {
 			tmp_dirs_files.insert(dir_path, QSet<QString>{fi.fileName()});
+
+			if (!watch) {
+				return;
+			}
 
 			if (!dir_watcher) {
 				dir_watcher = std::make_unique<QFileSystemWatcher>(QStringList{dir_path});
@@ -205,7 +209,7 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 		fi.makeAbsolute();
 
 		if(fi.isFile() && checkExtension(fi)) {
-			push_file(fi);
+			push_file(fi, false);
 		} else if(fi.isDir()) {
 			QDirIterator it(p, m_ext_filters,
 			                QDir::Files,
@@ -215,7 +219,7 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 				fi.setFile(it.next());
 				Q_ASSERT(fi.isAbsolute());
 
-				push_file(fi);
+				push_file(fi, true);
 				update_ui();
 			}
 		} else {
