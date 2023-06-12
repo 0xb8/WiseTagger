@@ -55,7 +55,6 @@ Tagger::Tagger(QWidget *_parent) :
 
 	m_separator.setFrameStyle(QFrame::HLine | QFrame::Sunken);
 	m_main_layout.addWidget(&m_picture);
-	m_main_layout.addWidget(&m_video);
 	m_main_layout.addWidget(&m_separator);
 	m_main_layout.addLayout(&m_tag_input_layout);
 	setLayout(&m_main_layout);
@@ -63,7 +62,6 @@ Tagger::Tagger(QWidget *_parent) :
 
 	m_playlist.setPlaybackMode(QMediaPlaylist::PlaybackMode::CurrentItemInLoop);
 	m_player.setPlaylist(&m_playlist);
-	m_player.setVideoOutput(&m_video);
 
 	setObjectName(QStringLiteral("Tagger"));
 	m_input.setObjectName(QStringLiteral("Input"));
@@ -1137,16 +1135,29 @@ bool Tagger::loadVideo(const QFileInfo & file)
 		return false;
 	}
 
+	if (!m_video) {
+		// BUG: Delay creation of video widget to avoid crashing the broken NVidia driver
+		// when running Stable Diffusion and WiseTagger at the same time.
+		// The crash will still happen, but only if video file was actually opened.
+		// ¯\_(ツ)_/¯
+		m_video = new QVideoWidget{this};
+		m_main_layout.insertWidget(m_main_layout.indexOf(&m_picture) + 1,
+		                           m_video);
+		m_player.setVideoOutput(m_video);
+	}
+
 	m_picture.hide();
-	m_video.show();
+	m_video->show();
 	playMedia();
 	return true;
 }
 
 void Tagger::hideVideo()
 {
-	stopVideo();
-	m_video.hide();
+	if (m_video) {
+		stopVideo();
+		m_video->hide();
+	}
 	m_picture.show();
 }
 

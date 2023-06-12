@@ -365,29 +365,30 @@ private:
 
 	static constexpr int m_tag_input_layout_margin = 10;
 
-	QVBoxLayout m_main_layout;
-	QVBoxLayout m_tag_input_layout;
+	QVBoxLayout     m_main_layout;
+	QVBoxLayout     m_tag_input_layout;
 
-	QFrame       m_separator;
-	Picture      m_picture;
-	QVideoWidget m_video;
-	TagInput     m_input;
-	TagFetcher   m_fetcher;
-	QBasicTimer  m_hide_request_timer;
+	QFrame          m_separator;
+	Picture         m_picture;
+	TagInput        m_input;
+	TagFetcher      m_fetcher;
+	QBasicTimer     m_hide_request_timer;
 
-	FileQueue   m_file_queue;
-	QMediaPlaylist m_playlist;
-	QMediaPlayer m_player;
+	FileQueue       m_file_queue;
 
-	QString     m_previous_dir;
-	QStringList m_current_tag_files;
-	QString     m_temp_tags;
-	QStringList m_original_tags;
+	QVideoWidget*   m_video = nullptr;
+	QMediaPlaylist  m_playlist;
+	QMediaPlayer    m_player;
 
-	QString     m_queue_filter_src;
+	QString         m_previous_dir;
+	QStringList     m_current_tag_files;
+	QString         m_temp_tags;
+	QStringList     m_original_tags;
+
+	QString         m_queue_filter_src;
 
 	// cache last caption file contents
-	mutable QString     m_last_caption_file_contents;
+	mutable QString m_last_caption_file_contents;
 
 	std::unordered_map<QString, unsigned> m_new_tag_counts;
 	std::unique_ptr<QFileSystemWatcher> m_fs_watcher;
