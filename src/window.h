@@ -203,6 +203,7 @@ private:
 	QMenu menu_sort;
 	QMenu menu_options;
 	QMenu menu_commands;
+	QMenu menu_context_commands;
 	QMenu menu_help;
 	QMenu menu_short_notification;
 	QMenu menu_notifications;

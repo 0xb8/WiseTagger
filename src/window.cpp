@@ -148,6 +148,7 @@ Window::Window(QWidget *_parent) : QMainWindow(_parent)
 	, menu_sort(         tr("&Sort Queue"))
 	, menu_options(      tr("&Options"))
 	, menu_commands(     tr("&Commands"))
+	, menu_context_commands(tr("&Commands"))
 	, menu_help(	     tr("&Help"))
 	, menu_short_notification()
 	, menu_notifications()
@@ -746,6 +747,7 @@ void Window::updateSettings()
 		this->removeAction(action); // NOTE: to prevent hotkey conflicts
 	}
 	menu_commands.clear();
+	menu_context_commands.clear();
 	createCommands();
 	updateMenus();
 }
@@ -1023,6 +1025,7 @@ void Window::createCommands()
 
 		if(name == CMD_SEPARATOR) {
 			menu_commands.addSeparator();
+			menu_context_commands.addSeparator();
 			continue;
 		}
 
@@ -1043,6 +1046,7 @@ void Window::createCommands()
 		}
 
 		this->addAction(action); // NOTE: to make hotkeys work when menubar is hidden, does not take ownership
+		menu_context_commands.addAction(action);
 		action->setIcon(util::get_icon_from_executable(binary));
 		if(!hkey.isEmpty()) {
 			action->setShortcut(hkey);
@@ -1825,6 +1829,7 @@ void Window::createMenus()
 	add_separator(menu_context_tagger);
 	menu_context_tagger.addMenu(&menu_view);
 	menu_context_tagger.addMenu(&menu_sort);
+	menu_context_tagger.addMenu(&menu_context_commands);
 	add_action(menu_context_tagger, a_set_queue_filter);
 	add_separator(menu_context_tagger);
 	add_action(menu_context_tagger, a_ib_replace);
@@ -1888,6 +1893,7 @@ void Window::updateMenus()
 	a_go_to_number.setDisabled(val);
 	a_edit_temp_tags.setDisabled(val);
 	menu_commands.setDisabled(val);
+	menu_context_commands.setDisabled(val);
 
 	bool is_playable = m_tagger.mediaIsVideo() || m_tagger.mediaIsAnimatedImage();
 	if (is_playable) {
