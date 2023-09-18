@@ -1130,7 +1130,8 @@ void Window::createCommands()
 					QTextStream in{tags_data};
 					in.setCodec("UTF-8");
 
-					auto tags = in.readAll().replace('\n', ' ').trimmed();
+					auto raw = in.readAll();
+					auto tags = raw.replace('\n', ' ').trimmed();
 					if (!tags.isEmpty()) {
 						auto current_tags = m_tagger.text();
 
@@ -1143,6 +1144,9 @@ void Window::createCommands()
 							break;
 						case CommandOutputMode::Prepend:
 							m_tagger.setText(tags + " " + current_tags);
+							break;
+						case CommandOutputMode::Show:
+							addNotification(tr("Command Output"), raw, raw);
 							break;
 						default:
 							break;
