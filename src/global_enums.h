@@ -88,6 +88,7 @@ public:
 		Replace, ///< Command output replaces current tags
 		Append,  ///< Command output appended to current tags
 		Prepend, ///< Command output prepended to current tags
+		Copy,    ///< Command output is copied into the system clipboard
 		Show     ///< Command output is displayed as a notification message
 	};
 	Q_ENUM(CommandOutputMode);

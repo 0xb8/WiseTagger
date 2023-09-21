@@ -1012,6 +1012,8 @@ void Window::processNewVersion(QNetworkReply *r)
 void Window::createCommands()
 {
 	QSettings settings;
+	static QClipboard *clipboard = QGuiApplication::clipboard();
+
 	auto size = settings.beginReadArray(SETT_COMMANDS_KEY);
 	for(auto i{0}; i < size; ++i) {
 		settings.setArrayIndex(i);
@@ -1144,6 +1146,10 @@ void Window::createCommands()
 							break;
 						case CommandOutputMode::Prepend:
 							m_tagger.setText(tags + " " + current_tags);
+							break;
+						case CommandOutputMode::Copy:
+							clipboard->setText(raw);
+							addNotification(tr("Command Executed"), tr("Results copied to clipboard"));
 							break;
 						case CommandOutputMode::Show:
 							addNotification(tr("Command Output"), raw, raw);
