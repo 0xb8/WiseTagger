@@ -1012,7 +1012,6 @@ void Window::processNewVersion(QNetworkReply *r)
 void Window::createCommands()
 {
 	QSettings settings;
-	static QClipboard *clipboard = QGuiApplication::clipboard();
 
 	auto size = settings.beginReadArray(SETT_COMMANDS_KEY);
 	for(auto i{0}; i < size; ++i) {
@@ -1112,6 +1111,9 @@ void Window::createCommands()
 				        [this, name, binary, mode](int exit_code, QProcess::ExitStatus exit_status)
 				{
 					Q_UNUSED(exit_code);
+					
+					QClipboard *clipboard = QGuiApplication::clipboard();
+					Q_ASSERT(clipboard != nullptr);
 
 					if (exit_status != QProcess::NormalExit) {
 						QMessageBox::critical(this,
