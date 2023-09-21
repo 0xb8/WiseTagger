@@ -1012,6 +1012,7 @@ void Window::processNewVersion(QNetworkReply *r)
 void Window::createCommands()
 {
 	QSettings settings;
+
 	auto size = settings.beginReadArray(SETT_COMMANDS_KEY);
 	for(auto i{0}; i < size; ++i) {
 		settings.setArrayIndex(i);
@@ -1110,6 +1111,9 @@ void Window::createCommands()
 				        [this, name, binary, mode](int exit_code, QProcess::ExitStatus exit_status)
 				{
 					Q_UNUSED(exit_code);
+					
+					QClipboard *clipboard = QGuiApplication::clipboard();
+					Q_ASSERT(clipboard != nullptr);
 
 					if (exit_status != QProcess::NormalExit) {
 						QMessageBox::critical(this,
@@ -1130,7 +1134,8 @@ void Window::createCommands()
 					QTextStream in{tags_data};
 					in.setCodec("UTF-8");
 
-					auto tags = in.readAll().replace('\n', ' ').trimmed();
+					auto raw = in.readAll();
+					auto tags = raw.replace('\n', ' ').trimmed();
 					if (!tags.isEmpty()) {
 						auto current_tags = m_tagger.text();
 
@@ -1143,6 +1148,13 @@ void Window::createCommands()
 							break;
 						case CommandOutputMode::Prepend:
 							m_tagger.setText(tags + " " + current_tags);
+							break;
+						case CommandOutputMode::Copy:
+							clipboard->setText(raw);
+							addNotification(tr("Command Executed"), tr("Results copied to clipboard"));
+							break;
+						case CommandOutputMode::Show:
+							addNotification(tr("Command Output"), raw, raw);
 							break;
 						default:
 							break;

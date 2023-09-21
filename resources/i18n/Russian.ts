@@ -331,38 +331,38 @@ In Main View</source>
         <translation>&amp;Команды</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="710"/>
+        <location filename="../../ui/settings.ui" line="720"/>
         <source>Move selected item up</source>
         <translation>Переместить выделенный элемент вверх</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="713"/>
+        <location filename="../../ui/settings.ui" line="723"/>
         <source>&amp;Up</source>
         <translation>&amp;Вверх</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="723"/>
+        <location filename="../../ui/settings.ui" line="733"/>
         <source>Move selected item down</source>
         <translation>Переместить выделенный элемент вниз</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="726"/>
+        <location filename="../../ui/settings.ui" line="736"/>
         <source>&amp;Down</source>
         <translation>В&amp;низ</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="770"/>
+        <location filename="../../ui/settings.ui" line="780"/>
         <source>A&amp;dd...</source>
         <translation>&amp;Добавить...</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="786"/>
+        <location filename="../../ui/settings.ui" line="796"/>
         <source>Remove selected item</source>
         <translation>Удалить выделенный элемент</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="789"/>
-        <location filename="../../ui/settings.ui" line="1037"/>
+        <location filename="../../ui/settings.ui" line="799"/>
+        <location filename="../../ui/settings.ui" line="1047"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
@@ -420,103 +420,113 @@ In Main View</source>
         <translation>Добавить в начало тегов</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="696"/>
+        <location filename="../../ui/settings.ui" line="693"/>
+        <source>Copy to clipboard</source>
+        <translation>Скопировать в буфер обмена</translation>
+    </message>
+    <message>
+        <location filename="../../ui/settings.ui" line="698"/>
+        <source>Show as a notification</source>
+        <translation>Показать в уведомлении</translation>
+    </message>
+    <message>
+        <location filename="../../ui/settings.ui" line="706"/>
         <source>&amp;Output</source>
         <translation>&amp;Вывод</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="812"/>
+        <location filename="../../ui/settings.ui" line="822"/>
         <source>&amp;Backup</source>
         <translation>&amp;Резервное копирование</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="818"/>
+        <location filename="../../ui/settings.ui" line="828"/>
         <location filename="../../src/settings_dialog.cpp" line="106"/>
         <source>Export settings to file</source>
         <translation>Экспорт настроек в файл</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="836"/>
+        <location filename="../../ui/settings.ui" line="846"/>
         <source>&amp;Export Settings</source>
         <translation>&amp;Экспортировать настройки</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="874"/>
+        <location filename="../../ui/settings.ui" line="884"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To use exported settings in portable mode, save them to &lt;span style=&quot; font-family:&apos;Courier New&apos;;&quot;&gt;WiseTagger.ini&lt;/span&gt; file and place that file into the &lt;span style=&quot; font-family:&apos;Courier New&apos;;&quot;&gt;/settings/catgirl/&lt;/span&gt; within your portable app directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Для того, чтобы использовать экспортированные настройки в портативном режиме, экспортируйте настройки в файл с именем &lt;span style=&quot; font-family:&apos;Courier New&apos;;&quot;&gt;WiseTagger.ini&lt;/span&gt; и поместите его в папку &lt;span style=&quot; font-family:&apos;Courier New&apos;;&quot;&gt;/settings/catgirl/&lt;/span&gt; внутри директории портативной версии программы.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="890"/>
+        <location filename="../../ui/settings.ui" line="900"/>
         <source>Import Settings from file</source>
         <translation>Импорт настроек из файла</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="905"/>
+        <location filename="../../ui/settings.ui" line="915"/>
         <source>&amp;Import Settings</source>
         <translation>&amp;Импортировать настройки</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="943"/>
+        <location filename="../../ui/settings.ui" line="953"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Caution!&lt;/span&gt; Importing settings will overwrite current settings.&lt;/p&gt;&lt;p&gt;Be sure to back them up first!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Внимание!&lt;/span&gt; Импортирование настроек приведет к перезаписи текущих настроек.&lt;/p&gt;&lt;p&gt;Сначала экспортируйте текущие настройки в файл во избежание их потери.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="989"/>
+        <location filename="../../ui/settings.ui" line="999"/>
         <source>New Command</source>
         <translation>Добавить команду</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="992"/>
+        <location filename="../../ui/settings.ui" line="1002"/>
         <source>Inserts new command</source>
         <translation>Добавляет новую команду</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="997"/>
+        <location filename="../../ui/settings.ui" line="1007"/>
         <source>New Separator</source>
         <translation>Добавить разделитель</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1000"/>
+        <location filename="../../ui/settings.ui" line="1010"/>
         <source>Inserts separator</source>
         <translation>Добавляет разделитель</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1005"/>
+        <location filename="../../ui/settings.ui" line="1015"/>
         <source>Path</source>
         <translation>Путь к файлу</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1008"/>
+        <location filename="../../ui/settings.ui" line="1018"/>
         <source>Inserts current file path placeholder</source>
         <translation>Вставляет путь к файлу</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1013"/>
+        <location filename="../../ui/settings.ui" line="1023"/>
         <source>Directory</source>
         <translation>Директория</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1016"/>
+        <location filename="../../ui/settings.ui" line="1026"/>
         <source>Inserts current directory placeholder</source>
         <translation>Вставляет директорию файла</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1021"/>
+        <location filename="../../ui/settings.ui" line="1031"/>
         <source>Name</source>
         <translation>Имя файла</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1024"/>
+        <location filename="../../ui/settings.ui" line="1034"/>
         <source>Inserts current file name placeholder</source>
         <translation>Вставляет имя файла</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1029"/>
+        <location filename="../../ui/settings.ui" line="1039"/>
         <source>Base Name</source>
         <translation>Имя без расширения</translation>
     </message>
     <message>
-        <location filename="../../ui/settings.ui" line="1032"/>
+        <location filename="../../ui/settings.ui" line="1042"/>
         <source>Inserts current file base name (without extension) placeholder</source>
         <translation>Вставляет имя файла без расширения</translation>
     </message>
@@ -639,262 +649,262 @@ In Main View</source>
 <context>
     <name>Tagger</name>
     <message>
-        <location filename="../../src/tagger.cpp" line="179"/>
-        <location filename="../../src/tagger.cpp" line="200"/>
+        <location filename="../../src/tagger.cpp" line="177"/>
+        <location filename="../../src/tagger.cpp" line="198"/>
         <source>Load Session Failed</source>
         <translation>Загрузка сессии не удалась</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="180"/>
+        <location filename="../../src/tagger.cpp" line="178"/>
         <source>&lt;p&gt;Could not load session from &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось загрузить сессию из файла &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="201"/>
+        <location filename="../../src/tagger.cpp" line="199"/>
         <source>&lt;p&gt;Could not load session from memory buffer&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось загрузить сессию из буфера в памяти&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="223"/>
+        <location filename="../../src/tagger.cpp" line="221"/>
         <source>Could not find next fixable file</source>
         <translation>Не удалось найти следующий файл для исправления тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="224"/>
+        <location filename="../../src/tagger.cpp" line="222"/>
         <source>&lt;p&gt;Could not find next fixable file in queue.&lt;/p&gt;&lt;p&gt;Perhaps all files in the queue are fixed?&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось найти следующий файл с исправлением тегов.&lt;/p&gt;&lt;p&gt;Возможно, все файлы в очереди имеют корректные теги?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="247"/>
+        <location filename="../../src/tagger.cpp" line="245"/>
         <source>Could not find previous fixable file</source>
         <translation>Не удалось найти предыдущий файл для исправления</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="248"/>
+        <location filename="../../src/tagger.cpp" line="246"/>
         <source>&lt;p&gt;Could not find previous fixable file in queue.&lt;/p&gt;&lt;p&gt;Perhaps all files in  the queue are fixed?&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось найти предыдущий файл c исправлением тегов.&lt;/p&gt;&lt;p&gt;Возможно, все файлы в очереди имеют корректные теги?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="370"/>
+        <location filename="../../src/tagger.cpp" line="368"/>
         <source>Delete file?</source>
         <translation>Удалить файл?</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="382"/>
+        <location filename="../../src/tagger.cpp" line="380"/>
         <source>yyyy-MM-dd hh:mm:ss</source>
         <comment>modified date</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="385"/>
+        <location filename="../../src/tagger.cpp" line="383"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="395"/>
+        <location filename="../../src/tagger.cpp" line="393"/>
         <source>Could not delete file</source>
         <translation>Не удалось удалить файл</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="396"/>
+        <location filename="../../src/tagger.cpp" line="394"/>
         <source>&lt;p&gt;Could not delete current file.&lt;/p&gt;&lt;p&gt;This can happen when you don&apos;t have write permissions to that file, or when file has been renamed or removed by another application.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось удалить файл.&lt;/p&gt;&lt;p&gt;Это может произойти, если вы не обладаете разрешением на запись, или когда файл был переименован или удален другой программой.&lt;/p&gt;&lt;p&gt;Будет открыт следующий файл.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="308"/>
+        <location filename="../../src/tagger.cpp" line="306"/>
         <source>Fetched tags mismatch</source>
         <translation>Несовпадение полученных тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="309"/>
+        <location filename="../../src/tagger.cpp" line="307"/>
         <source>&lt;p&gt;Imageboard tags do not match current tags:&lt;p style=&quot;margin-left: 1em; line-height: 130%;&quot;&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;/p&gt;%2%3&lt;p&gt;Please choose what to do:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Теги имиджборды не совпадают с текущими тегами:&lt;p style=&quot;margin-left: 1em; line-height: 130%;&quot;&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/p&gt;&lt;/p&gt;%2%3&lt;p&gt;Выберите действие:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="320"/>
+        <location filename="../../src/tagger.cpp" line="318"/>
         <source>Merge tags</source>
         <translation>Соединить теги вместе</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="371"/>
+        <location filename="../../src/tagger.cpp" line="369"/>
         <source>&lt;h3 style=&quot;font-weight: normal;&quot;&gt;Are you sure you want to delete &lt;u&gt;%1&lt;/u&gt; permanently?&lt;/h3&gt;&lt;dd&gt;&lt;dl&gt;File type: %2&lt;/dl&gt;&lt;dl&gt;File size: %3&lt;/dl&gt;&lt;dl&gt;Dimensions: %4 x %5&lt;/dl&gt;&lt;dl&gt;Modified: %6 (%7 ago)&lt;/dl&gt;&lt;/dd&gt;&lt;p&gt;&lt;em&gt;This action cannot be undone!&lt;/em&gt;&lt;/p&gt;</source>
         <translation>&lt;h3 style=&quot;font-weight: normal;&quot;&gt;Вы действительно хотите безвозвратно удалить &lt;b&gt;%1&lt;/b&gt;?&lt;/h3&gt;&lt;dd&gt;&lt;dl&gt;Тип файла: %2&lt;/dl&gt;&lt;dl&gt;Размер файла: %3&lt;/dl&gt;&lt;dl&gt;Разрешение: %4 x %5&lt;/dl&gt;&lt;dl&gt;Изменен: %6 (%7 назад)&lt;/dl&gt;&lt;/dd&gt;&lt;p&gt;&lt;em&gt;Это действие не может быть отменено!&lt;/em&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="495"/>
+        <location filename="../../src/tagger.cpp" line="493"/>
         <source>press &lt;i&gt;Merge tags&lt;/i&gt; to keep</source>
         <translation>нажмите &lt;i&gt;Соединить теги вместе&lt;/i&gt;, чтобы оставить</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="843"/>
+        <location filename="../../src/tagger.cpp" line="841"/>
         <source>Error opening tag file</source>
         <translation>Не удалось открыть файл тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="844"/>
+        <location filename="../../src/tagger.cpp" line="842"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл мог быть переименован или удален другим приложением.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="893"/>
+        <location filename="../../src/tagger.cpp" line="891"/>
         <source>Edit temporary tags</source>
         <translation>Редактор временных тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="894"/>
+        <location filename="../../src/tagger.cpp" line="892"/>
         <source>Temporary tags:</source>
         <translation>Временные теги:</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1103"/>
+        <location filename="../../src/tagger.cpp" line="1101"/>
         <source>Renaming disabled: User has no write permission in this directory.</source>
         <translation>Переименование невозможно: Нет прав на запись в этой директории.</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1122"/>
-        <location filename="../../src/tagger.cpp" line="1367"/>
+        <location filename="../../src/tagger.cpp" line="1120"/>
+        <location filename="../../src/tagger.cpp" line="1378"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File path is too long: %2 characters, max 259.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Путь к файлу слишком длинный: %2 символов, максимальная длина - 259 символов.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1134"/>
+        <location filename="../../src/tagger.cpp" line="1132"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Could not add media to playlist.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Не удалось добавить файл в плейлист.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1337"/>
+        <location filename="../../src/tagger.cpp" line="1348"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File name is too long: &lt;b&gt;%2&lt;/b&gt; characters, but maximum allowed file name length is %3 characters.&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось переименовать &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Имя файла слишком длинное: &lt;b&gt;%2&lt;/b&gt; символа, но максимальная длина имени файла &amp;ndash; %3 символов.&lt;/p&gt;&lt;p&gt;Измените теги и попробуйте снова.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1431"/>
+        <location filename="../../src/tagger.cpp" line="1442"/>
         <source>&lt;p&gt;Could not rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File may have been renamed or removed by another application, file with this name may already exist in the current directory or exceed the character limit.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось переименовать &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл мог быть переименован или удалён другой программой, либо файл с таким именем уже существует в текущей директории, либо длина пути к файлу превышает лимит системы.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1446"/>
+        <location filename="../../src/tagger.cpp" line="1457"/>
         <source>&lt;p&gt;Cannot rename &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File with this name already exists in &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Please change some of your tags.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось переименовать &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Файл с таким именем уже существует в &lt;b&gt;%2&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Измените теги и попробуйте снова.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1507"/>
+        <location filename="../../src/tagger.cpp" line="1518"/>
         <source>Update captions?</source>
         <translation>Обновить теги?</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1508"/>
+        <location filename="../../src/tagger.cpp" line="1519"/>
         <source>&lt;p&gt;Update captions for &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;</source>
         <translation>&lt;p&gt;Обновить теги для &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1512"/>
+        <location filename="../../src/tagger.cpp" line="1523"/>
         <source>Update</source>
         <translation>Обновить</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1524"/>
+        <location filename="../../src/tagger.cpp" line="1535"/>
         <source>Cannot update captions file</source>
         <translation>Невозможно обновить файл тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1525"/>
+        <location filename="../../src/tagger.cpp" line="1536"/>
         <source>&lt;p&gt;Cannot update captions for &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Error opening captions file for writing.&lt;/p&gt;&lt;p&gt;Please check the permissions and try again.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Невозможно обновить теги для &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Ошибка открытия файла тегов на запись.&lt;/p&gt;&lt;p&gt;Пожалуйста, проверьте права доступа и попробуйте снова.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="86"/>
-        <location filename="../../src/tagger.cpp" line="1090"/>
-        <location filename="../../src/tagger.cpp" line="1121"/>
-        <location filename="../../src/tagger.cpp" line="1133"/>
-        <location filename="../../src/tagger.cpp" line="1366"/>
+        <location filename="../../src/tagger.cpp" line="84"/>
+        <location filename="../../src/tagger.cpp" line="1088"/>
+        <location filename="../../src/tagger.cpp" line="1119"/>
+        <location filename="../../src/tagger.cpp" line="1131"/>
+        <location filename="../../src/tagger.cpp" line="1377"/>
         <source>Error opening media</source>
         <translation>Не удалось открыть медиафайл</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="868"/>
+        <location filename="../../src/tagger.cpp" line="866"/>
         <source>[ edit all tag files ]</source>
         <translation>[ редактировать все файлы тегов ]</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="871"/>
+        <location filename="../../src/tagger.cpp" line="869"/>
         <source>Edit Tag File</source>
         <translation>Редактировать файл тегов</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="872"/>
+        <location filename="../../src/tagger.cpp" line="870"/>
         <source>&lt;p&gt;Select tag file to edit:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Выберите файл тегов для редактирования:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1061"/>
-        <location filename="../../src/tagger.cpp" line="1072"/>
+        <location filename="../../src/tagger.cpp" line="1059"/>
+        <location filename="../../src/tagger.cpp" line="1070"/>
         <source>Error opening file</source>
         <translation>Не удалось открыть файл</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="87"/>
+        <location filename="../../src/tagger.cpp" line="85"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File format is not supported or file corrupted.&lt;/p&gt;&lt;p&gt;Media player error: %2&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Формат файла не поддерживается, или файл был повреждён.&lt;/p&gt;&lt;p&gt;Ошибка воспроизведения: %2&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="319"/>
+        <location filename="../../src/tagger.cpp" line="317"/>
         <source>Use only imageboard tags</source>
         <translation>Использовать теги имиджборды</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="486"/>
+        <location filename="../../src/tagger.cpp" line="484"/>
         <source>Tags that will be added:</source>
         <translation>Теги, которые будут добавлены:</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="492"/>
+        <location filename="../../src/tagger.cpp" line="490"/>
         <source>Tags that will be removed:</source>
         <translation>Теги, которые будут удалены:</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1062"/>
+        <location filename="../../src/tagger.cpp" line="1060"/>
         <source>&lt;p&gt;Directory &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;File from another directory will be opened instead.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Папка &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;&lt;p&gt;Будет открыт файл из другой директории.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1073"/>
+        <location filename="../../src/tagger.cpp" line="1071"/>
         <source>&lt;p&gt;File &lt;b&gt;%1&lt;/b&gt; does not exist anymore.&lt;/p&gt;&lt;p&gt;Next file will be opened instead.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Файл &lt;b&gt;%1&lt;/b&gt; больше не существует.&lt;/p&gt;&lt;p&gt;Будет открыт следующий файл.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1091"/>
+        <location filename="../../src/tagger.cpp" line="1089"/>
         <source>&lt;p&gt;Could not open &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;File format is not supported or file corrupted.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось открыть &lt;b&gt;%1&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Формат файла не поддерживается, или файл был повреждён.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1399"/>
+        <location filename="../../src/tagger.cpp" line="1410"/>
         <source>&lt;p&gt;Rename &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;</source>
         <translation>&lt;p&gt;Переименовать &lt;b&gt;%1&lt;/b&gt;?&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1445"/>
+        <location filename="../../src/tagger.cpp" line="1456"/>
         <source>Cannot rename file</source>
         <translation>Не удалось переименовать файл</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1398"/>
+        <location filename="../../src/tagger.cpp" line="1409"/>
         <source>Rename file?</source>
         <translation>Переименовать файл?</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1403"/>
+        <location filename="../../src/tagger.cpp" line="1414"/>
         <source>Rename</source>
         <translation>Да</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1404"/>
-        <location filename="../../src/tagger.cpp" line="1513"/>
+        <location filename="../../src/tagger.cpp" line="1415"/>
+        <location filename="../../src/tagger.cpp" line="1524"/>
         <source>Discard</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location filename="../../src/tagger.cpp" line="1336"/>
-        <location filename="../../src/tagger.cpp" line="1430"/>
+        <location filename="../../src/tagger.cpp" line="1347"/>
+        <location filename="../../src/tagger.cpp" line="1441"/>
         <source>Could not rename file</source>
         <translation>Не удалось переименовать файл</translation>
     </message>
@@ -981,13 +991,13 @@ In Main View</source>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="105"/>
-        <location filename="../../src/window.cpp" line="1482"/>
+        <location filename="../../src/window.cpp" line="1492"/>
         <source>Save Session</source>
         <translation>Сохранить сессию</translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="104"/>
-        <location filename="../../src/window.cpp" line="1502"/>
+        <location filename="../../src/window.cpp" line="1512"/>
         <source>Open Session</source>
         <translation>Открыть сессию</translation>
     </message>
@@ -1282,149 +1292,159 @@ In Main View</source>
         <translation>&lt;h3&gt;Доступна новая версия: v%1&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;%2&quot;&gt;Нажмите здесь, чтобы загрузить новую версию&lt;/a&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1039"/>
+        <location filename="../../src/window.cpp" line="1041"/>
         <source>Executable &quot;%1&quot; does not exist!</source>
         <translation>Исполняемый файл &quot;%1&quot; не существует!</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1083"/>
-        <location filename="../../src/window.cpp" line="1116"/>
+        <location filename="../../src/window.cpp" line="1085"/>
+        <location filename="../../src/window.cpp" line="1118"/>
         <source>Failed to start command</source>
         <translation>Не удалось запустить команду</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1084"/>
-        <location filename="../../src/window.cpp" line="1117"/>
+        <location filename="../../src/window.cpp" line="1086"/>
+        <location filename="../../src/window.cpp" line="1119"/>
         <source>&lt;p&gt;Failed to launch command &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Could not start &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось выполнить команду &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Невозможно запустить &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1178"/>
+        <location filename="../../src/window.cpp" line="1152"/>
+        <source>Command Executed</source>
+        <translation>Команда выполнена</translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="1152"/>
+        <source>Results copied to clipboard</source>
+        <translation>Результаты скопированы в буфер обмена</translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="1188"/>
         <source>Ctrl+C</source>
         <comment>Copy to clipboard</comment>
         <translation>Ctrl+C</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1182"/>
+        <location filename="../../src/window.cpp" line="1192"/>
         <source>Ctrl+Shift+F</source>
         <comment>Fetch tags</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1209"/>
+        <location filename="../../src/window.cpp" line="1219"/>
         <source>Open all files in the folder and all subfolders.</source>
         <translation>Открыть все файлы в папке и её подпапках.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1214"/>
+        <location filename="../../src/window.cpp" line="1224"/>
         <source>Reload changes in tag files and search for newly added tag files.</source>
         <translation>Перезагрузить измененные файлы тегов и искать добавленные файлы тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1218"/>
+        <location filename="../../src/window.cpp" line="1228"/>
         <source>Toggle forcing the author tag to be the first tag in the filename.</source>
         <translation>Включить перестановку тегов автора в начало результирующего имени файла.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1251"/>
+        <location filename="../../src/window.cpp" line="1261"/>
         <source>Search results page opened in default browser.</source>
         <translation>Результаты поиска были открыты в браузере по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1312"/>
+        <location filename="../../src/window.cpp" line="1322"/>
         <source>Tag fetching failed</source>
         <translation>Не удалось загрузить теги</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1313"/>
+        <location filename="../../src/window.cpp" line="1323"/>
         <source>Tag fetching failed:  %1</source>
         <translation>Не удалось загрузить теги:  %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1319"/>
+        <location filename="../../src/window.cpp" line="1329"/>
         <source>Tag file changed</source>
         <translation>Файл тегов изменён</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1320"/>
+        <location filename="../../src/window.cpp" line="1330"/>
         <source>Tag file has been edited or removed.
 All changes successfully applied.</source>
         <translation>Файл тегов был редактирован или удален.
 Все изменения успешно применены.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1484"/>
-        <location filename="../../src/window.cpp" line="1504"/>
+        <location filename="../../src/window.cpp" line="1494"/>
+        <location filename="../../src/window.cpp" line="1514"/>
         <source>Session Files (%1)</source>
         <translation>Файлы сессий (%1)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1490"/>
+        <location filename="../../src/window.cpp" line="1500"/>
         <source>Save Session Error</source>
         <translation>Не удалось сохранить сессию</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1491"/>
+        <location filename="../../src/window.cpp" line="1501"/>
         <source>&lt;p&gt;Could not save session to &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Check file permissions.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось сохранить сессию в файл &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Проверьте права доступа.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1510"/>
+        <location filename="../../src/window.cpp" line="1520"/>
         <source>Enter Number</source>
         <translation>Введите число</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1511"/>
+        <location filename="../../src/window.cpp" line="1521"/>
         <source>Enter file number to open:</source>
         <translation>Введите номер файла:</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1520"/>
+        <location filename="../../src/window.cpp" line="1530"/>
         <source>Notifications  </source>
         <translation>Уведомления  </translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1520"/>
+        <location filename="../../src/window.cpp" line="1530"/>
         <source>Notifications: %1</source>
         <translation>Уведомлений: %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1538"/>
+        <location filename="../../src/window.cpp" line="1548"/>
         <source>&lt;p&gt;New tags were found, ordered by number of times used:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Найдены новые теги, в порядке убывания частоты использования:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1545"/>
+        <location filename="../../src/window.cpp" line="1555"/>
         <source>Check Notifications menu for list of added tags.</source>
         <translation>Откройте меню уведомлений, чтобы просмотреть список новых тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1576"/>
+        <location filename="../../src/window.cpp" line="1586"/>
         <source>Tag files conflict</source>
         <translation>Конфликт файлов тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1577"/>
+        <location filename="../../src/window.cpp" line="1587"/>
         <source>Some of the tag files are in conflict</source>
         <translation>Некоторые файлы тегов конфликтуют</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1578"/>
+        <location filename="../../src/window.cpp" line="1588"/>
         <source>&lt;p&gt;Because &lt;em&gt;overriding tag files&lt;/em&gt; halt the search, the following &lt;em&gt;appending tag files&lt;/em&gt; are always ignored:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%1&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;Overriding tag files that caused the conflict:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%2&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Поскольку &lt;em&gt;переопределяющие файлы тегов&lt;/em&gt; останавливают поиск, следующие &lt;em&gt;нормальные файлы тегов&lt;/em&gt; всегда игнорируются:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%1&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;Переопределяющие файлы тегов, вызвавшие конфликт:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%2&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Документация по переопределяющим и нормальным файлам тегов&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1600"/>
+        <location filename="../../src/window.cpp" line="1610"/>
         <source>Tag file syntax error</source>
         <translation>Синтаксическая ошибка в файле тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1600"/>
+        <location filename="../../src/window.cpp" line="1610"/>
         <source>Regular expression syntax error</source>
         <translation>Синтаксическая ошибка в регулярном выражении</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1601"/>
+        <location filename="../../src/window.cpp" line="1611"/>
         <source>&lt;h2&gt;Regular expression syntax error&lt;/h2&gt;&lt;p&gt;At column %1: %2&lt;/p&gt;&lt;pre style=&quot;font-family: Consolas, &quot;Lucida Console&quot;, Monaco,monospace,monospace;&quot;&gt;%3
 
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</source>
@@ -1433,22 +1453,22 @@ All changes successfully applied.</source>
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1614"/>
+        <location filename="../../src/window.cpp" line="1624"/>
         <source>Network error</source>
         <translation>Ошибка соединения</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1613"/>
+        <location filename="../../src/window.cpp" line="1623"/>
         <source>Error connecting to %1: %2</source>
         <translation>Не удалось подключиться к %1: %2</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1668"/>
+        <location filename="../../src/window.cpp" line="1678"/>
         <source>Tag Fetching Done.</source>
         <translation>Загрузка тегов завершена.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1919"/>
+        <location filename="../../src/window.cpp" line="1929"/>
         <source>About %1</source>
         <translation>О программе %1</translation>
     </message>
@@ -1458,18 +1478,18 @@ All changes successfully applied.</source>
         <translation>Загрузка %1 на iqdb.org... загружено %2%</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1551"/>
+        <location filename="../../src/window.cpp" line="1561"/>
         <source>&lt;h2&gt;Could not locate suitable tag file&lt;/h2&gt;&lt;p&gt;You can still browse and rename files, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened file and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Подходящий файл тегов не обнаружен&lt;/h2&gt;&lt;p&gt;Вы сможете просматривать и переименовывать файлы, однако автодополнение тегов не будет работать.&lt;/p&gt;&lt;hr&gt;WiseTagger ищет &lt;em&gt;файлы тегов&lt;/em&gt; в папке текущего изображения, и во всех папках выше.&lt;p&gt;Названия файлов тегов:&lt;dd&gt;&lt;dl&gt;Нормальный файл: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Переопределяющий файл: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Папки, в которых производился поиск, по порядку:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Документация по добавляемым и переопределяемым файлам тегов&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1935"/>
+        <location filename="../../src/window.cpp" line="1945"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation>включен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1935"/>
+        <location filename="../../src/window.cpp" line="1945"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation>выключен</translation>
@@ -1545,132 +1565,137 @@ All changes successfully applied.</source>
         <translation>Доступна новая версия</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1167"/>
+        <location filename="../../src/window.cpp" line="1155"/>
+        <source>Command Output</source>
+        <translation>Вывод команды</translation>
+    </message>
+    <message>
+        <location filename="../../src/window.cpp" line="1177"/>
         <source>Ctrl+D</source>
         <comment>File|Open Directory</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1179"/>
+        <location filename="../../src/window.cpp" line="1189"/>
         <source>Ctrl+A</source>
         <comment>Fix tags</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1180"/>
+        <location filename="../../src/window.cpp" line="1190"/>
         <source>Ctrl+P</source>
         <comment>Open post</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1181"/>
+        <location filename="../../src/window.cpp" line="1191"/>
         <source>Ctrl+F</source>
         <comment>Reverse search</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1183"/>
+        <location filename="../../src/window.cpp" line="1193"/>
         <source>Ctrl+L</source>
         <comment>Open file location</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1210"/>
+        <location filename="../../src/window.cpp" line="1220"/>
         <source>Open imageboard post of this image.</source>
         <translation>Открыть это изображение на странице имиджборды.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1211"/>
+        <location filename="../../src/window.cpp" line="1221"/>
         <source>Upload this image to iqdb.org and open search results page in default browser.</source>
         <translation>Загрузить это изображение на iqdb.org и открыть страницу с результатом поиска в браузере по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1212"/>
+        <location filename="../../src/window.cpp" line="1222"/>
         <source>Open folder where this image is located.</source>
         <translation>Открыть папку, в которой находится это изображение.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1213"/>
+        <location filename="../../src/window.cpp" line="1223"/>
         <source>Open folder where current tag file is located.</source>
         <translation>Открыть папку, в которой расположен текущий файл тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1215"/>
+        <location filename="../../src/window.cpp" line="1225"/>
         <source>Open current tag file in default text editor.</source>
         <translation>Открыть текущий файл тегов в текстовом редакторе по-умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1216"/>
+        <location filename="../../src/window.cpp" line="1226"/>
         <source>Toggle replacing certain imageboard tags with their shorter version.</source>
         <translation>Включить замену тегов некоторых имиджборд на их более короткие версии.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1217"/>
+        <location filename="../../src/window.cpp" line="1227"/>
         <source>Toggle restoring imageboard tags back to their original version.</source>
         <translation>Включить восстановление тегов имиджборд к их оригинальным версиям.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1251"/>
+        <location filename="../../src/window.cpp" line="1261"/>
         <source>IQDB upload finished</source>
         <translation>Загрузка файла завершена</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1545"/>
+        <location filename="../../src/window.cpp" line="1555"/>
         <source>New tags added</source>
         <translation>Найдены новые теги</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1549"/>
+        <location filename="../../src/window.cpp" line="1559"/>
         <source>Tag file not found</source>
         <translation>Файл тегов не найден</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1550"/>
+        <location filename="../../src/window.cpp" line="1560"/>
         <source>Could not locate suitable tag file</source>
         <translation>Подходящий файл тегов не обнаружен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1615"/>
+        <location filename="../../src/window.cpp" line="1625"/>
         <source>Network error: %1</source>
         <translation>Ошибка соединения: %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1644"/>
+        <location filename="../../src/window.cpp" line="1654"/>
         <source>Name</source>
         <translation>имени</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1647"/>
+        <location filename="../../src/window.cpp" line="1657"/>
         <source>Type</source>
         <translation>типу</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1650"/>
+        <location filename="../../src/window.cpp" line="1660"/>
         <source>Modification Date</source>
         <translation>дате изменения</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1653"/>
+        <location filename="../../src/window.cpp" line="1663"/>
         <source>Size</source>
         <translation>размеру</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1656"/>
+        <location filename="../../src/window.cpp" line="1666"/>
         <source>Name Length</source>
         <translation>длине имени</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1659"/>
+        <location filename="../../src/window.cpp" line="1669"/>
         <source>Tag Count</source>
         <translation>числу тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1662"/>
+        <location filename="../../src/window.cpp" line="1672"/>
         <source>Queue Sorted by %1</source>
         <translation>Очередь отсортирована по %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1931"/>
+        <location filename="../../src/window.cpp" line="1941"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
