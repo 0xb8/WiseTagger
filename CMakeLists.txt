@@ -1,5 +1,5 @@
-project(WiseTagger)
 cmake_minimum_required(VERSION 3.16)
+project(WiseTagger)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(APP_VERSION "0.6.9")
+set(APP_VERSION "0.6.10")
 set(TARGET_PRODUCT "WiseTagger")
 set(TARGET_COMPANY "catgirl")
 
