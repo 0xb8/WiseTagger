@@ -12,6 +12,10 @@
 
 QString util::duration(uint64_t duration_sec, bool with_seconds)
 {
+	if (duration_sec == 0) {
+		return qApp->translate("Duration", "%n seconds", "", 0);
+	}
+
 	auto yr  = duration_sec / 31536000;
 	auto mon = (duration_sec / 2678400) % 12;
 	auto d   = (duration_sec / 86400) % 31;
