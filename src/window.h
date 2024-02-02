@@ -55,6 +55,9 @@ public slots:
 	/// Hide current upload progress
 	void hideUploadProgress();
 
+	/// Alert by flashing taskbar entry.
+	void alert();
+
 	/// Update the window's title
 	void updateWindowTitle();
 

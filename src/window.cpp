@@ -261,15 +261,18 @@ void Window::updateWindowTitle()
 	if(m_tagger.isEmpty()) {
 		setWindowTitle(tr(Window::MainWindowTitleEmpty)
 			.arg(qApp->applicationVersion()));
+		setWindowFilePath(QString{});
 		return;
 	}
 
 	const auto media_dimensions = m_tagger.mediaDimensions();
+	setWindowModified(m_tagger.fileModified());
+	setWindowFilePath(m_tagger.currentFile());
 
 	if (m_tagger.mediaIsVideo() || m_tagger.mediaIsAnimatedImage()) {
 		setWindowTitle(tr(Window::MainWindowTitleFrameRate).arg(
 			m_tagger.currentFileName(),
-			m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+			QStringLiteral("[*]"),
 			QString::number(media_dimensions.width()),
 			QString::number(media_dimensions.height()),
 			util::size::printable(m_tagger.mediaFileSize()),
@@ -278,7 +281,7 @@ void Window::updateWindowTitle()
 	} else {
 		setWindowTitle(tr(Window::MainWindowTitle).arg(
 			m_tagger.currentFileName(),
-			m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+			QStringLiteral("[*]"),
 			QString::number(media_dimensions.width()),
 			QString::number(media_dimensions.height()),
 			util::size::printable(m_tagger.mediaFileSize()),
@@ -295,7 +298,7 @@ void Window::updateWindowTitleProgress(int progress)
 	}
 	setWindowTitle(tr(Window::MainWindowTitleProgress).arg(
 		m_tagger.currentFileName(),
-		m_tagger.fileModified() ? QStringLiteral("*") : QStringLiteral(""),
+		QStringLiteral("[*]"),
 		QString::number(m_tagger.mediaDimensions().width()),
 		QString::number(m_tagger.mediaDimensions().height()),
 		util::size::printable(m_tagger.mediaFileSize()),
@@ -492,6 +495,13 @@ void Window::hideUploadProgress()
 #endif
 	updateWindowTitle();
 	statusBar()->showMessage(tr("Done."), 3000);
+}
+
+void Window::alert()
+{
+	auto window = windowHandle();
+	Q_ASSERT(window != nullptr);
+	window->alert(2500);
 }
 
 //------------------------------------------------------------------------------
@@ -1127,6 +1137,7 @@ void Window::createCommands()
 
 
 						hideUploadProgress();
+						alert();
 						return;
 					}
 
@@ -1261,6 +1272,7 @@ void Window::createActions()
 
 	connect(&m_reverse_search, &ReverseSearch::uploadProgress, this, &Window::showUploadProgress);
 	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::hideUploadProgress);
+	connect(&m_reverse_search, &ReverseSearch::finished,       this, &Window::alert);
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched, &TaggerStatistics::instance(), &TaggerStatistics::reverseSearched);
 	connect(&m_reverse_search, &ReverseSearch::reverseSearched, this, [this]()
 	{
@@ -1325,6 +1337,7 @@ void Window::createActions()
 	{
 		if (file == m_tagger.currentFile()) {
 			hideUploadProgress();
+			alert();
 			addNotification(tr("Tag fetching failed"), reason);
 			statusBar()->showMessage(tr("Tag fetching failed:  %1").arg(reason), 3000);
 		}
@@ -1681,6 +1694,7 @@ void Window::createActions()
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::ready, this, [this](QString, QString)
 	{
 		hideUploadProgress();
+		alert();
 		statusBar()->showMessage(tr("Tag Fetching Done."), 3000);
 	});
 }
