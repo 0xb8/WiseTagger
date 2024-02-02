@@ -889,7 +889,7 @@ bool FileQueue::fileMatchesFilter(const QFileInfo& file) const
 	};
 
 	auto is_tag_quoted = [](const QString& tag) {
-		return tag.startsWith('"') && tag.endsWith('"');
+		return tag.size() > 2 && tag.startsWith('"') && tag.endsWith('"');
 	};
 
 	auto unquoted_tag = [](const QString& tag) {
