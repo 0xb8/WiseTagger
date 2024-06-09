@@ -119,7 +119,7 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 									if (!res.isEmpty()) {
 										res.append(' ');
 									}
-									res.append(tag->toString().replace(' ', '_'));
+									res.append(tag->toString().replace(' ', '_').toLower());
 								}
 							}
 						}
