@@ -54,7 +54,7 @@ void TagFetcher::fetch_tags(const QString & filename, QString url) {
 	auto hash_hex = hash.result().toHex();
 
 	if (url.isEmpty()) {
-		url = QStringLiteral("https://capi-v2.sankakucomplex.com/posts?tags=md5:");
+		url = QStringLiteral("https://sankakuapi.com/posts?tags=md5:");
 		// "https://danbooru.donmai.us/posts.json?tags=md5:"
 		url.append(hash_hex);
 	}
@@ -114,12 +114,12 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 						for (auto val : arr) {
 							if (val.isObject()) {
 								auto obj = val.toObject();
-								auto tag = obj.find("name_en");
+								auto tag = obj.find("tagName");
 								if (tag != obj.end() && tag->isString()) {
 									if (!res.isEmpty()) {
 										res.append(' ');
 									}
-									res.append(tag->toString().replace(' ', '_').toLower());
+									res.append(tag->toString());
 								}
 							}
 						}
