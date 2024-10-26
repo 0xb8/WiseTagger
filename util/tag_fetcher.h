@@ -88,12 +88,18 @@ signals:
 
 private:
 	void open_reply(QNetworkReply* reply);
+	void check_result(const QString& file);
 
 	/// file size threshold for displaying progress bar.
 	static constexpr int64_t m_progress_threshold = 5 * 1024 * 1024;
 
 	QNetworkAccessManager m_nam;
-	QNetworkReply *m_reply = nullptr;
+	QList<QNetworkReply*> m_replies;
+
+	QStringList m_fetched_tags;
+	QList<QPair<QUrl, QString>> m_net_errors;
+	QList<QPair<QUrl, QString>> m_errors;
+
 	bool m_hashing = false;
 };
 

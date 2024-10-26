@@ -4,7 +4,8 @@
 <context>
     <name>Duration</name>
     <message numerus="yes">
-        <location filename="../../util/strings.cpp" line="22"/>
+        <location filename="../../util/strings.cpp" line="16"/>
+        <location filename="../../util/strings.cpp" line="26"/>
         <source>%n seconds</source>
         <translation>
             <numerusform>%n секунда</numerusform>
@@ -13,7 +14,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../util/strings.cpp" line="23"/>
+        <location filename="../../util/strings.cpp" line="27"/>
         <source>%n minutes</source>
         <translation>
             <numerusform>%n минута</numerusform>
@@ -22,7 +23,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../util/strings.cpp" line="24"/>
+        <location filename="../../util/strings.cpp" line="28"/>
         <source>%n hours</source>
         <translation>
             <numerusform>%n час</numerusform>
@@ -32,7 +33,7 @@
     </message>
     <message numerus="yes">
         <location filename="../../src/statistics.cpp" line="178"/>
-        <location filename="../../util/strings.cpp" line="25"/>
+        <location filename="../../util/strings.cpp" line="29"/>
         <source>%n days</source>
         <translation>
             <numerusform>%n день</numerusform>
@@ -41,7 +42,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../util/strings.cpp" line="26"/>
+        <location filename="../../util/strings.cpp" line="30"/>
         <source>%n months</source>
         <translation>
             <numerusform>%n месяц</numerusform>
@@ -50,7 +51,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../util/strings.cpp" line="27"/>
+        <location filename="../../util/strings.cpp" line="31"/>
         <source>%n years</source>
         <translation>
             <numerusform>%n год</numerusform>
@@ -631,17 +632,17 @@ In Main View</source>
 <context>
     <name>TagFetcher</name>
     <message>
-        <location filename="../../util/tag_fetcher.cpp" line="34"/>
+        <location filename="../../util/tag_fetcher.cpp" line="41"/>
         <source>Could not map file.</source>
         <translation>Не удалось отобразить файл в память.</translation>
     </message>
     <message>
-        <location filename="../../util/tag_fetcher.cpp" line="143"/>
+        <location filename="../../util/tag_fetcher.cpp" line="166"/>
         <source>Image MD5 mismatch! Perhaps the file is corrupted?</source>
         <translation>Несовпадение MD5-суммы изображения! Возможно, файл поврежден?</translation>
     </message>
     <message>
-        <location filename="../../util/tag_fetcher.cpp" line="148"/>
+        <location filename="../../util/tag_fetcher.cpp" line="173"/>
         <source>Image not found on the imageboard.</source>
         <translation>Изображение не найдено на имиджборде.</translation>
     </message>
@@ -991,13 +992,13 @@ In Main View</source>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="105"/>
-        <location filename="../../src/window.cpp" line="1492"/>
+        <location filename="../../src/window.cpp" line="1511"/>
         <source>Save Session</source>
         <translation>Сохранить сессию</translation>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="104"/>
-        <location filename="../../src/window.cpp" line="1512"/>
+        <location filename="../../src/window.cpp" line="1531"/>
         <source>Open Session</source>
         <translation>Открыть сессию</translation>
     </message>
@@ -1048,6 +1049,7 @@ In Main View</source>
     </message>
     <message>
         <location filename="../../src/window.cpp" line="150"/>
+        <location filename="../../src/window.cpp" line="151"/>
         <source>&amp;Commands</source>
         <translation>&amp;Команды</translation>
     </message>
@@ -1217,234 +1219,234 @@ In Main View</source>
         <translation>&amp;Сортировать</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="151"/>
+        <location filename="../../src/window.cpp" line="152"/>
         <source>&amp;Help</source>
         <translation>&amp;Справка</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="184"/>
+        <location filename="../../src/window.cpp" line="185"/>
         <source>Open File</source>
         <translation>Открыть файл</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="203"/>
+        <location filename="../../src/window.cpp" line="204"/>
         <source>Open Folder Recursively</source>
         <translation>Открыть папку рекурсивно</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="203"/>
+        <location filename="../../src/window.cpp" line="204"/>
         <source>Open Folder</source>
         <translation>Открыть папку</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="236"/>
+        <location filename="../../src/window.cpp" line="237"/>
         <source>Invalid proxy</source>
         <translation>Ошибка прокси</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="237"/>
+        <location filename="../../src/window.cpp" line="238"/>
         <source>&lt;p&gt;Proxy URL &lt;em&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/em&gt; is invalid. Proxy &lt;b&gt;will not&lt;/b&gt; be used!&lt;/p&gt;</source>
         <translation>&lt;p&gt;URL прокси&lt;em&gt;&lt;code&gt;%1&lt;/code&gt;&lt;/em&gt; некорректен. Прокси &lt;b&gt;не будет использована!&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="343"/>
+        <location filename="../../src/window.cpp" line="347"/>
         <source>(not matched)</source>
         <translation>(не соответствует)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="460"/>
+        <location filename="../../src/window.cpp" line="464"/>
         <source>Fetching tags from %1...</source>
         <translation>Загрузка тегов с %1...</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="484"/>
+        <location filename="../../src/window.cpp" line="488"/>
         <source>Running %1...</source>
         <translation>Выполняется %1...</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="641"/>
+        <location filename="../../src/window.cpp" line="652"/>
         <source>%1 Command Line Usage</source>
         <translation>Параметры командной строки %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="642"/>
+        <location filename="../../src/window.cpp" line="653"/>
         <source>&lt;h4&gt;&lt;pre&gt;%1 [-r | --recursive] [-h | --help] [path...]&lt;/pre&gt;&lt;/h4&gt;&lt;table&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;-r, --recursive&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Open files in subdirectories recursively.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;-h, --help&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Display this help message.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;path...&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;One or several file/directory paths.&lt;br/&gt;Use &quot;-&quot; to read paths from &lt;code&gt;stdin&lt;/code&gt;.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</source>
         <translation>&lt;h4&gt;&lt;pre&gt;%1 [-r | --recursive] [-h | --help] [path...]&lt;/pre&gt;&lt;/h4&gt;&lt;table&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;-r, --recursive&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Открывать файлы в подпапках рекурсивно.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;-h, --help&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Показать это справочное сообщение.&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;&lt;code&gt;path...&lt;/code&gt;&lt;/td&gt;&lt;td style=&quot;padding: 5px 10px&quot;&gt;Один или несколько путей к файлам/папкам.&lt;br/&gt;Используйте &quot;-&quot; для чтения списка путей из &lt;code&gt;stdin&lt;/code&gt;.&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="885"/>
+        <location filename="../../src/window.cpp" line="897"/>
         <source>Naming mode</source>
         <translation>Режим именования</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="888"/>
+        <location filename="../../src/window.cpp" line="900"/>
         <source>Tagging mode</source>
         <translation>Режим тегирования</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1002"/>
+        <location filename="../../src/window.cpp" line="1014"/>
         <source>Version %1 is available.</source>
         <translation>Доступна версия %1.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1003"/>
+        <location filename="../../src/window.cpp" line="1015"/>
         <source>&lt;h3&gt;Updated version available: v%1&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;%2&quot;&gt;Click here to download new version&lt;/a&gt;.&lt;/p&gt;</source>
         <translation>&lt;h3&gt;Доступна новая версия: v%1&lt;/h3&gt;&lt;p&gt;&lt;a href=&quot;%2&quot;&gt;Нажмите здесь, чтобы загрузить новую версию&lt;/a&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1041"/>
+        <location filename="../../src/window.cpp" line="1053"/>
         <source>Executable &quot;%1&quot; does not exist!</source>
         <translation>Исполняемый файл &quot;%1&quot; не существует!</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1085"/>
-        <location filename="../../src/window.cpp" line="1118"/>
+        <location filename="../../src/window.cpp" line="1098"/>
+        <location filename="../../src/window.cpp" line="1134"/>
         <source>Failed to start command</source>
         <translation>Не удалось запустить команду</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1086"/>
-        <location filename="../../src/window.cpp" line="1119"/>
+        <location filename="../../src/window.cpp" line="1099"/>
+        <location filename="../../src/window.cpp" line="1135"/>
         <source>&lt;p&gt;Failed to launch command &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Could not start &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось выполнить команду &lt;b&gt;%1&lt;/b&gt;:&lt;/p&gt;&lt;p&gt;Невозможно запустить &lt;code&gt;%2&lt;/code&gt;.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1152"/>
+        <location filename="../../src/window.cpp" line="1169"/>
         <source>Command Executed</source>
         <translation>Команда выполнена</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1152"/>
+        <location filename="../../src/window.cpp" line="1169"/>
         <source>Results copied to clipboard</source>
         <translation>Результаты скопированы в буфер обмена</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1188"/>
+        <location filename="../../src/window.cpp" line="1205"/>
         <source>Ctrl+C</source>
         <comment>Copy to clipboard</comment>
         <translation>Ctrl+C</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1192"/>
+        <location filename="../../src/window.cpp" line="1209"/>
         <source>Ctrl+Shift+F</source>
         <comment>Fetch tags</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1219"/>
+        <location filename="../../src/window.cpp" line="1236"/>
         <source>Open all files in the folder and all subfolders.</source>
         <translation>Открыть все файлы в папке и её подпапках.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1224"/>
+        <location filename="../../src/window.cpp" line="1241"/>
         <source>Reload changes in tag files and search for newly added tag files.</source>
         <translation>Перезагрузить измененные файлы тегов и искать добавленные файлы тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1228"/>
+        <location filename="../../src/window.cpp" line="1245"/>
         <source>Toggle forcing the author tag to be the first tag in the filename.</source>
         <translation>Включить перестановку тегов автора в начало результирующего имени файла.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1261"/>
+        <location filename="../../src/window.cpp" line="1279"/>
         <source>Search results page opened in default browser.</source>
         <translation>Результаты поиска были открыты в браузере по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1322"/>
+        <location filename="../../src/window.cpp" line="1341"/>
         <source>Tag fetching failed</source>
         <translation>Не удалось загрузить теги</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1323"/>
+        <location filename="../../src/window.cpp" line="1342"/>
         <source>Tag fetching failed:  %1</source>
         <translation>Не удалось загрузить теги:  %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1329"/>
+        <location filename="../../src/window.cpp" line="1348"/>
         <source>Tag file changed</source>
         <translation>Файл тегов изменён</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1330"/>
+        <location filename="../../src/window.cpp" line="1349"/>
         <source>Tag file has been edited or removed.
 All changes successfully applied.</source>
         <translation>Файл тегов был редактирован или удален.
 Все изменения успешно применены.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1494"/>
-        <location filename="../../src/window.cpp" line="1514"/>
+        <location filename="../../src/window.cpp" line="1513"/>
+        <location filename="../../src/window.cpp" line="1533"/>
         <source>Session Files (%1)</source>
         <translation>Файлы сессий (%1)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1500"/>
+        <location filename="../../src/window.cpp" line="1519"/>
         <source>Save Session Error</source>
         <translation>Не удалось сохранить сессию</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1501"/>
+        <location filename="../../src/window.cpp" line="1520"/>
         <source>&lt;p&gt;Could not save session to &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Check file permissions.&lt;/p&gt;</source>
         <translation>&lt;p&gt;Не удалось сохранить сессию в файл &lt;b&gt;%1&lt;/b&gt;.&lt;/p&gt;&lt;p&gt;Проверьте права доступа.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1520"/>
+        <location filename="../../src/window.cpp" line="1539"/>
         <source>Enter Number</source>
         <translation>Введите число</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1521"/>
+        <location filename="../../src/window.cpp" line="1540"/>
         <source>Enter file number to open:</source>
         <translation>Введите номер файла:</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1530"/>
+        <location filename="../../src/window.cpp" line="1549"/>
         <source>Notifications  </source>
         <translation>Уведомления  </translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1530"/>
+        <location filename="../../src/window.cpp" line="1549"/>
         <source>Notifications: %1</source>
         <translation>Уведомлений: %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1548"/>
+        <location filename="../../src/window.cpp" line="1567"/>
         <source>&lt;p&gt;New tags were found, ordered by number of times used:&lt;/p&gt;</source>
         <translation>&lt;p&gt;Найдены новые теги, в порядке убывания частоты использования:&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1555"/>
+        <location filename="../../src/window.cpp" line="1574"/>
         <source>Check Notifications menu for list of added tags.</source>
         <translation>Откройте меню уведомлений, чтобы просмотреть список новых тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1586"/>
+        <location filename="../../src/window.cpp" line="1605"/>
         <source>Tag files conflict</source>
         <translation>Конфликт файлов тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1587"/>
+        <location filename="../../src/window.cpp" line="1606"/>
         <source>Some of the tag files are in conflict</source>
         <translation>Некоторые файлы тегов конфликтуют</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1588"/>
+        <location filename="../../src/window.cpp" line="1607"/>
         <source>&lt;p&gt;Because &lt;em&gt;overriding tag files&lt;/em&gt; halt the search, the following &lt;em&gt;appending tag files&lt;/em&gt; are always ignored:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%1&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;Overriding tag files that caused the conflict:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%2&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Поскольку &lt;em&gt;переопределяющие файлы тегов&lt;/em&gt; останавливают поиск, следующие &lt;em&gt;нормальные файлы тегов&lt;/em&gt; всегда игнорируются:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%1&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;Переопределяющие файлы тегов, вызвавшие конфликт:&lt;/p&gt;&lt;p&gt;&lt;ol&gt;%2&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Документация по переопределяющим и нормальным файлам тегов&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1610"/>
+        <location filename="../../src/window.cpp" line="1629"/>
         <source>Tag file syntax error</source>
         <translation>Синтаксическая ошибка в файле тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1610"/>
+        <location filename="../../src/window.cpp" line="1629"/>
         <source>Regular expression syntax error</source>
         <translation>Синтаксическая ошибка в регулярном выражении</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1611"/>
+        <location filename="../../src/window.cpp" line="1630"/>
         <source>&lt;h2&gt;Regular expression syntax error&lt;/h2&gt;&lt;p&gt;At column %1: %2&lt;/p&gt;&lt;pre style=&quot;font-family: Consolas, &quot;Lucida Console&quot;, Monaco,monospace,monospace;&quot;&gt;%3
 
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</source>
@@ -1453,49 +1455,49 @@ All changes successfully applied.</source>
 &lt;span style=&quot;color: red&quot;&gt;%4&lt;/span&gt;&lt;pre&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1624"/>
+        <location filename="../../src/window.cpp" line="1643"/>
         <source>Network error</source>
         <translation>Ошибка соединения</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1623"/>
+        <location filename="../../src/window.cpp" line="1642"/>
         <source>Error connecting to %1: %2</source>
         <translation>Не удалось подключиться к %1: %2</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1678"/>
+        <location filename="../../src/window.cpp" line="1698"/>
         <source>Tag Fetching Done.</source>
         <translation>Загрузка тегов завершена.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1929"/>
+        <location filename="../../src/window.cpp" line="1951"/>
         <source>About %1</source>
         <translation>О программе %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="447"/>
+        <location filename="../../src/window.cpp" line="451"/>
         <source>Uploading %1 to iqdb.org...  %2% complete</source>
         <translation>Загрузка %1 на iqdb.org... загружено %2%</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1561"/>
+        <location filename="../../src/window.cpp" line="1580"/>
         <source>&lt;h2&gt;Could not locate suitable tag file&lt;/h2&gt;&lt;p&gt;You can still browse and rename files, but tag autocomplete will not work.&lt;/p&gt;&lt;hr&gt;WiseTagger will look for &lt;em&gt;tag files&lt;/em&gt; in directory of the currently opened file and in directories directly above it.&lt;p&gt;Tag files we looked for:&lt;dd&gt;&lt;dl&gt;Appending tag file: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Overriding tag file: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Directories where we looked for them, in search order:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Appending and overriding tag files documentation&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;h2&gt;Подходящий файл тегов не обнаружен&lt;/h2&gt;&lt;p&gt;Вы сможете просматривать и переименовывать файлы, однако автодополнение тегов не будет работать.&lt;/p&gt;&lt;hr&gt;WiseTagger ищет &lt;em&gt;файлы тегов&lt;/em&gt; в папке текущего изображения, и во всех папках выше.&lt;p&gt;Названия файлов тегов:&lt;dd&gt;&lt;dl&gt;Нормальный файл: &lt;b&gt;%1&lt;/b&gt;&lt;/dl&gt;&lt;dl&gt;Переопределяющий файл: &lt;b&gt;%2&lt;/b&gt;&lt;/dl&gt;&lt;/dd&gt;&lt;/p&gt;&lt;p&gt;Папки, в которых производился поиск, по порядку:&lt;ol&gt;%3&lt;/ol&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/0xb8/WiseTagger#tag-file-selection&quot;&gt;Документация по добавляемым и переопределяемым файлам тегов&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1945"/>
+        <location filename="../../src/window.cpp" line="1967"/>
         <source>enabled</source>
         <comment>portable</comment>
         <translation>включен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1945"/>
+        <location filename="../../src/window.cpp" line="1967"/>
         <source>disabled</source>
         <comment>portable</comment>
         <translation>выключен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="493"/>
+        <location filename="../../src/window.cpp" line="497"/>
         <source>Done.</source>
         <translation>Готово.</translation>
     </message>
@@ -1535,167 +1537,167 @@ All changes successfully applied.</source>
         <translation>&amp;Воспроизведение</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="186"/>
+        <location filename="../../src/window.cpp" line="187"/>
         <source>All Supported Files (%1);;Image Files (%2);;Video Files (%3)</source>
         <translation>Все поддерживаемые файлы (%1);;Файлы изображений (%2);;Файлы видео (%3)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="316"/>
+        <location filename="../../src/window.cpp" line="320"/>
         <source>Zoom: %1%    Directory:  %2      Modified: %3 ago (%4)</source>
         <translation>Масштаб: %1%    Директория:  %2      Изменён: %3 назад (%4)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="337"/>
+        <location filename="../../src/window.cpp" line="341"/>
         <source>&lt;a href=&quot;#filter&quot; style=&quot;color:#0089cc;&quot;&gt;Queue Filter:&lt;/a&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;nbsp;%2&amp;nbsp;&amp;nbsp;%3&amp;nbsp;/&amp;nbsp;%4&amp;nbsp;&amp;nbsp;%5</source>
         <translation>&lt;a href=&quot;#filter&quot; style=&quot;color:#0089cc;&quot;&gt;Фильтр очереди:&lt;/a&gt;&amp;nbsp;&amp;nbsp;%1&amp;nbsp;&amp;nbsp;%2&amp;nbsp;&amp;nbsp;%3&amp;nbsp;/&amp;nbsp;%4&amp;nbsp;&amp;nbsp;%5</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="343"/>
+        <location filename="../../src/window.cpp" line="347"/>
         <source>(no matches)</source>
         <translation>(нет совпадений)</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="473"/>
+        <location filename="../../src/window.cpp" line="477"/>
         <source>Calculating file hash...  %1% complete</source>
         <translation>Вычисляем хеш файла...  выполнено %1%</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1001"/>
+        <location filename="../../src/window.cpp" line="1013"/>
         <source>New version available</source>
         <translation>Доступна новая версия</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1155"/>
+        <location filename="../../src/window.cpp" line="1172"/>
         <source>Command Output</source>
         <translation>Вывод команды</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1177"/>
+        <location filename="../../src/window.cpp" line="1194"/>
         <source>Ctrl+D</source>
         <comment>File|Open Directory</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1189"/>
+        <location filename="../../src/window.cpp" line="1206"/>
         <source>Ctrl+A</source>
         <comment>Fix tags</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1190"/>
+        <location filename="../../src/window.cpp" line="1207"/>
         <source>Ctrl+P</source>
         <comment>Open post</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1191"/>
+        <location filename="../../src/window.cpp" line="1208"/>
         <source>Ctrl+F</source>
         <comment>Reverse search</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1193"/>
+        <location filename="../../src/window.cpp" line="1210"/>
         <source>Ctrl+L</source>
         <comment>Open file location</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1220"/>
+        <location filename="../../src/window.cpp" line="1237"/>
         <source>Open imageboard post of this image.</source>
         <translation>Открыть это изображение на странице имиджборды.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1221"/>
+        <location filename="../../src/window.cpp" line="1238"/>
         <source>Upload this image to iqdb.org and open search results page in default browser.</source>
         <translation>Загрузить это изображение на iqdb.org и открыть страницу с результатом поиска в браузере по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1222"/>
+        <location filename="../../src/window.cpp" line="1239"/>
         <source>Open folder where this image is located.</source>
         <translation>Открыть папку, в которой находится это изображение.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1223"/>
+        <location filename="../../src/window.cpp" line="1240"/>
         <source>Open folder where current tag file is located.</source>
         <translation>Открыть папку, в которой расположен текущий файл тегов.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1225"/>
+        <location filename="../../src/window.cpp" line="1242"/>
         <source>Open current tag file in default text editor.</source>
         <translation>Открыть текущий файл тегов в текстовом редакторе по-умолчанию.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1226"/>
+        <location filename="../../src/window.cpp" line="1243"/>
         <source>Toggle replacing certain imageboard tags with their shorter version.</source>
         <translation>Включить замену тегов некоторых имиджборд на их более короткие версии.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1227"/>
+        <location filename="../../src/window.cpp" line="1244"/>
         <source>Toggle restoring imageboard tags back to their original version.</source>
         <translation>Включить восстановление тегов имиджборд к их оригинальным версиям.</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1261"/>
+        <location filename="../../src/window.cpp" line="1279"/>
         <source>IQDB upload finished</source>
         <translation>Загрузка файла завершена</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1555"/>
+        <location filename="../../src/window.cpp" line="1574"/>
         <source>New tags added</source>
         <translation>Найдены новые теги</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1559"/>
+        <location filename="../../src/window.cpp" line="1578"/>
         <source>Tag file not found</source>
         <translation>Файл тегов не найден</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1560"/>
+        <location filename="../../src/window.cpp" line="1579"/>
         <source>Could not locate suitable tag file</source>
         <translation>Подходящий файл тегов не обнаружен</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1625"/>
+        <location filename="../../src/window.cpp" line="1644"/>
         <source>Network error: %1</source>
         <translation>Ошибка соединения: %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1654"/>
+        <location filename="../../src/window.cpp" line="1673"/>
         <source>Name</source>
         <translation>имени</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1657"/>
+        <location filename="../../src/window.cpp" line="1676"/>
         <source>Type</source>
         <translation>типу</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1660"/>
+        <location filename="../../src/window.cpp" line="1679"/>
         <source>Modification Date</source>
         <translation>дате изменения</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1663"/>
+        <location filename="../../src/window.cpp" line="1682"/>
         <source>Size</source>
         <translation>размеру</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1666"/>
+        <location filename="../../src/window.cpp" line="1685"/>
         <source>Name Length</source>
         <translation>длине имени</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1669"/>
+        <location filename="../../src/window.cpp" line="1688"/>
         <source>Tag Count</source>
         <translation>числу тегов</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1672"/>
+        <location filename="../../src/window.cpp" line="1691"/>
         <source>Queue Sorted by %1</source>
         <translation>Очередь отсортирована по %1</translation>
     </message>
     <message>
-        <location filename="../../src/window.cpp" line="1941"/>
+        <location filename="../../src/window.cpp" line="1963"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
