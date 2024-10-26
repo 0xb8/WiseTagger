@@ -1,9 +1,8 @@
-
 [Setup]
 AppName=WiseTagger
-AppCopyright=Copyright (C) 2023 catgirl
-AppVersion=0.6.10
-VersionInfoVersion=0.6.10
+AppCopyright=Copyright (C) 2024 catgirl
+AppVersion=0.6.11
+VersionInfoVersion=0.6.11
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -23,8 +22,8 @@ SetupIconFile=..\icon.ico
 WizardStyle=modern
 AllowNoIcons=yes
 
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
@@ -59,8 +58,15 @@ Type: files; Name: "{app}\libicuuc69.dll"
 Type: files; Name: "{app}\libicudt72.dll"
 Type: files; Name: "{app}\libicuin72.dll"
 Type: files; Name: "{app}\libicuuc72.dll"
+Type: files; Name: "{app}\libicudt73.dll"
+Type: files; Name: "{app}\libicuin73.dll"
+Type: files; Name: "{app}\libicuuc73.dll"
 Type: files; Name: "{app}\libtiff-5.dll"
 Type: files; Name: "{app}\libavif.dll"
+Type: files; Name: "{app}\libavif.dll"
+Type: files; Name: "{app}\libdav1d.dll"
+Type: files; Name: "{app}\libSvtAv1Enc.dll"
+Type: files; Name: "{app}\libx265.dll"
 Type: files; Name: "{app}\imageformats\qmng.dll"
 Type: files; Name: "{app}\platforms\qminimal.dll"
 Type: files; Name: "{app}\platforms\qoffscreen.dll"
