@@ -10,6 +10,7 @@
 #include "util/misc.h"
 #include <QApplication>
 #include <QLoggingCategory>
+#include <QElapsedTimer>
 #include <QDirIterator>
 #include <QTextStream>
 #include <QCollator>
@@ -138,6 +139,7 @@ void FileQueue::push(const QString &f, bool recursive)
 		                QDir::Files,
 		                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 		                          : QDirIterator::NoIteratorFlags);
+		QDir prev_dir;
 		int count = 0;
 		while(it.hasNext()) {
 			fi.setFile(it.next());
@@ -149,6 +151,11 @@ void FileQueue::push(const QString &f, bool recursive)
 				// avoid gui hang
 				qApp->processEvents();
 				count = 0;
+			}
+			auto d = fi.dir();
+			if (prev_dir != d) {
+				prev_dir = d;
+				report_directory_load_progress(d.absolutePath());
 			}
 		}
 	} else {
@@ -203,6 +210,7 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 			qApp->processEvents();
 			count = 0;
 		}
+
 	};
 	for(const auto & p : qAsConst(paths)) {
 		fi.setFile(p);
@@ -215,12 +223,18 @@ void FileQueue::assign(const QStringList& paths, bool recursive)
 			                QDir::Files,
 			                recursive ? QDirIterator::Subdirectories | QDirIterator::FollowSymlinks
 			                          : QDirIterator::NoIteratorFlags);
+			QDir prev_dir;
 			while(it.hasNext()) {
 				fi.setFile(it.next());
 				Q_ASSERT(fi.isAbsolute());
 
 				push_file(fi, true);
 				update_ui();
+				auto d = fi.dir();
+				if (prev_dir != d) {
+					prev_dir = d;
+					report_directory_load_progress(d.absolutePath());
+				}
 			}
 		} else {
 			pwarn << "assign() : extension not allowed by filter:" << fi.fileName();
@@ -712,6 +726,22 @@ void FileQueue::process_changed_directory(const QString &dir_path)
 		}
 		update_filter();
 		emit newFilesAdded();
+	}
+}
+
+void FileQueue::report_directory_load_progress(QString dir)
+{
+	static QElapsedTimer timer;
+	bool first_time = false;
+	if (!timer.isValid()) {
+		timer.start();
+		first_time = true;
+	}
+
+	// don't emit the signal too often to avoid excessive UI updates
+	if (first_time || timer.restart() > 15) {
+		emit directoryLoadingProgress(dir);
+		qApp->processEvents();
 	}
 }
 

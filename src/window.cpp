@@ -488,6 +488,17 @@ void Window::showCommandExecutionProgress(QString command_name)
 	statusBar()->showMessage(tr("Running %1...").arg(command_name));
 }
 
+void Window::showDirectoryLoadingProgress(QString dir)
+{
+#ifdef Q_OS_WIN32
+	auto progress = m_win_taskbar_button.progress();
+	progress->setVisible(!dir.isEmpty());
+	progress->setMaximum(0);
+	progress->setValue(0);
+#endif
+	statusBar()->showMessage(tr("Loading directory %1 ...").arg(dir));
+}
+
 void Window::hideUploadProgress()
 {
 #ifdef Q_OS_WIN32
@@ -1697,6 +1708,8 @@ void Window::createActions()
 		alert();
 		statusBar()->showMessage(tr("Tag Fetching Done."), 3000);
 	});
+	connect(&m_tagger.queue(), &FileQueue::directoryLoadingProgress, this, &Window::showDirectoryLoadingProgress);
+	connect(&m_tagger, &Tagger::fileOrDirectoryLoaded, this, &Window::hideUploadProgress);
 }
 
 

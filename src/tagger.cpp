@@ -139,6 +139,7 @@ bool Tagger::openFile(const QString &filename, bool recursive)
 	m_picture.cache.clear();
 	m_nav_direction = 0;
 
+	emit fileOrDirectoryLoaded();
 	qApp->restoreOverrideCursor();
 	return loadCurrentFile();
 }
@@ -160,6 +161,7 @@ bool Tagger::openDir(const QString &dir, bool recursive)
 	m_picture.cache.clear();
 	m_nav_direction = 0;
 
+	emit fileOrDirectoryLoaded();
 	qApp->restoreOverrideCursor();
 	return loadCurrentFile();
 }
@@ -1600,3 +1602,4 @@ bool Tagger::writeCaptionFile(QFileInfo source_file, const QStringList& tags) co
 	}
 	return true;
 }
+

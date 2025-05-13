@@ -339,6 +339,11 @@ signals:
 	 */
 	void linkActivated(QString link);
 
+	/*!
+	 * \brief Emitted when file or directory has been fully loaded.
+	 */
+	void fileOrDirectoryLoaded();
+
 protected:
 	void keyPressEvent(QKeyEvent* e) override;
 	void timerEvent(QTimerEvent* e) override;

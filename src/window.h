@@ -52,6 +52,9 @@ public slots:
 	/// Display command execution progress.
 	void showCommandExecutionProgress(QString command_name);
 
+	/// Display directory loading progress.
+	void showDirectoryLoadingProgress(QString dir);
+
 	/// Hide current upload progress
 	void hideUploadProgress();
 

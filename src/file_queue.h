@@ -338,10 +338,16 @@ signals:
 	 */
 	void newFilesAdded();
 
+	/*!
+	 * \brief Emitted to report directories encountered during \ref FileQueue::push() or \ref FileQueue::assign().
+	 */
+	void directoryLoadingProgress(QString dir);
+
 private:
 	void update_filter();
 	void on_watcher_directory_changed(const QString& dir);
 	void process_changed_directory(const QString& dir);
+	void report_directory_load_progress(QString dir);
 
 	static const QString m_empty;
 	static const int watcher_update_granularity_ms;
