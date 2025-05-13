@@ -43,5 +43,10 @@
         <file>icons/Default/zoom-fit-best.svg</file>
         <file>transparency.png</file>
         <file>wisetagger.svg</file>
+        <file>imageboards/danbooru.svg</file>
+        <file>imageboards/gelbooru.png</file>
+        <file>imageboards/konachan.ico</file>
+        <file>imageboards/sankaku.png</file>
+        <file>imageboards/yandere.ico</file>
     </qresource>
 </RCC>

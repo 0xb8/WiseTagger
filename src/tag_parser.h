@@ -12,6 +12,7 @@
  *  \brief Class @ref TagParser
  */
 
+#include <array>
 #include <QStringList>
 #include <QVector>
 #include <QRegularExpression>
@@ -198,13 +199,21 @@ public:
 	 */
 	bool isTagRemoved(const QString& tag) const;
 
-
 	/*!
 	 * \brief Returns custom color for tag \p kind.
 	 * \return Invalid QColor if no custom color is set for \p kind.
 	 */
 	QColor getCustomKindColor(TagKind kind) const;
 
+	/*!
+	 * \brief Returns imageboard state array.
+	 * \returns Array of state codes for each of known imageboards, as specified below.
+	 * \retval -1 Imageboard is neither explicitly enabled or disabled.
+	 * \retval 0  Imageboard is disabled.
+	 * \retval 1  Imageboard is enabled.
+	 *
+	 */
+	std::array<int, 5> getImageboardState() const;
 
 	/*!
 	 *  \brief Returns whether \p ch is a tag negation token.
@@ -248,7 +257,8 @@ private:
 	 * \param custom_categories Map for storing `#pragma category <key> #<value>`
 	 * \return true if encountered a pragma, false otherwise
 	 */
-	bool parse_pragma(const QString& line, std::unordered_map<QString, QColor>& custom_categories);
+	bool parse_pragma(const QString& line,
+	                  std::unordered_map<QString, QColor>& custom_categories);
 
 	/*!
 	 * \brief List of tags that are related to specified tag.
@@ -330,6 +340,9 @@ private:
 	/// Custom removed tags color (`#pragma removed_color`)
 	QColor m_custom_removal_color;
 #endif
+
+	/// Imageboard state.
+	std::array<int, 5> m_imageboard_state;
 
 };
 

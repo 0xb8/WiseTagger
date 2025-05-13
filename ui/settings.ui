@@ -817,6 +817,29 @@ In Main View</string>
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="imageboards">
+      <attribute name="title">
+       <string>Im&amp;ageboards</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_8">
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Note: imageboards can also be enabled or disabled in the tag file, e.g.:&lt;/p&gt;&lt;pre&gt;#pragma imageboard &amp;lt;name&amp;gt; &amp;lt;on | off&amp;gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QTableView" name="imb_tbl_view"/>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="backup">
       <attribute name="title">
        <string>&amp;Backup</string>
@@ -1078,6 +1101,7 @@ In Main View</string>
   <tabstop>cmdArgsEdit</tabstop>
   <tabstop>cmdArgsPlaceholderShow</tabstop>
   <tabstop>cmdOutputMode</tabstop>
+  <tabstop>imb_tbl_view</tabstop>
   <tabstop>exportSettingsBtn</tabstop>
   <tabstop>importSettingsBtn</tabstop>
  </tabstops>

@@ -205,6 +205,11 @@ QColor TagParser::getCustomKindColor(TagKind kind) const
 }
 #endif
 
+std::array<int, 5> TagParser::getImageboardState() const
+{
+	return m_imageboard_state;
+}
+
 int TagParser::getWeight(const QString &tag) const {
 	int ret = 0;
 	auto it = m_tags_weight.find(tag);
@@ -256,6 +261,7 @@ bool TagParser::loadTagData(const QByteArray& data)
 	m_custom_removal_color = QColor();
 	m_custom_replacement_color = QColor();
 #endif
+	m_imageboard_state.fill(-1);
 
 	if(data.isEmpty()) {
 		return false;
@@ -720,6 +726,8 @@ bool TagParser::parse_pragma(const QString& line, std::unordered_map<QString, QC
 				m_custom_replacement_color = replacement;
 			}
 
+			// ---------------
+
 			auto get_category_color = [](const auto& pragmas, QString& category) {
 				QColor res;
 				if (pragmas.size() >= 4) {
@@ -738,6 +746,41 @@ bool TagParser::parse_pragma(const QString& line, std::unordered_map<QString, QC
 			if (category_color.isValid()) {
 				custom_categories.emplace(category_name, category_color);
 			}
+
+			// ---------------
+
+			auto get_imageboard_state = [](const auto& pragmas) -> int {
+				// FIXME: put these in some header file to maintain consistent order
+				const std::array<QStringView, 5> imageboards {
+					QStringView(L"yandere"),
+					QStringView(L"konachan"),
+					QStringView(L"sankaku"),
+					QStringView(L"danbooru"),
+					QStringView(L"gelbooru"),
+				};
+
+				if (pragmas.size() >= 4 && pragmas[1] == "imageboard") {
+					for (size_t i = 0; i < imageboards.size(); ++i) {
+						if (pragmas[2] == imageboards[i]) {
+							const auto &state = pragmas[3];
+							if (state == QStringLiteral("on") || state == QStringLiteral("enabled") || state == QStringLiteral("1")) {
+								return i + 1;
+							}
+
+							if (state == QStringLiteral("off") || state == QStringLiteral("disabled") || state == QStringLiteral("0")) {
+								return -(i + 1);
+							}
+						}
+					}
+				}
+				return 0;
+			};
+
+			int imgboard_state = get_imageboard_state(pragmas);
+			if (imgboard_state != 0) { // found valid imageboard state
+				m_imageboard_state[std::abs(imgboard_state) - 1] = int(imgboard_state > 0);
+			}
+
 		}
 		return true;
 	}

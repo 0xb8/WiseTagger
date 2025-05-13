@@ -43,6 +43,7 @@
 #define S_PRELOAD       QStringLiteral("performance/pixmap_precache_enabled")
 #define S_PRELOAD_CNT   QStringLiteral("performance/pixmap_precache_count")
 #define S_PRELOAD_MEM   QStringLiteral("performance/pixmap_cache_size")
+#define S_FETCH_IMGBDS  QStringLiteral("fetch_tags_from")
 
 #define D_LOCALE        QStringLiteral("English")
 #define D_STYLE         QStringLiteral("Default")
@@ -76,9 +77,13 @@ namespace logging_category {
 #define pwarn qCWarning(logging_category::settdialog)
 
 
-SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui::SettingsDialog), m_cmdl(nullptr), m_dmpr(nullptr)
+
+
+SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui::SettingsDialog), m_cmdl(nullptr), m_dmpr(nullptr), m_ib_fetch_enabled_mdl(new ImageboardFetchEnabledModel())
 {
 	ui->setupUi(this);
+	ui->imb_tbl_view->setModel(m_ib_fetch_enabled_mdl);
+
 #ifndef Q_OS_WIN
 	ui->vercheckEnabled->hide();
 #endif
@@ -254,6 +259,7 @@ SettingsDialog::SettingsDialog(QWidget * parent_) : QDialog(parent_), ui(new Ui:
 	ui->newCmd->setMenu(menu_acts);
 	ui->cmdArgsPlaceholderShow->setMenu(menu_ph);
 	ui->cmdView->setContextMenuPolicy(Qt::CustomContextMenu);
+
 	reset();
 }
 
@@ -261,6 +267,7 @@ SettingsDialog::~SettingsDialog()
 {
 	pdbg << "Deleting" << this << "...";
 	delete ui;
+	delete m_ib_fetch_enabled_mdl;
 }
 
 void SettingsDialog::reset()
@@ -316,6 +323,7 @@ void SettingsDialog::reset()
 	ui->cmdView->setModel(fmd);
 	ui->cmdView->setItemDelegate(new SeparatorDelegate(m_cmdl));
 	ui->cmdView->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
+	ui->imb_tbl_view->horizontalHeader()->setSectionResizeMode(0,QHeaderView::Stretch);
 
 	auto disable_widgets = [this](bool val)
 	{
@@ -382,6 +390,8 @@ void SettingsDialog::resetModel()
 		m_cmdl->setItem(i, 4, item);
 	}
 	st.endArray();
+
+	m_ib_fetch_enabled_mdl->reset();
 }
 
 void SettingsDialog::apply()
@@ -459,6 +469,8 @@ void SettingsDialog::apply()
 		settings.setValue(SETT_COMMAND_MODE, QVariant::fromValue(static_cast<CommandOutputMode>(mode)));
 	}
 	settings.endArray();
+	m_ib_fetch_enabled_mdl->commit();
+
 	emit updated();
 
 	if (lang_changed || style_changed) {
@@ -486,6 +498,7 @@ void SettingsDialog::restoreDefaults()
 	ui->fontSize_min-> setValue(      D_FONT_SIZE_MIN);
 	ui->preloadCount-> setValue(      D_PRELOAD_CNT);
 	ui->cacheMemory->  setValue(      D_PRELOAD_MEM);
+	m_ib_fetch_enabled_mdl->restoreDefault();
 }
 
 bool HideColumnsFilter::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
@@ -558,4 +571,145 @@ HotkeyEdit::HotkeyEdit(QWidget *parent)
 HotkeyEdit::~HotkeyEdit()
 {
 
+}
+
+ImageboardFetchEnabledModel::ImageboardFetchEnabledModel()
+{
+	for (int i = 0; i < _imageboard_count; ++i)
+		m_state[i] = true;
+}
+
+void ImageboardFetchEnabledModel::reset()
+{
+	QSettings sett;
+	sett.beginGroup(S_FETCH_IMGBDS);
+
+	for (int i = 0; i < _imageboard_count; ++i)
+		m_state[i] = sett.value(data(index(i, 0), ImageboardSettingsKeyRole).toString(), true).toBool();
+
+	sett.endGroup();
+	emit dataChanged(index(0, 1), index(_imageboard_count - 1, 1), {Qt::CheckStateRole});
+}
+
+void ImageboardFetchEnabledModel::commit()
+{
+	QSettings sett;
+	sett.beginGroup(S_FETCH_IMGBDS);
+
+	for (int i = 0; i < _imageboard_count; ++i)
+		sett.setValue(data(index(i, 0), ImageboardSettingsKeyRole).toString(), m_state[i]);
+
+	sett.endGroup();
+}
+
+void ImageboardFetchEnabledModel::restoreDefault()
+{
+	for (int i = 0; i < _imageboard_count; ++i)
+		m_state[i] = true;
+	emit dataChanged(index(0, 1), index(_imageboard_count - 1, 1), {Qt::CheckStateRole});
+}
+
+int ImageboardFetchEnabledModel::rowCount(const QModelIndex &parent) const
+{
+	Q_UNUSED(parent);
+	return _imageboard_count;
+}
+
+int ImageboardFetchEnabledModel::columnCount(const QModelIndex &parent) const
+{
+	Q_UNUSED(parent);
+	return 2;
+}
+
+QVariant ImageboardFetchEnabledModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	if (orientation == Qt::Horizontal) {
+		if (section == 0) {
+			if (role == Qt::DisplayRole)
+				return tr("Imageboard");
+		}
+		if (section == 1) {
+			if (role == Qt::DisplayRole)
+				return tr("Enabled");
+		}
+	}
+	return QVariant();
+}
+
+Qt::ItemFlags ImageboardFetchEnabledModel::flags(const QModelIndex &index) const
+{
+	if (index.column() == 1)
+		return QAbstractTableModel::flags(index) | Qt::ItemIsUserCheckable;
+
+	return QAbstractTableModel::flags(index);
+}
+
+QVariant ImageboardFetchEnabledModel::data(const QModelIndex &index, int role) const
+{
+	int row = index.row();
+	Q_ASSERT(row < _imageboard_count);
+
+	if (index.column() == 0) {
+		if (row == Yandere) {
+			if (role == Qt::DisplayRole)
+				return tr("yande.re");
+			if (role == Qt::DecorationRole)
+				return QIcon(":/imageboards/yandere.ico");
+			if (role == ImageboardSettingsKeyRole)
+				return "yandere";
+
+		}
+		if (row == Konachan) {
+			if (role == Qt::DisplayRole)
+				return tr("Konachan");
+			if (role == Qt::DecorationRole)
+				return QIcon(":/imageboards/konachan.ico");
+			if (role == ImageboardSettingsKeyRole)
+				return "konachan";
+		}
+		if (row == Sankaku) {
+			if (role == Qt::DisplayRole)
+				return tr("Sankaku Complex");
+			if (role == Qt::DecorationRole)
+				return QIcon(":/imageboards/sankaku.png");
+			if (role == ImageboardSettingsKeyRole)
+				return "sankaku";
+		}
+		if (row == Danbooru) {
+			if (role == Qt::DisplayRole)
+				return tr("Danbooru");
+			if (role == Qt::DecorationRole)
+				return QIcon(":/imageboards/danbooru.svg");
+			if (role == ImageboardSettingsKeyRole)
+				return "danbooru";
+		}
+		if (row == Gelbooru) {
+			if (role == Qt::DisplayRole)
+				return tr("Gelbooru");
+			if (role == Qt::DecorationRole)
+				return QIcon(":/imageboards/gelbooru.png");
+			if (role == ImageboardSettingsKeyRole)
+				return "gelbooru";
+		}
+	}
+
+	if (index.column() == 1) {
+		if (role == Qt::CheckStateRole) {
+			return m_state[row] ? Qt::Checked : Qt::Unchecked;
+		}
+	}
+
+	return QVariant();
+}
+
+bool ImageboardFetchEnabledModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+
+	if (role == Qt::CheckStateRole && index.column() == 1) {
+		m_state[index.row()] = value.toInt() == Qt::Checked;
+		emit dataChanged(index, index, {Qt::CheckStateRole});
+		return true;
+	}
+
+	return QAbstractTableModel::setData(index, value, role);
 }

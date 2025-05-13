@@ -13,6 +13,7 @@
  * \brief Class \ref TagFetcher
  */
 
+#include <array>
 #include <QString>
 #include <QNetworkAccessManager>
 
@@ -32,9 +33,11 @@ public:
 	/*!
 	 * \brief Fetches tags using imageboard JSON API.
 	 * \param file File for which to fetch tags.
-	 * \param url Imageboard API url for the post.
+	 * \param imageboards Overrides which imageboards to fetch from.
+	 *                    Pass \c -1 to use default settings for the imageboard.
 	 */
-	void fetch_tags(const QString& file, QString url);
+	void fetch_tags(const QString& file,
+	                std::array<int, 5> imageboards);
 
 	/*!
 	 * \brief Aborts the tag fetching request.
@@ -52,9 +55,9 @@ signals:
 
 	/*!
 	 * \brief Emitted when tag fetching is started.
-	 * \param url Imageboard API url for this file.
+	 * \param urls Imageboard API urls for this file.
 	 */
-	void started(QString url);
+	void started(QList<QUrl> urls);
 
 	/*!
 	 * \brief Emitted when hashing input file.

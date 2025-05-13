@@ -20,9 +20,9 @@ namespace Ui {
 class QStandardItemModel;
 class QDataWidgetMapper;
 class QKeyEvent;
+class ImageboardFetchEnabledModel;
 
-class SettingsDialog : public QDialog
-{
+class SettingsDialog : public QDialog {
 	Q_OBJECT
 public:
 	SettingsDialog(QWidget *parent_ = nullptr);
@@ -44,8 +44,10 @@ private:
 	Ui::SettingsDialog *ui;
 	QStandardItemModel *m_cmdl;
 	QDataWidgetMapper *m_dmpr;
+	ImageboardFetchEnabledModel* m_ib_fetch_enabled_mdl;
 
 };
+
 
 class HideColumnsFilter : public QSortFilterProxyModel {
 	Q_OBJECT
@@ -54,8 +56,8 @@ public:
 	bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const override;
 };
 
-class SeparatorDelegate : public QStyledItemDelegate
-{
+
+class SeparatorDelegate : public QStyledItemDelegate {
 	Q_OBJECT
 public:
 	explicit SeparatorDelegate(QObject *parent = nullptr) : QStyledItemDelegate(parent){}
@@ -64,8 +66,8 @@ public:
 	QString displayText(const QVariant &value, const QLocale &locale) const override;
 };
 
-class HotkeyEdit : public QLineEdit
-{
+
+class HotkeyEdit : public QLineEdit {
 	Q_OBJECT
 public:
 	HotkeyEdit(QWidget *parent = 0);
@@ -76,6 +78,42 @@ protected:
 
 private:
 	QKeySequence m_sequence;
+};
+
+
+class ImageboardFetchEnabledModel : public QAbstractTableModel {
+	Q_OBJECT
+
+	enum ImageboardSettingsKeyEnum {
+		ImageboardSettingsKeyRole = Qt::UserRole + 1
+	};
+
+	enum ImageBoardIndex {
+		Yandere = 0,
+		Konachan,
+		Sankaku,
+		Danbooru,
+		Gelbooru,
+
+		_imageboard_count // must be last!
+	};
+
+	bool m_state[_imageboard_count];
+public:
+	ImageboardFetchEnabledModel();
+
+	void reset();
+	void commit();
+	void restoreDefault();
+
+	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	int columnCount(const QModelIndex &parent) const override;
+
+	Qt::ItemFlags flags(const QModelIndex &index) const override;
+
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+	QVariant data(const QModelIndex &index, int role) const override;;
+	bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 };
 
 #endif

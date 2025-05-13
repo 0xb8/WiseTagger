@@ -415,7 +415,7 @@ void Tagger::fixTags()
 void Tagger::fetchTags()
 {
 	Q_ASSERT(fileRenameable());
-	m_fetcher.fetch_tags(currentFile(), m_input.postTagsApiURL());
+	m_fetcher.fetch_tags(currentFile(), m_input.tag_parser().getImageboardState());
 }
 
 void Tagger::tagsFetched(QString file, QString tags)

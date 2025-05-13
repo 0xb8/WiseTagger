@@ -8,7 +8,7 @@
 #include "util/tag_fetcher.h"
 #include "util/network.h"
 #include "util/strings.h"
-#include <array>
+#include <QSettings>
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -29,7 +29,8 @@ TagFetcher::TagFetcher(QObject * parent) : QObject(parent) {
 }
 
 
-void TagFetcher::fetch_tags(const QString & filename, QString url) {
+
+void TagFetcher::fetch_tags(const QString & filename, std::array<int, 5> imageboards) {
 	QCryptographicHash hash{QCryptographicHash::Md5};
 	QFile file{filename};
 	file.open(QIODevice::ReadOnly);
@@ -63,28 +64,50 @@ void TagFetcher::fetch_tags(const QString & filename, QString url) {
 
 	// ---------------
 
-	auto urls = std::array<QString, 3>();
-	urls[0] = url;
-	urls[1] = QStringLiteral("https://sankakuapi.com/posts?tags=md5:%1").arg(hash_hex);
-	urls[2] = QStringLiteral("https://danbooru.donmai.us/posts.json?md5=%1").arg(hash_hex);
+	auto urls = QList<QUrl>();
+
+	QSettings sett;
+	sett.beginGroup("fetch_tags_from");
+	if (imageboards[0] == 1 || (imageboards[0] == -1 && sett.value("yandere", true).toBool())) {
+		urls.append(QStringLiteral("https://yande.re/post?tags=md5:%1").arg(hash_hex));
+	}
+	if (imageboards[1] == 1 || (imageboards[1] == -1 && sett.value("konachan", true).toBool())) {
+		urls.append(QStringLiteral("https://konachan.com/post?tags=md5:%1").arg(hash_hex));
+	}
+	if (imageboards[2] == 1 || (imageboards[2] == -1 && sett.value("sankaku", true).toBool())) {
+		urls.append(QStringLiteral("https://sankakuapi.com/posts?tags=md5:%1").arg(hash_hex));
+	}
+	if (imageboards[3] == 1 || (imageboards[3] == -1 && sett.value("danbooru", true).toBool())) {
+		urls.append(QStringLiteral("https://danbooru.donmai.us/posts.json?md5=%1").arg(hash_hex));
+	}
+	if (imageboards[4] == 1 || (imageboards[4] == -1 && sett.value("gelbooru", true).toBool())) {
+		urls.append(QStringLiteral("https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&tags=md5:%1").arg(hash_hex));
+	}
+	sett.endGroup();
+
+	// ---------------
 
 	abort();
 
-	for (const auto& url : qAsConst(urls)) {
-		if (url.isEmpty()) continue;
+	if (urls.isEmpty()) {
+		emit failed(filename, tr("All imageboards are disabled.\n"
+		                         "You can enable them in the settings or in the tag file."));
+		return;
+	}
 
+	for (const auto& url : qAsConst(urls)) {
 		QNetworkRequest req{url};
 		req.setAttribute(QNetworkRequest::User, filename);
 		req.setAttribute(QNetworkRequest::Attribute(QNetworkRequest::User + 1), hash_hex);
-		// NOTE: wtf? danbooru's cloudflare inserts captcha page into api requests
-		req.setHeader(QNetworkRequest::UserAgentHeader, url.contains("danbooru") ? "notabrowser" : WISETAGGER_USERAGENT);
+		// NOTE: wtf? danbooru's cloudflare inserts captcha page into api requests for a browser UA
+		req.setHeader(QNetworkRequest::UserAgentHeader, url.host().contains(QStringLiteral("danbooru")) ? "notabrowser" : WISETAGGER_USERAGENT);
 		req.setRawHeader(QByteArrayLiteral("Accept"), QByteArrayLiteral("application/json"));
 
 		auto reply = m_nam.get(req);
 		m_replies.append(reply);
 	}
 
-	emit started(url);
+	emit started(urls);
 }
 
 void TagFetcher::abort()
@@ -156,7 +179,19 @@ void TagFetcher::open_reply(QNetworkReply * reply)
 			}
 
 		} else if (doc.isObject()) {
-			parse_post(doc.object());
+			const auto docobj = doc.object();
+			auto post = docobj.find("post");
+			if (post != docobj.end()) {
+				if (post->isObject()) {
+					parse_post(post->toObject());
+				} else if (post->isArray()) {
+					parse_post(post->toArray().first().toObject());
+				} else {
+					pdbg << "post is neither object or array:" << post.value();
+				}
+			} else {
+				parse_post(docobj);
+			}
 		}
 	}
 	reply->close();

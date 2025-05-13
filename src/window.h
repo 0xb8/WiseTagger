@@ -44,7 +44,7 @@ public slots:
 	void showUploadProgress(qint64 bytesSent, qint64 bytesTotal);
 
 	/// Display current tag fetching progress
-	void showTagFetchProgress(QString url);
+	void showTagFetchProgress(QList<QUrl> urls);
 
 	/// Display file hashing progress.
 	void showFileHashingProgress(QString file, int value);

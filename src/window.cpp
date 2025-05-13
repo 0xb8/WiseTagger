@@ -452,7 +452,7 @@ void Window::showUploadProgress(qint64 bytesSent, qint64 bytesTotal)
 			m_tagger.currentFileName(), QString::number(percent_done)));
 }
 
-void Window::showTagFetchProgress(QString url_str)
+void Window::showTagFetchProgress(QList<QUrl> urls)
 {
 #ifdef Q_OS_WIN32
 	auto progress = m_win_taskbar_button.progress();
@@ -460,8 +460,9 @@ void Window::showTagFetchProgress(QString url_str)
 	progress->setMaximum(0);
 	progress->setValue(0);
 #endif
-	auto url = QUrl(url_str);
-	statusBar()->showMessage(tr("Fetching tags from %1...").arg(url.host()));
+	QStringList hosts;
+	std::transform(urls.cbegin(), urls.cend(), std::back_inserter(hosts), [](const QUrl& u){ return u.host(); });
+	statusBar()->showMessage(tr("Fetching tags from %1...").arg(hosts.join(QStringLiteral(", "))));
 }
 
 void Window::showFileHashingProgress(QString file, int value)
@@ -496,7 +497,7 @@ void Window::showDirectoryLoadingProgress(QString dir)
 	progress->setMaximum(0);
 	progress->setValue(0);
 #endif
-	statusBar()->showMessage(tr("Loading directory %1 ...").arg(dir));
+	statusBar()->showMessage(tr("Loading directory contents:  %1").arg(dir));
 }
 
 void Window::hideUploadProgress()
