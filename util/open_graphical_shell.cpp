@@ -23,6 +23,7 @@
 #include <QFileInfo>
 #endif
 
+#define translate QCoreApplication::translate
 
 void util::open_files_in_gui_shell(const QStringList& input_files) {
 #ifdef Q_OS_WIN32
@@ -68,9 +69,9 @@ void util::open_files_in_gui_shell(const QStringList& input_files) {
 		auto res = ::SHOpenFolderAndSelectItems(dir_item.get(), selection_ptrs.size(), selection_ptrs.data(), 0);
 		if (res != S_OK) {
 			QMessageBox::critical(nullptr,
-			                      qApp->translate("OpenInGuiShell","Error opening files in GUI shell"),
-			                      qApp->translate("OpenInGuiShell","<p>Could not open files in GUI shell</p>"
-			                                      "<p>System returned code %1").arg(res));
+			                      translate("OpenInGuiShell","Error opening files in GUI shell"),
+			                      translate("OpenInGuiShell","<p>Could not open files in GUI shell</p>"
+			                                "<p>System returned code %1").arg(res));
 		}
 	}
 
@@ -79,3 +80,5 @@ void util::open_files_in_gui_shell(const QStringList& input_files) {
 		QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file).path()));
 #endif
 }
+
+#undef translate

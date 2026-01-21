@@ -9,11 +9,15 @@
 #include <QCoreApplication>
 #include "util/strings.h"
 
+#define translate QCoreApplication::translate
 
 QString util::duration(uint64_t duration_sec, bool with_seconds)
 {
+
+
+
 	if (duration_sec == 0) {
-		return qApp->translate("Duration", "%n seconds", "", 0);
+		return translate("Duration", "%n seconds", "", 0);
 	}
 
 	auto yr  = duration_sec / 31536000;
@@ -23,12 +27,12 @@ QString util::duration(uint64_t duration_sec, bool with_seconds)
 	auto min = (duration_sec / 60) % 60;
 	auto s   = (with_seconds || duration_sec < 60) ? duration_sec % 60 : 0;
 
-	auto sec  = s   != 0 ? qApp->translate("Duration", "%n seconds", "", s)   : QStringLiteral("");
-	auto mins = min != 0 ? qApp->translate("Duration", "%n minutes", "", min) : QStringLiteral("");
-	auto hrs  = hr  != 0 ? qApp->translate("Duration", "%n hours", "", hr)    : QStringLiteral("");
-	auto days = d   != 0 ? qApp->translate("Duration", "%n days", "", d)      : QStringLiteral("");
-	auto mons = mon != 0 ? qApp->translate("Duration", "%n months", "", mon)  : QStringLiteral("");
-	auto yrs  = yr  != 0 ? qApp->translate("Duration", "%n years", "", yr)    : QStringLiteral("");
+	auto sec  = s   != 0 ? translate("Duration", "%n seconds", "", s)   : QStringLiteral("");
+	auto mins = min != 0 ? translate("Duration", "%n minutes", "", min) : QStringLiteral("");
+	auto hrs  = hr  != 0 ? translate("Duration", "%n hours", "", hr)    : QStringLiteral("");
+	auto days = d   != 0 ? translate("Duration", "%n days", "", d)      : QStringLiteral("");
+	auto mons = mon != 0 ? translate("Duration", "%n months", "", mon)  : QStringLiteral("");
+	auto yrs  = yr  != 0 ? translate("Duration", "%n years", "", yr)    : QStringLiteral("");
 
 	auto res = QStringLiteral("%1 %2 %3 %4 %5 %6").arg(yrs, mons, days, hrs, mins, sec);
 	return res.simplified();
@@ -116,3 +120,5 @@ QString util::html_list_join(const QStringList &sl)
 	}
 	return html_list;
 }
+
+#undef translate

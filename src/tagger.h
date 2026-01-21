@@ -330,6 +330,11 @@ signals:
 	void parseError(QString regex_source, QString error, int column);
 
 	/*!
+	 * \brief Emitted when warning is raised when loading media.
+	 */
+	void mediaLoadWarning(QString title, QString description);
+
+	/*!
 	 * \brief Emitted on double Escape combination to hide the window to tray.
 	 */
 	void hideRequested();

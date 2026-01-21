@@ -370,6 +370,8 @@ void Window::updateImageboardPostURL(QString url)
 
 void Window::addNotification(QString title, QString description, QString body)
 {
+	Q_ASSERT(!title.isEmpty());
+
 	// remove other notifications of the same type
 	removeNotification(title);
 	// we want only last notification's action to be triggered
@@ -390,8 +392,11 @@ void Window::addNotification(QString title, QString description, QString body)
 		++m_notification_count;
 	}
 	showNotificationsMenu();
-	m_tray_icon.setVisible(true);
-	m_tray_icon.showMessage(title, description);
+
+	if (!description.isEmpty()) {
+		m_tray_icon.setVisible(true);
+		m_tray_icon.showMessage(title, description);
+	}
 }
 
 void Window::removeNotification(QString title) {
@@ -1649,6 +1654,11 @@ void Window::createActions()
 		                                regex_source.toHtmlEscaped(),
 		                                arrow));
 	});
+	connect(&m_tagger, &Tagger::mediaLoadWarning, this, [this](QString title, QString description){
+		addNotification(title,
+		                QString(), // does not show tray notification - just in our custom menu
+		                description);
+	});
 	auto show_network_error_notification = [this](QUrl url, QString error)
 	{
 		auto error_str = tr("Error connecting to %1: %2").arg(url.host(), error);
@@ -1700,7 +1710,8 @@ void Window::createActions()
 			criteria_str = tr("Tag Count");
 		}
 
-		addNotification(tr("Queue Sorted by %1").arg(criteria_str));
+		addNotification(tr("Queue Sorted by %1").arg(criteria_str),
+		                tr("Sorted %n files", nullptr, m_tagger.queue().size()));
 	});
 	connect(&a_fetch_tags,  &QAction::triggered, &m_tagger, &Tagger::fetchTags);
 	connect(&m_tagger.tag_fetcher(), &TagFetcher::ready, this, [this](QString, QString)

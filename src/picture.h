@@ -72,6 +72,9 @@ signals:
 	/// Emitted when media display size has changed.
 	void mediaResized();
 
+	/// Emitted when some warning message (e.g. format mismatch) needs to be shown to user.
+	void warningMessage(QString title, QString description);
+
 public slots:
 
 	/// Clear media and display welcome text.

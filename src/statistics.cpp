@@ -42,6 +42,8 @@ namespace logging_category {Q_LOGGING_CATEGORY(stats, "Statistics")}
 #define TIME_SPENT                 QStringLiteral("stats/time_spent_seconds")
 #define DATE_FIRST_LAUNCHED        QStringLiteral("stats/date_first_launched")
 
+#define translate QCoreApplication::translate
+
 TaggerStatistics &TaggerStatistics::instance()
 {
 	static TaggerStatistics instance;
@@ -175,7 +177,7 @@ void TaggerStatistics::showStatsDialog()
 	const auto first_launch     = m_settings.value(DATE_FIRST_LAUNCHED).toDateTime().toLocalTime();
 	const auto first_launch_dt  = first_launch.daysTo(QDateTime::currentDateTime());
 	const auto first_launch_s   = first_launch.toString(QStringLiteral("yyyy-MM-dd hh:mm:ss"));
-	const auto first_launch_dts = qApp->translate("Duration", "%n days", "", first_launch_dt);
+	const auto first_launch_dts = translate("Duration", "%n days", "", first_launch_dt);
 	const auto files_opened     = m_settings.value(NUM_FILES_OPENED, 0).toInt();
 	const auto dimensions_max   = m_settings.value(IMG_DIMENSIONS_MAX, QSize(0,0)).toSize();
 	const auto dimensions_avg   = m_settings.value(IMG_DIMENSIONS_AVG, QSize(0,0)).toSize();
@@ -278,3 +280,4 @@ void TaggerStatistics::showStatsDialog()
 	mb.setTextInteractionFlags(Qt::TextBrowserInteraction);
 	mb.exec();
 }
+#undef translate

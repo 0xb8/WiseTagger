@@ -146,8 +146,33 @@ bool Picture::loadMedia(const QString &filename)
 
 	QImageReader reader(&m_file_buf);
 	auto format = util::guess_image_format(filename);
-	if(!format.isEmpty()) {
-		reader.setFormat(format);
+
+	QSettings settings;
+	if (settings.value("performance/autodetect_format", true).toBool()) {
+		auto actual_format = reader.format();
+
+		if (actual_format.isEmpty()) {
+			pwarn << "invalid or unsupported format";
+			clear();
+			return false;
+		}
+
+		if (format != actual_format) {
+			auto ext = QFileInfo(filename).suffix();
+			emit warningMessage(tr("Wrong file extension"),
+			                    tr("<p><code>%1</code></p>"
+			                       "<p>File extension does not match the actual image format; should be <b><code>.%3</code></b></p>").arg(filename, reader.format()));
+
+			pwarn << "Image format does not match the extension"
+			      << QString::fromLatin1(reader.format())
+			      << ":"
+			      << filename;
+		}
+
+	} else {
+		if(!format.isEmpty()) {
+			reader.setFormat(format);
+		}
 	}
 
 	if(reader.imageCount() > 1) {
@@ -169,7 +194,7 @@ bool Picture::loadMedia(const QString &filename)
 
 		m_movie->setCacheMode(QMovie::CacheNone);
 		this->setMovie(m_movie.get());
-		TaggerStatistics::instance().movieLoadedDirectly(timer.nsecsElapsed() / 1e6);
+		TaggerStatistics::instance().movieLoadedDirectly(timer.nsecsElapsed() * 1e-6);
 	} else {
 		m_pixmap = QPixmap::fromImage(reader.read());
 		if(m_pixmap.isNull()) {

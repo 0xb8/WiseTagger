@@ -71,6 +71,7 @@ Tagger::Tagger(QWidget *_parent) :
 	connect(&m_input, &TagInput::parseError, this, &Tagger::parseError);
 	connect(&m_picture, &Picture::linkActivated, this, &Tagger::linkActivated);
 	connect(&m_picture, &Picture::mediaResized, this, &Tagger::mediaResized);
+	connect(&m_picture, &Picture::warningMessage, this, &Tagger::mediaLoadWarning);
 	connect(this, &Tagger::fileRenamed, &TaggerStatistics::instance(), &TaggerStatistics::fileRenamed);
 	connect(this, &Tagger::fileOpened, this, [this](const auto& file)
 	{
