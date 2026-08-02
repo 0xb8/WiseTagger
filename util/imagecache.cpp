@@ -193,6 +193,10 @@ ImageCache::QueryResult ImageCache::getImage(const QString& filename, QSize wind
 
 void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size, double device_pixel_ratio)
 {
+	auto format = util::guess_image_format(filename);
+	if (!imageFormatAllowed(format))
+		return;
+
 	auto image_id = getUniqueImageID(filename, window_size);
 
 	{	// check if other thread began to load image before locking for write
@@ -228,8 +232,6 @@ void ImageCache::addFileThreadFunc(const QString& filename, QSize window_size, d
 		setFileInvalid(image_id);
 		return;
 	}
-
-	auto format = util::guess_image_format(filename);
 
 	QImageReader reader(&file, format);
 	if(!reader.canRead() || reader.supportsAnimation()) { // NOTE: to prevent caching of animated images
@@ -336,6 +338,22 @@ uint64_t ImageCache::getUniqueImageID(const QString& filename, QSize size)
 		}
 	}
 	return image_id;
+}
+
+bool ImageCache::imageFormatAllowed(const QByteArray &fmt)
+{
+	const char* allowed_formats[] = {
+		"jpeg",
+		"png",
+		"bmp"
+	};
+
+	for(auto f : allowed_formats) {
+		if (fmt == f)
+			return true;
+	}
+
+	return false;
 }
 
 void ImageCache::setFileInvalid(uint64_t unique_id)

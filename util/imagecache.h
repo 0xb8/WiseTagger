@@ -140,6 +140,9 @@ private:
 		State  state;
 	};
 
+	/// Can file with this extension be loaded in cache?
+	static bool imageFormatAllowed(const QByteArray& fmt);
+
 	using FilenameIdCache = std::unordered_map<QString, uint64_t>;
 
 	QThreadPool            m_thread_pool;
