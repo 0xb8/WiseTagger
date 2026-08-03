@@ -1,8 +1,8 @@
 [Setup]
 AppName=WiseTagger
-AppCopyright=Copyright (C) 2024 catgirl
-AppVersion=0.6.11
-VersionInfoVersion=0.6.11
+AppCopyright=Copyright (C) 2026 catgirl
+AppVersion=0.6.12
+VersionInfoVersion=0.6.12
 
 AppPublisher=catgirl
 AppPublisherURL=https://github.com/0xb8/WiseTagger
@@ -17,13 +17,13 @@ Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=lowest
 OutputDir=..\
+OutputBaseFilename=WiseTagger Setup v0.6.12
 LicenseFile=LICENSE.txt
 SetupIconFile=..\icon.ico
 WizardStyle=modern
 AllowNoIcons=yes
-
-ArchitecturesAllowed=x64compatible
-ArchitecturesInstallIn64BitMode=x64compatible
+SetupArchitecture=x64
+SetupMutex=SetupWiseTagger
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
@@ -61,12 +61,20 @@ Type: files; Name: "{app}\libicuuc72.dll"
 Type: files; Name: "{app}\libicudt73.dll"
 Type: files; Name: "{app}\libicuin73.dll"
 Type: files; Name: "{app}\libicuuc73.dll"
+Type: files; Name: "{app}\libicudt75.dll"
+Type: files; Name: "{app}\libicuin75.dll"
+Type: files; Name: "{app}\libicuuc75.dll"
 Type: files; Name: "{app}\libtiff-5.dll"
 Type: files; Name: "{app}\libavif.dll"
 Type: files; Name: "{app}\libavif.dll"
 Type: files; Name: "{app}\libdav1d.dll"
 Type: files; Name: "{app}\libSvtAv1Enc.dll"
+Type: files; Name: "{app}\libSvtAv1Enc-2.dll"
+Type: files; Name: "{app}\libopenjph-0.17.dll"
 Type: files; Name: "{app}\libx265.dll"
+Type: files; Name: "{app}\libx265-209.dll"
+Type: files; Name: "{app}\libx265-216.dll"
+Type: files; Name: "{app}\rav1e.dll"
 Type: files; Name: "{app}\imageformats\qmng.dll"
 Type: files; Name: "{app}\platforms\qminimal.dll"
 Type: files; Name: "{app}\platforms\qoffscreen.dll"
